@@ -1,8 +1,4 @@
-.git
-.github
-.vscode
-tests
-examples
-deploy
-*.md
-!src/**
+# Only the docker folder is needed to build the image (MCPPosh is installed from the Gallery
+# or from docker/packages).
+*
+!docker/
