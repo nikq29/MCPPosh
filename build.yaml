@@ -110,7 +110,7 @@ Pester:
         #- FunctionalQuality
         #- TestQuality
     CodeCoverage:
-      CoveragePercentTarget: 0 # Set to 0 to bypass
+      CoveragePercentTarget: 85 # Set to 0 to bypass
       #OutputPath: JaCoCo_$OsShortName.xml
       #OutputEncoding: ascii
       UseBreakpoints: false

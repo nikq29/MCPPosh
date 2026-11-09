@@ -38,7 +38,7 @@ function Invoke-McpRequest {
     $id = if ($hasId) { $Message['id'] } else { $null }
     $method = $Message['method']
 
-    if ($Message['jsonrpc'] -ne '2.0' -or ($null -ne $method -and $method -isnot [string]) -or ($hasId -and $null -ne $id -and $id -isnot [string] -and $id -isnot [long] -and $id -isnot [double])) {
+    if ($Message['jsonrpc'] -ne '2.0' -or ($null -ne $method -and $method -isnot [string]) -or ($hasId -and $null -ne $id -and $id -isnot [string] -and $id -isnot [long] -and $id -isnot [int] -and $id -isnot [double])) {
         return New-McpErrorResponse -Id $id -Code -32600 -Message 'Invalid Request'
     }
 

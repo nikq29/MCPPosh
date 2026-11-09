@@ -39,7 +39,8 @@ function Get-McpClientConfig {
         Stdio only: lets the agent add notes (add_note tool).
 
     .PARAMETER UseModuleName
-        Stdio only: import the module by name (requires MCPPosh in $env:PSModulePath) instead of by path.
+        Stdio only: import the module by name instead of by path. This is the default when MCPPosh is
+        installed in a standard module folder (for example with Install-PSResource MCPPosh).
 
     .PARAMETER AsJson
         Return only the JSON text.
@@ -93,7 +94,15 @@ function Get-McpClientConfig {
     $notes = [System.Collections.Generic.List[string]]::new()
 
     if ($Transport -eq 'Stdio') {
-        $moduleReference = if ($UseModuleName) { 'MCPPosh' } else { "'" + $script:ModuleManifestPath.Replace("'", "''") + "'" }
+        # A module installed with Install-PSResource/Install-Module lives in a standard module folder and is
+        # imported by name, so the configuration keeps working after module updates.
+        $standardModuleRoots = @(
+            (Join-Path -Path $PSHOME -ChildPath 'Modules')
+            $(if ($IsWindows) { Join-Path -Path ([Environment]::GetFolderPath('MyDocuments')) -ChildPath 'PowerShell/Modules' } else { Join-Path -Path $HOME -ChildPath '.local/share/powershell/Modules' })
+            $(if ($IsWindows) { Join-Path -Path $env:ProgramFiles -ChildPath 'PowerShell/Modules' } else { '/usr/local/share/powershell/Modules' })
+        ) | ForEach-Object { [System.IO.Path]::GetFullPath($_).TrimEnd('/', '\') + [System.IO.Path]::DirectorySeparatorChar }
+        $installedFromGallery = @($standardModuleRoots | Where-Object { $script:ModuleManifestPath.StartsWith($_, [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
+        $moduleReference = if ($UseModuleName -or $installedFromGallery) { 'MCPPosh' } else { "'" + $script:ModuleManifestPath.Replace("'", "''") + "'" }
         $kbReference = if (Test-McpLooksLikePath -Value $KnowledgeBase) { $kb.Path } else { $kb.Name }
         $serverCommand = "Import-Module $moduleReference; Start-McpServer -KnowledgeBase '$($kbReference.Replace("'", "''"))' -Transport Stdio" + $(if ($AllowWrite) { ' -AllowWrite' } else { '' })
         $pwsh = Get-McpPwshPath
