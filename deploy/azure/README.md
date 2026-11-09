@@ -1,107 +1,111 @@
-# MCPPosh zentral in Azure hosten
+# Hosting MCPPosh centrally in Azure
 
-Diese Vorlage betreibt einen MCPPosh-Server als **Azure Container App**. Die Wissensbasis liegt auf
-einer **Azure-Files-Freigabe**, die der Container unter `/data` einbindet. Gepflegt wird das Wissen
-weiterhin lokal mit PowerShell und per `Publish-McpKnowledgeBase` hochgeladen. Der laufende Server
-lädt neue Dokumente automatisch nach, ein Neustart ist nicht nötig.
+This template runs an MCPPosh server as an **Azure Container App**. The knowledge base lives on an
+**Azure Files share** that the container mounts at `/data`. You keep maintaining the knowledge
+locally with PowerShell and upload it with `Publish-McpKnowledgeBase`. The running server loads new
+documents automatically, no restart is needed.
 
 ```
- PowerShell (lokal)                         Azure
+ PowerShell (local)                         Azure
  ┌─────────────────────┐   Publish-     ┌──────────────────────┐      ┌───────────────────────┐
- │ Add-McpDocument ... │──Mcp─────────► │ Azure Files (/data)  │◄─────│ Container App MCPPosh │◄── AI-Agents
- │ Wissensbasis        │  KnowledgeBase │ knowledgebases/<KB>  │ mount│ https://…/mcp         │   (HTTPS +
- └─────────────────────┘                └──────────────────────┘      └───────────────────────┘    API-Key)
+ │ Add-McpDocument ... │──Mcp─────────► │ Azure Files (/data)  │◄─────│ Container App MCPPosh │◄── AI agents
+ │ knowledge base      │  KnowledgeBase │ knowledgebases/<KB>  │ mount│ https://…/mcp         │   (HTTPS +
+ └─────────────────────┘                └──────────────────────┘      └───────────────────────┘    API key)
 ```
 
-## Bestandteile
+## Contents
 
-| Datei | Zweck |
+| File | Purpose |
 | --- | --- |
-| `main.bicep` | Log Analytics, Storage Account + Freigabe `mcpposh`, Container-Apps-Umgebung, Container App mit HTTPS-Ingress, API-Key als Secret und Health-Probes |
-| `deploy.ps1` | Bereitstellung per Az PowerShell, optional direkt mit Veröffentlichung der Wissensbasis |
-| `../../docker/Dockerfile` | Container-Image (PowerShell 7.4 + MCPPosh, läuft als Nicht-root-Benutzer) |
+| `main.bicep` | Log Analytics, storage account with the share `mcpposh`, Container Apps environment, Container App with HTTPS ingress, API key secret and health probes |
+| `deploy.ps1` | Deployment with Az PowerShell, optionally publishing the knowledge base right away |
+| `../../docker/Dockerfile` | Container image (PowerShell 7.4, MCPPosh installed from the PowerShell Gallery, runs as a non-root user) |
 
-## 1. Image bauen
+## 1. Container image
 
-**Variante A: Azure Container Registry**
+**Option A: GitHub Container Registry (recommended).** The workflow `.github/workflows/build.yml`
+builds `ghcr.io/<owner>/mcpposh:<version>` (and `:latest`) for every release tag `vX.Y.Z`, with
+MCPPosh installed from the PowerShell Gallery. If the package is public, the Container App needs
+no registry credentials.
+
+**Option B: Azure Container Registry.**
 
 ```powershell
-az acr create -g rg-mcpposh -n meineacr --sku Basic --admin-enabled true
-az acr build -r meineacr -t mcpposh:0.1.0 -f docker/Dockerfile .
+az acr create -g rg-mcpposh -n myacr --sku Basic --admin-enabled true
+az acr build -r myacr -t mcpposh:0.1.0 -f docker/Dockerfile --build-arg MCPPOSH_VERSION=0.1.0 .
 ```
 
-**Variante B: GitHub Container Registry**: Der Workflow `.github/workflows/docker.yml` baut bei jedem
-Push auf `main` und bei Tags `v*` automatisch `ghcr.io/<owner>/mcpposh`. Ist das Paket öffentlich,
-braucht die Container App keine Registry-Zugangsdaten.
-
-## 2. Bereitstellen
+## 2. Deploy
 
 ```powershell
-Install-Module Az -Scope CurrentUser        # einmalig
+Install-PSResource -Name Az, MCPPosh    # once
 Connect-AzAccount
 
 ./deploy/azure/deploy.ps1 -ResourceGroupName rg-mcpposh -Location westeurope `
     -Image ghcr.io/<owner>/mcpposh:latest -KnowledgeBase Contoso -Publish
 ```
 
-Für ein privates ACR-Image zusätzlich `-RegistryServer meineacr.azurecr.io -RegistryUsername meineacr -RegistryPassword (Read-Host -AsSecureString)` angeben.
+For a private ACR image add `-RegistryServer myacr.azurecr.io -RegistryUsername myacr -RegistryPassword (Read-Host -AsSecureString)`.
 
-Ohne `-ApiKey` erzeugt das Skript einen zufälligen Schlüssel und zeigt ihn **einmal** an.
-Alternativ mit der Azure CLI:
+Without `-ApiKey` the script generates a random key and shows it **once**. Alternatively with the
+Azure CLI:
 
 ```bash
 az deployment group create -g rg-mcpposh -f deploy/azure/main.bicep \
-  -p image=ghcr.io/<owner>/mcpposh:latest apiKey=<mind. 16 Zeichen> knowledgeBase=Contoso
+  -p image=ghcr.io/<owner>/mcpposh:latest apiKey=<at least 16 characters> knowledgeBase=Contoso
 ```
 
-## 3. Wissen veröffentlichen und verwalten
+## 3. Publish and manage knowledge
 
 ```powershell
 Add-McpDocument -KnowledgeBase Contoso -Path .\docs -Recurse
 Publish-McpKnowledgeBase -Name Contoso -StorageAccountName <storage> -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
 
-Get-McpServer  -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key   # Status, Dokumente, Revision
+Get-McpServer  -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key   # status, documents, revision
 Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 'VPN'
 ```
 
-`Publish-McpKnowledgeBase` lädt nur geänderte Dateien hoch, das Manifest immer zuletzt. `-Prune`
-entfernt Dokumente, die lokal gelöscht wurden. Statt `-ResourceGroupName` gehen auch
-`-StorageAccountKey`, `-SasToken` oder `-Context`.
+`Publish-McpKnowledgeBase` only uploads changed files and always uploads the manifest last.
+`-Prune` removes documents that were deleted locally. Instead of `-ResourceGroupName` you can use
+`-StorageAccountKey`, `-SasToken` or `-Context`.
 
-Alternativ lässt sich die Freigabe als Laufwerk einbinden (SMB, Port 445). Setzt man
-`$env:MCPPOSH_HOME` auf das Laufwerk, arbeiten alle Cmdlets direkt auf der zentralen Wissensbasis.
+Alternatively mount the share as a drive (SMB, port 445) and set `$env:MCPPOSH_HOME` to it; all
+cmdlets then work directly on the central knowledge base.
 
-## 4. AI-Clients verbinden
+## 4. Connect AI clients
 
 ```powershell
-Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode   -Transport Http -Uri https://<app>.azurecontainerapps.io/mcp -ApiKeyPlaceholder
+Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode     -Transport Http -Uri https://<app>.azurecontainerapps.io/mcp -ApiKeyPlaceholder
 Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode -Transport Http -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key
 ```
 
-Claude Desktop bindet entfernte Server über *Einstellungen › Connectors* ein oder über die von
-`Get-McpClientConfig -Client ClaudeDesktop -Transport Http` erzeugte `mcp-remote`-Brücke (Node.js).
+Claude Desktop adds remote servers under *Settings › Connectors*, or through the `mcp-remote`
+bridge (Node.js) created by `Get-McpClientConfig -Client ClaudeDesktop -Transport Http`.
 
-## Konfiguration des Containers
+## Container configuration
 
-| Variable | Bedeutung | Standard |
+| Variable | Meaning | Default |
 | --- | --- | --- |
-| `MCPPOSH_API_KEY` | API-Key(s), kommagetrennt (Secret) | Pflicht |
-| `MCPPOSH_KNOWLEDGEBASE` | Name der Wissensbasis auf der Freigabe | `Default` |
-| `MCPPOSH_DESCRIPTION` | Beschreibung beim ersten Anlegen | leer |
-| `MCPPOSH_ALLOW_WRITE` | `true` aktiviert das Tool `add_note` | `false` |
-| `MCPPOSH_ALLOWED_ORIGINS` | CORS-Origins für Browser-Clients | leer |
-| `MCPPOSH_ALLOW_ANONYMOUS` | `true` = ohne API-Key (nur hinter einem authentifizierenden Gateway) | `false` |
-| `MCPPOSH_IMPORT_PATH` | Ordner, dessen Dokumente beim Start importiert werden | `/seed` |
-| `MCPPOSH_PORT` | Port im Container | `8080` |
+| `MCPPOSH_API_KEY` | API key(s), comma-separated (secret) | required |
+| `MCPPOSH_KNOWLEDGEBASE` | name of the knowledge base on the share | `Default` |
+| `MCPPOSH_DESCRIPTION` | description used when the knowledge base is created | empty |
+| `MCPPOSH_ALLOW_WRITE` | `true` enables the tool `add_note` | `false` |
+| `MCPPOSH_ALLOWED_ORIGINS` | CORS origins for browser clients | empty |
+| `MCPPOSH_ALLOW_ANONYMOUS` | `true` = no API key (only behind an authenticating gateway) | `false` |
+| `MCPPOSH_IMPORT_PATH` | folder whose documents are imported at start | `/seed` |
+| `MCPPOSH_PORT` | port inside the container | `8080` |
 
-## Sicherheit und Betrieb
+Image build arguments: `MCPPOSH_VERSION` (module version from the Gallery, empty = latest stable),
+`MCPPOSH_SOURCE` (`PSGallery` or `Local` for packages in `docker/packages`) and `PWSH_VERSION`.
 
-- Die Container App ist nur per HTTPS erreichbar. Jeder Aufruf von `/mcp` braucht den API-Key
-  (`Authorization: Bearer …` oder `X-API-Key`). `/health` zeigt ohne Key nur den Status.
-- Mehrere Schlüssel (kommagetrennt) erlauben eine Rotation ohne Ausfall.
-- Für Microsoft Entra ID lässt sich der Container-App-Authentifizierungsdienst („Easy Auth“) oder Azure
-  API Management vorschalten, dann eventuell mit `MCPPOSH_ALLOW_ANONYMOUS=true`.
-- Der Server ist zustandslos. Ohne Schreibzugriff kann `maxReplicas` erhöht werden. Mit
-  `allowWrite` sollte es bei einer Replica bleiben.
-- `minReplicas = 0` spart Kosten, verursacht aber einige Sekunden Kaltstart.
-- Logs: Log Analytics (`ContainerAppConsoleLogs_CL`) oder `az containerapp logs show -n mcpposh -g rg-mcpposh --follow`.
+## Security and operations
+
+- The Container App is only reachable over HTTPS. Every call to `/mcp` requires the API key
+  (`Authorization: Bearer …` or `X-API-Key`). `/health` only shows the status without a key.
+- Several keys (comma-separated) allow key rotation without downtime.
+- For Microsoft Entra ID, put Container Apps authentication ("Easy Auth") or Azure API Management in
+  front of the app, possibly with `MCPPOSH_ALLOW_ANONYMOUS=true`.
+- The server is stateless. Without write access `maxReplicas` can be increased; with `allowWrite`
+  keep a single replica.
+- `minReplicas = 0` saves costs but causes a cold start of a few seconds.
+- Logs: Log Analytics (`ContainerAppConsoleLogs_CL`) or `az containerapp logs show -n mcpposh -g rg-mcpposh --follow`.

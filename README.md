@@ -1,142 +1,147 @@
 # MCPPosh
 
-**Deine eigene Dokumentation als MCP-Server für AI Agents, komplett mit PowerShell verwaltet.**
+**Serve your own documentation to AI agents through an MCP server, managed entirely from PowerShell.**
 
-MCPPosh ist ein PowerShell-Modul. Damit baust du eine Wissensbasis aus deinen Dokumenten auf
-(Markdown, Word, PDF, HTML/Webseiten, CSV, JSON/YAML/XML, Skripte …) und stellst sie über das
-[Model Context Protocol](https://modelcontextprotocol.io) einem AI Agent bereit, etwa Claude
-Desktop, Claude Code, GitHub Copilot in VS Code oder Cursor. Der Server läuft lokal oder zentral,
-zum Beispiel in Azure.
+MCPPosh is a PowerShell module that builds a knowledge base from your documents (Markdown, Word,
+PDF, HTML and web pages, CSV, JSON/YAML/XML, source code ...) and provides it to AI agents such as
+Claude Desktop, Claude Code, GitHub Copilot in VS Code or Cursor through the
+[Model Context Protocol](https://modelcontextprotocol.io). The server runs locally or centrally,
+for example in Azure.
 
 ```powershell
-New-McpKnowledgeBase -Name Contoso -Description 'Interne IT-Doku: Runbooks, Architektur, FAQ'
+Install-PSResource -Name MCPPosh
+New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation: runbooks, architecture, FAQ'
 Add-McpDocument -KnowledgeBase Contoso -Path .\docs -Recurse
-Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop   # Konfiguration für den Agent
+Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop   # configuration for the agent
 ```
 
-## Funktionen
+## Features
 
-- **Wissen in vielen Formaten hinzufügen**: Dateien, ganze Ordner, Pipeline aus `Get-ChildItem`,
-  Webseiten (`-Url`) und Text (`-Content`). Eigene Formate per `Register-McpDocumentConverter`.
-- **Lokale Volltextsuche (BM25)**: abschnittsweise, mit leichtem Stemming für Deutsch und Englisch,
-  Präfixsuche und Tag-Filtern. Keine API-Keys, keine Cloud-Abhängigkeit.
-- **MCP-Server mit zwei Transporten**: *stdio* (der Agent startet den Server) und *Streamable HTTP*
-  (Hintergrundprozess oder Container) mit API-Key-Schutz.
-- **Verwaltung per PowerShell**: starten, stoppen, neu starten, Status, Logs, End-to-End-Test und
-  fertige Client-Konfigurationen.
-- **Live-Reload**: Neu hinzugefügte Dokumente sind sofort verfügbar, auch auf laufenden Servern.
-- **Optionaler Schreibzugriff**: Mit `-AllowWrite` kann der Agent über `add_note` selbst Wissen ablegen.
-- **Zentrales Hosting**: Docker-Image, Bicep-Vorlage für Azure Container Apps + Azure Files und
-  `Publish-McpKnowledgeBase` zum Veröffentlichen.
+- **Add knowledge in many formats**: files, whole folders, pipeline input from `Get-ChildItem`,
+  web pages (`-Url`) and text (`-Content`). Add your own formats with `Register-McpDocumentConverter`.
+- **Local full-text search (BM25)**: section based, with light stemming for English and German,
+  prefix expansion and tag filters. No API keys, no cloud dependency.
+- **MCP server with two transports**: *stdio* (the agent starts the server) and *Streamable HTTP*
+  (background process or container) protected by API keys.
+- **Managed from PowerShell**: start, stop, restart, status, logs, end-to-end tests and
+  ready-to-use client configurations.
+- **Live reload**: documents you add are available immediately, also on running servers.
+- **Optional write access**: with `-AllowWrite` the agent can store knowledge itself through `add_note`.
+- **Central hosting**: Docker image (installs MCPPosh from the PowerShell Gallery), Bicep template
+  for Azure Container Apps with Azure Files and `Publish-McpKnowledgeBase` for publishing.
 
-## Voraussetzungen
+## Requirements
 
-- **PowerShell 7.2 oder neuer** (Windows, Linux, macOS). Windows PowerShell 5.1 wird nicht unterstützt.
-- Optional für PDF: das Modul [PSWritePDF](https://www.powershellgallery.com/packages/PSWritePDF)
-  oder `pdftotext` (Poppler), siehe [PDF-Unterstützung](#pdf-unterstützung).
-- Optional für Azure: `Az.Storage` (Veröffentlichen), `Az.Resources` + Bicep CLI (Bereitstellen).
+- **PowerShell 7.2 or later** on Windows, Linux or macOS. Windows PowerShell 5.1 is not supported.
+- Optional for PDF: the module [PSWritePDF](https://www.powershellgallery.com/packages/PSWritePDF)
+  or `pdftotext` (Poppler), see [PDF support](#pdf-support).
+- Optional for Azure: `Az.Storage` (publishing), `Az.Resources` and the Bicep CLI (deployment).
 
 ## Installation
 
+From the PowerShell Gallery:
+
+```powershell
+Install-PSResource -Name MCPPosh            # PowerShell 7.4+ (PSResourceGet)
+Install-Module -Name MCPPosh -Scope CurrentUser   # alternatively with PowerShellGet
+```
+
+From source (the module is built with [Sampler](https://github.com/gaelcolas/Sampler)):
+
 ```powershell
 git clone https://github.com/nikq29/MCPPosh.git
-Import-Module ./MCPPosh/src/MCPPosh/MCPPosh.psd1
+cd MCPPosh
+./build.ps1 -ResolveDependency -Tasks build
+Import-Module ./output/module/MCPPosh
 ```
 
-Damit `Import-Module MCPPosh` überall funktioniert, kopierst du `src/MCPPosh` in einen Ordner aus
-`$env:PSModulePath`, zum Beispiel:
+## Quick start
 
 ```powershell
-Copy-Item ./MCPPosh/src/MCPPosh -Destination (Join-Path ($env:PSModulePath -split [IO.Path]::PathSeparator)[0] 'MCPPosh') -Recurse
-```
+# 1. Create a knowledge base. The description is sent to the agent as instructions.
+New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation of Contoso.'
 
-## Schnellstart
+# 2. Add knowledge
+Add-McpDocument -KnowledgeBase Contoso -Path C:\Docs -Recurse -Tags internal
+Add-McpDocument -KnowledgeBase Contoso -Url https://example.com/handbook.html
+Add-McpDocument -KnowledgeBase Contoso -Title 'VPN error 809' -Content 'Check the firewall rule VPN-IKE.' -Tags vpn
 
-```powershell
-# 1. Wissensbasis anlegen. Die Beschreibung erhält der Agent als Anweisung.
-New-McpKnowledgeBase -Name Contoso -Description 'Interne IT-Dokumentation von Contoso.'
+# 3. Test the search the way the agent searches
+Search-McpDocument -KnowledgeBase Contoso -Query 'vpn connection drops'
 
-# 2. Wissen hinzufügen
-Add-McpDocument -KnowledgeBase Contoso -Path C:\Doku -Recurse -Tags intern
-Add-McpDocument -KnowledgeBase Contoso -Url https://example.com/handbuch.html
-Add-McpDocument -KnowledgeBase Contoso -Title 'VPN Fehler 809' -Content 'Firewall-Regel VPN-IKE prüfen.' -Tags vpn
-
-# 3. Suche testen, so wie der Agent sucht
-Search-McpDocument -KnowledgeBase Contoso -Query 'VPN bricht ab'
-
-# 4. Agent verbinden (Beispiel Claude Code)
+# 4. Connect an agent (example: Claude Code)
 (Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode).Command
 
-# 5. Ende-zu-Ende testen
+# 5. Test end to end
 Test-McpServer -KnowledgeBase Contoso -Query 'VPN'
 ```
 
-## Wissen hinzufügen
+## Adding knowledge
 
-`Add-McpDocument` wandelt alles beim Import in Markdown um und legt einen Suchindex an.
-Wird dieselbe Datei oder URL erneut hinzugefügt, aktualisiert das das vorhandene Dokument; ein
-Duplikat entsteht nicht. Text aus `-Content` wird über den Titel zugeordnet.
+`Add-McpDocument` converts everything to Markdown when it is added and builds a search index.
+Adding the same file or URL again updates the existing document instead of creating a duplicate;
+text added with `-Content` is matched by its title.
 
-| Format | Endungen | Hinweise |
+| Format | Extensions | Notes |
 | --- | --- | --- |
-| Markdown | `.md` `.markdown` `.mdx` | Titel und Tags aus Front Matter (`title:`, `tags:`) |
-| Text | `.txt` `.log` `.rst` `.adoc` … | unbekannte Textdateien werden als Text gelesen |
-| HTML / Web | `.html` `.htm`, `-Url` | Überschriften, Listen, Tabellen, Code und Links bleiben erhalten; Navigation und Skripte werden entfernt |
-| Word | `.docx` | reines .NET, kein Office nötig; Überschriften (auch lokalisiert), Listen, Tabellen |
-| PDF | `.pdf` | über PSWritePDF oder pdftotext |
-| CSV / TSV | `.csv` `.tsv` | wird zur Markdown-Tabelle, Trennzeichen (`,` `;` Tab) wird erkannt |
-| JSON / YAML / XML | `.json` `.yaml` `.yml` `.xml` `.config` … | als Codeblock |
-| Quellcode | `.ps1` `.py` `.cs` `.js` `.ts` `.sql` `.sh` `.bicep` `.tf` `Dockerfile` … | als Codeblock mit Sprache |
+| Markdown | `.md` `.markdown` `.mdx` | title and tags from front matter (`title:`, `tags:`) |
+| Text | `.txt` `.log` `.rst` `.adoc` ... | unknown text files are read as text |
+| HTML / web | `.html` `.htm`, `-Url` | headings, lists, tables, code and links are kept; navigation and scripts are removed |
+| Word | `.docx` | pure .NET, no Office required; headings (also localized), lists, tables |
+| PDF | `.pdf` | through PSWritePDF or pdftotext |
+| CSV / TSV | `.csv` `.tsv` | converted to a Markdown table, the delimiter (`,` `;` tab) is detected |
+| JSON / YAML / XML | `.json` `.yaml` `.yml` `.xml` `.config` ... | as code block |
+| Source code | `.ps1` `.py` `.cs` `.js` `.ts` `.sql` `.sh` `.bicep` `.tf` `Dockerfile` ... | as code block with language |
 
 ```powershell
-Add-McpDocument -Path .\docs -Recurse -Include *.md, *.docx -Exclude *entwurf* -Tags handbuch
+Add-McpDocument -Path .\docs -Recurse -Include *.md, *.docx -Exclude *draft* -Tags handbook
 Get-ChildItem \\server\wiki -Filter *.html -Recurse | Add-McpDocument -KnowledgeBase Contoso
 Add-McpDocument -Url https://learn.microsoft.com/powershell/scripting/overview
-Add-McpDocument -Path .\export.dat -Format Text      # Konverter erzwingen
+Add-McpDocument -Path .\export.dat -Format Text      # force a converter
 ```
 
-### Dokumente pflegen
+### Maintaining documents
 
 ```powershell
 Get-McpDocument -KnowledgeBase Contoso -Tag runbook
 Get-McpDocument -KnowledgeBase Contoso -Title '*VPN*' -IncludeContent
-Set-McpDocument -KnowledgeBase Contoso -Id vpn-fehler-809-1a2b3c -AddTags netzwerk
-Update-McpDocument -KnowledgeBase Contoso -All -RemoveMissing   # geänderte Quellen neu einlesen
-Get-McpDocument -KnowledgeBase Contoso -Tag veraltet | Remove-McpDocument
+Set-McpDocument -KnowledgeBase Contoso -Id vpn-error-809-1a2b3c -AddTags network
+Update-McpDocument -KnowledgeBase Contoso -All -RemoveMissing   # re-import changed sources
+Get-McpDocument -KnowledgeBase Contoso -Tag obsolete | Remove-McpDocument
 ```
 
-### Eigene Formate
+### Custom formats
 
 ```powershell
 Register-McpDocumentConverter -Name Email -Extension .eml -ScriptBlock {
     param($Path)
     @{ Title = (Split-Path $Path -LeafBase); Content = Get-Content -LiteralPath $Path -Raw }
 }
-Get-McpDocumentConverter          # alle Formate und Endungen
+Get-McpDocumentConverter          # all formats and extensions
 ```
 
-Der Scriptblock gibt einen Markdown-String oder eine Hashtable mit `Content`, `Title` und `Tags`
-zurück. Registrierungen gelten für die aktuelle Sitzung; für eine dauerhafte Nutzung gehören sie
-ins Profil. Laufende Server brauchen den Konverter nicht, weil beim Import konvertiert wird.
+The script block returns a Markdown string or a hashtable with `Content`, `Title` and `Tags`.
+Registrations last for the current session; put them in your profile to keep them. Running servers
+do not need the converter because documents are converted when they are added.
 
-### PDF-Unterstützung
+### PDF support
 
-PDFs werden über ein zusätzliches Werkzeug gelesen. MCPPosh nutzt automatisch, was vorhanden ist:
+PDFs are read with an additional tool. MCPPosh uses what is available:
 
-1. **PSWritePDF** (PowerShell-Modul, `Convert-PDFToText`): `Install-Module PSWritePDF -Scope CurrentUser`
-2. **pdftotext** aus Poppler: `winget install oschwartz10612.Poppler`, `brew install poppler` oder `apt install poppler-utils`
+1. **PSWritePDF** (PowerShell module, `Convert-PDFToText`): `Install-PSResource PSWritePDF`
+2. **pdftotext** from Poppler: `winget install oschwartz10612.Poppler`, `brew install poppler` or `apt install poppler-utils`
 
-> PSWritePDF enthält die Bibliothek iText 7, die unter der AGPL steht. Das ist relevant, wenn du
-> sie kommerziell weitergibst.
+> PSWritePDF bundles the iText 7 library, which is licensed under the AGPL. This matters if you
+> redistribute it commercially.
 
-Nach der Installation liest `Update-McpDocument -All -Force` vorhandene PDFs neu ein.
+After installing PDF support, `Update-McpDocument -All -Force` re-imports existing PDFs.
 
-## Server bereitstellen
+## Providing the server
 
-### stdio: der Agent startet den Server
+### stdio: the agent starts the server
 
-AI-Clients starten `pwsh` mit `Start-McpServer -Transport Stdio`. Die passende Konfiguration
-erzeugt `Get-McpClientConfig`:
+AI clients start `pwsh` with `Start-McpServer -Transport Stdio`. `Get-McpClientConfig` creates the
+matching configuration:
 
 ```powershell
 Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop     # claude_desktop_config.json
@@ -145,7 +150,7 @@ Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -AsJson | Set-Content 
 Get-McpClientConfig -KnowledgeBase Contoso -Client Cursor            # ~/.cursor/mcp.json
 ```
 
-Beispielausgabe für Claude Desktop:
+Example output for Claude Desktop with MCPPosh installed from the Gallery:
 
 ```json
 {
@@ -153,13 +158,13 @@ Beispielausgabe für Claude Desktop:
     "mcpposh-contoso": {
       "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
       "args": ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
-               "Import-Module 'C:\\Tools\\MCPPosh\\MCPPosh.psd1'; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
+               "Import-Module MCPPosh; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
     }
   }
 }
 ```
 
-### HTTP: Server im Hintergrund
+### HTTP: server in the background
 
 ```powershell
 Start-McpServer -KnowledgeBase Contoso -Port 5050 -ApiKey $key   # http://localhost:5050/mcp
@@ -171,93 +176,122 @@ Stop-McpServer -KnowledgeBase Contoso
 Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -ApiKeyPlaceholder
 ```
 
-- Standardmäßig lauscht der Server nur auf `localhost`. Mit `-ListenAddress '*'` ist er im Netzwerk
-  erreichbar; dann ist `-ApiKey` Pflicht. Unter Windows braucht das zusätzlich Adminrechte oder eine
-  URL-ACL (`netsh http add urlacl url=http://+:5050/ user=DOMAIN\user`).
-- Den API-Key schicken Clients als `Authorization: Bearer <key>` oder `X-API-Key: <key>`. Mehrere
-  Keys sind möglich, etwa für eine Rotation. Alternativ setzt du `$env:MCPPOSH_API_KEY`.
-- `-Foreground` lässt den Server im aktuellen Fenster laufen (für Container und Fehlersuche).
+- By default the server only listens on `localhost`. With `-ListenAddress '*'` it is reachable from
+  the network and `-ApiKey` is required. On Windows this also needs administrator rights or a URL
+  ACL (`netsh http add urlacl url=http://+:5050/ user=DOMAIN\user`).
+- Clients send the API key as `Authorization: Bearer <key>` or `X-API-Key: <key>`. Several keys are
+  possible, for example for key rotation. Alternatively set `$env:MCPPOSH_API_KEY`.
+- `-Foreground` keeps the server in the current console (for containers and troubleshooting).
 
-### Was der Agent bekommt
+### What the agent gets
 
-| MCP-Tool | Zweck |
+| MCP tool | Purpose |
 | --- | --- |
-| `search_documentation` | Volltextsuche; liefert die passendsten Abschnitte mit Dokument-ID |
-| `get_document` | ganzes Dokument als Markdown, bei langen Dokumenten seitenweise (`offset`) |
-| `list_documents` | Dokumente mit Titel, Tags und Kurzbeschreibung (Filter nach Tag) |
-| `add_note` | Notiz speichern, nur mit `-AllowWrite` |
+| `search_documentation` | full-text search; returns the best matching sections with their document ids |
+| `get_document` | a complete document as Markdown, paged for long documents (`offset`) |
+| `list_documents` | documents with title, tags and summary (filter by tag) |
+| `add_note` | store a note, only with `-AllowWrite` |
 
-Zusätzlich ist jedes Dokument als MCP-Resource `mcpposh://<Wissensbasis>/documents/<id>` verfügbar.
-Die Beschreibung der Wissensbasis wird als `instructions` übertragen. Unterstützte
-Protokollversionen: 2025-11-25, 2025-06-18, 2025-03-26 und 2024-11-05.
+Every document is also available as MCP resource `mcpposh://<knowledge base>/documents/<id>`. The
+description of the knowledge base is sent as `instructions`. Supported protocol revisions:
+2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05.
 
-## Zentral hosten (Docker / Azure)
+## Central hosting (Docker / Azure)
+
+The Docker image installs MCPPosh from the PowerShell Gallery:
 
 ```bash
-docker build -f docker/Dockerfile -t mcpposh .
+docker build -f docker/Dockerfile --build-arg MCPPOSH_VERSION=0.1.0 -t mcpposh .
 docker run -p 8080:8080 -e MCPPOSH_API_KEY=<key> -e MCPPOSH_KNOWLEDGEBASE=Contoso -v mcpposh-data:/data mcpposh
 ```
 
-Für Azure liegt in [`deploy/azure`](deploy/azure/README.md) eine Bicep-Vorlage samt `deploy.ps1`.
-Sie stellt eine Container App mit HTTPS und API-Key bereit; die Wissensbasis liegt auf Azure Files.
-Gepflegt wird lokal, veröffentlicht per PowerShell:
+Released images are published as `ghcr.io/nikq29/mcpposh:<version>`. To test an unreleased build,
+copy `output/MCPPosh.*.nupkg` to `docker/packages` and build with `--build-arg MCPPOSH_SOURCE=Local`.
+
+[`deploy/azure`](deploy/azure/README.md) contains a Bicep template and `deploy.ps1` that deploy a
+Container App with HTTPS and an API key; the knowledge base lives on Azure Files. You keep
+maintaining the knowledge locally and publish it with PowerShell:
 
 ```powershell
-./deploy/azure/deploy.ps1 -ResourceGroupName rg-mcpposh -Image ghcr.io/<owner>/mcpposh:latest -KnowledgeBase Contoso -Publish
+./deploy/azure/deploy.ps1 -ResourceGroupName rg-mcpposh -Image ghcr.io/nikq29/mcpposh:latest -KnowledgeBase Contoso -Publish
 Publish-McpKnowledgeBase -Name Contoso -StorageAccountName <storage> -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
 Get-McpServer  -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key
 Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 'VPN'
 ```
 
-## Cmdlet-Übersicht
+## Cmdlet overview
 
-| Bereich | Cmdlets |
+| Area | Cmdlets |
 | --- | --- |
-| Wissensbasis | `New-`, `Get-`, `Set-`, `Remove-McpKnowledgeBase`, `Export-`/`Import-McpKnowledgeBase` (ZIP), `Publish-McpKnowledgeBase` (Azure Files) |
-| Dokumente | `Add-`, `Get-`, `Set-`, `Update-`, `Remove-McpDocument`, `Search-McpDocument` |
-| Formate | `Register-`, `Get-`, `Unregister-McpDocumentConverter` |
+| Knowledge bases | `New-`, `Get-`, `Set-`, `Remove-McpKnowledgeBase`, `Export-`/`Import-McpKnowledgeBase` (ZIP), `Publish-McpKnowledgeBase` (Azure Files) |
+| Documents | `Add-`, `Get-`, `Set-`, `Update-`, `Remove-McpDocument`, `Search-McpDocument` |
+| Formats | `Register-`, `Get-`, `Unregister-McpDocumentConverter` |
 | Server | `Start-`, `Stop-`, `Restart-`, `Get-McpServer`, `Test-McpServer`, `Get-McpServerLog` |
 | Clients | `Get-McpClientConfig` |
 
-Hilfe zu jedem Cmdlet: `Get-Help Add-McpDocument -Full`. Weitere Beispiele stehen in [`examples`](examples).
+Help for every cmdlet: `Get-Help Add-McpDocument -Full` and `Get-Help about_MCPPosh`. More examples
+are in [`examples`](examples).
 
-## Speicherort und Aufbau
+## Storage location and layout
 
-Daten liegen unter `$env:MCPPOSH_HOME`, standardmäßig `~/.mcpposh`:
+Data is stored below `$env:MCPPOSH_HOME`, by default `~/.mcpposh`:
 
 ```
 ~/.mcpposh/
-├── knowledgebases/<Name>/
-│   ├── knowledgebase.json   # Name, Beschreibung
-│   ├── manifest.json        # Dokumentliste, Revision
-│   ├── documents/<id>.md    # normalisierter Inhalt
-│   ├── index/<id>.json      # vorberechneter Suchindex (Abschnitte, Termhäufigkeiten)
+├── knowledgebases/<name>/
+│   ├── knowledgebase.json   # name, description
+│   ├── manifest.json        # document list, revision
+│   ├── documents/<id>.md    # normalized content
+│   ├── index/<id>.json      # precomputed search index (sections, term frequencies)
 │   └── logs/                # server-stdio.log, server-<port>.log
-└── servers/                 # Status lokal gestarteter HTTP-Server
+└── servers/                 # state of locally started HTTP servers
 ```
 
-Statt eines Namens akzeptiert `-KnowledgeBase` auch einen Pfad, zum Beispiel auf ein eingebundenes
-Netzlaufwerk. Die Wissensbasis `Default` wird bei Bedarf automatisch angelegt.
+Instead of a name, `-KnowledgeBase` also accepts a path, for example on a mounted network share.
+The knowledge base `Default` is created automatically when it is first used.
 
-## Sicherheit
+## Security
 
-- stdio-Server laufen mit den Rechten des Benutzers, der den Agent startet.
-- HTTP-Server lauschen standardmäßig nur auf `localhost` und prüfen den `Origin`-Header (Schutz vor
-  DNS-Rebinding). Für andere Adressen ist ein API-Key Pflicht, außer mit `-AllowAnonymous` hinter
-  einem authentifizierenden Gateway.
-- API-Keys werden nie gespeichert und dem Hintergrundprozess über die Umgebung übergeben, nicht über
-  die Kommandozeile. Der Vergleich läuft in konstanter Zeit.
-- Schreibzugriff für den Agent (`add_note`) ist standardmäßig aus. Agent-Notizen tragen den Tag
-  `agent-note` und lassen sich mit `Get-McpDocument -SourceType Agent` prüfen.
-- `-Url` akzeptiert nur `http`/`https`.
+- stdio servers run with the rights of the user who starts the agent.
+- HTTP servers only listen on `localhost` by default and check the `Origin` header (protection
+  against DNS rebinding). Other addresses require an API key, unless `-AllowAnonymous` is used
+  behind an authenticating gateway.
+- API keys are never stored and are passed to background processes through the environment, not
+  on the command line. Keys are compared in constant time.
+- Write access for the agent (`add_note`) is off by default. Agent notes are tagged `agent-note` and
+  can be reviewed with `Get-McpDocument -SourceType Agent`.
+- `-Url` only accepts `http` and `https`.
 
-## Entwicklung
+## Development
+
+MCPPosh uses the [Sampler](https://github.com/gaelcolas/Sampler) build framework.
 
 ```powershell
-Install-Module Pester -MinimumVersion 5.5 -Scope CurrentUser
-Invoke-Pester ./tests -Output Detailed
+./build.ps1 -ResolveDependency -Tasks noop   # download the build dependencies into output/RequiredModules
+./build.ps1 -Tasks build                     # build the module into output/module/MCPPosh/<version>
+./build.ps1 -Tasks test                      # QA, unit and integration tests with code coverage
+./build.ps1 -Tasks pack                      # create output/MCPPosh.<version>.nupkg (requires the dotnet CLI)
 ```
 
-Die CI (`.github/workflows/ci.yml`) führt die Tests auf Windows, Linux und macOS aus, ergänzt um
-PSScriptAnalyzer, den Bicep-Build und den Docker-Build. `docker.yml` veröffentlicht das Image nach
-`ghcr.io/<owner>/mcpposh`.
+- Sources are in `source/` with one function per file (`Public/` exported, `Private/` internal);
+  `prefix.ps1` and `suffix.ps1` are merged into the built `MCPPosh.psm1`.
+- Tests: `tests/QA` (Sampler quality checks: help, PSScriptAnalyzer and a unit test file for every
+  function, changelog), `tests/Unit/Public` and `tests/Unit/Private` (one file per function) and
+  `tests/Integration` (real stdio and HTTP server processes).
+- Every change needs an entry in the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md).
+
+### Releases
+
+The version is calculated by [GitVersion](https://gitversion.net) from the Git history
+(`GitVersion.yml`). The workflow [`.github/workflows/build.yml`](.github/workflows/build.yml)
+builds and tests every push and pull request on Windows, Linux and macOS. Pushing a tag `vX.Y.Z`
+additionally
+
+1. publishes the module to the PowerShell Gallery and creates a GitHub release (Sampler task `publish`),
+2. builds the Docker image with that version from the Gallery and pushes it to `ghcr.io/<owner>/mcpposh`.
+
+Publishing requires the repository secret `GALLERY_API_TOKEN` with a PowerShell Gallery API key.
+
+## License
+
+[MIT](LICENSE)

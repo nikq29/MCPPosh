@@ -10,9 +10,9 @@ function ConvertTo-McpSlug {
         The text to convert, usually the title of a document or the name of a knowledge base.
 
     .EXAMPLE
-        ConvertTo-McpSlug -Text 'VPN: Fehler 809 beheben'
+        ConvertTo-McpSlug -Text 'VPN: Error 809 & Fixes'
 
-        Returns vpn-fehler-809-beheben.
+        Returns vpn-error-809-fixes.
     #>
     [CmdletBinding()]
     [OutputType([string])]
