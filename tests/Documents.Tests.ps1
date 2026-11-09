@@ -108,7 +108,7 @@ Describe 'Adding and managing documents' {
         $updated.Title | Should -Be 'Häufige Fragen'
         $updated.Tags | Should -Be @('faq')
 
-        $result = Set-McpDocument -KnowledgeBase Docs -Id $doc.Id -Content '# FAQ`n`nNeuer Inhalt' -PassThru
+        $result = Set-McpDocument -KnowledgeBase Docs -Id $doc.Id -Content "# FAQ`n`nNeuer Inhalt" -PassThru
         $result.Title | Should -Be 'Häufige Fragen'
         (Get-McpDocument -KnowledgeBase Docs -Id $doc.Id -IncludeContent).Content | Should -Match 'Neuer Inhalt'
     }
