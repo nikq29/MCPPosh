@@ -123,7 +123,9 @@ function Test-McpServer {
                 $result.SearchResults = $hits.Count
                 if ($hits.Count -gt 0) {
                     $top = $hits[0]
-                    $result.TopResult = if ($top['heading'] -and $top['heading'] -ne $top['title']) { "$($top['title']) > $($top['heading'])" } else { [string]$top['title'] }
+                    $heading = [string]$top['heading']
+                    $title = [string]$top['title']
+                    $result.TopResult = if (-not $heading -or $heading -eq $title -or $heading.StartsWith("$title > ")) { if ($heading) { $heading } else { $title } } else { "$title > $heading" }
                 }
             }
             $result.Success = $true

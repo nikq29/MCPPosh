@@ -46,7 +46,9 @@ function Invoke-McpSearchTool {
     $position = 0
     foreach ($result in $results) {
         $position++
-        $location = if ($result.Heading -and $result.Heading -ne $result.Title) { "$($result.Title) > $($result.Heading)" } else { $result.Title }
+        $location = if (-not $result.Heading) { $result.Title }
+        elseif ($result.Heading -eq $result.Title -or $result.Heading.StartsWith("$($result.Title) > ")) { $result.Heading }
+        else { "$($result.Title) > $($result.Heading)" }
         $tagText = if ($result.Tags.Count -gt 0) { " | tags: $($result.Tags -join ', ')" } else { '' }
         $null = $builder.AppendLine()
         $null = $builder.AppendLine("## $position. $location")
