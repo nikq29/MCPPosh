@@ -1,7 +1,11 @@
 # Shared helpers for the Pester tests. Dot-source in BeforeAll.
 
 $script:RepoRoot = Split-Path -Parent $PSScriptRoot
-$script:ModuleManifest = Join-Path $script:RepoRoot 'src/MCPPosh/MCPPosh.psd1'
+# Tests run against the module built by Sampler (./build.ps1 -Tasks build), which the build puts on PSModulePath.
+$script:ModuleManifest = (Get-Module -Name MCPPosh -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Path
+if (-not $script:ModuleManifest) {
+    $script:ModuleManifest = Get-ChildItem -Path (Join-Path $script:RepoRoot 'output/module/MCPPosh') -Filter MCPPosh.psd1 -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+}
 
 function Initialize-McpTestEnvironment {
     param([string] $Name = 'home')
