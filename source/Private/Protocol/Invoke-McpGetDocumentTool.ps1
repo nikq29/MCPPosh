@@ -47,15 +47,15 @@ function Invoke-McpGetDocumentTool {
     $end = $offset + $length
 
     $builder = [System.Text.StringBuilder]::new()
-    $null = $builder.AppendLine("Document: $($record.title)")
-    $null = $builder.AppendLine("id: $id | format: $($record.format) | updated: $($record.updated)")
-    if ($record.source) { $null = $builder.AppendLine("source: $($record.source)") }
-    if (@($record.tags).Count -gt 0) { $null = $builder.AppendLine("tags: $(@($record.tags) -join ', ')") }
-    $null = $builder.AppendLine()
+    $null = $builder.Append("Document: $($record.title)").Append("`n")
+    $null = $builder.Append("id: $id | format: $($record.format) | updated: $($record.updated)").Append("`n")
+    if ($record.source) { $null = $builder.Append("source: $($record.source)").Append("`n") }
+    if (@($record.tags).Count -gt 0) { $null = $builder.Append("tags: $(@($record.tags) -join ', ')").Append("`n") }
+    $null = $builder.Append("`n")
     $null = $builder.Append($slice)
     if ($end -lt $total) {
-        $null = $builder.AppendLine()
-        $null = $builder.AppendLine()
+        $null = $builder.Append("`n")
+        $null = $builder.Append("`n")
         $null = $builder.Append("[Showing characters $offset-$end of $total. Call get_document with offset=$end to continue.]")
     }
 

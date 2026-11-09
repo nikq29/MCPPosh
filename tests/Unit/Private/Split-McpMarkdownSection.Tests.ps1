@@ -30,4 +30,13 @@ Describe 'Split-McpMarkdownSection' {
             $chunks | ForEach-Object { $_.text.Length | Should -BeLessOrEqual 500 }
         }
     }
+
+    It 'uses LF line endings on all platforms, also for CRLF input' {
+        InModuleScope MCPPosh {
+            $chunks = @(Split-McpMarkdownSection -Content "# A`r`n`r`nLine 1`r`nLine 2`r`n`r`n## B`r`n`r`nText B")
+            $chunks.Count | Should -Be 2
+            $chunks[0].text | Should -Be "Line 1`nLine 2"
+            $chunks | ForEach-Object { $_.text | Should -Not -Match "`r" }
+        }
+    }
 }

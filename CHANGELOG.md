@@ -28,3 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   workflow `docs` (PlatyPS); `Get-Help <cmdlet> -Online` opens the reference page.
 - Documentation quality tests (`tests/QA/docs.tests.ps1`) and Markdown linting in the CI workflow.
 - `Publish-McpKnowledgeBase` returns `MCPPosh.PublishResult` objects.
+
+### Fixed
+
+- Markdown tables, search chunks and the text of the MCP tool results use LF line endings on every platform;
+  on Windows they contained CRLF. Documents with CRLF line endings are chunked without carriage returns.
+- The `Publish-McpKnowledgeBase` unit tests no longer fail when the Az.Storage module is installed.

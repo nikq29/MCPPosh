@@ -25,4 +25,12 @@ Describe 'ConvertTo-McpMarkdownTable' {
     It 'returns an empty string for no rows' {
         InModuleScope MCPPosh { ConvertTo-McpMarkdownTable -Rows @() | Should -Be '' }
     }
+
+    It 'uses LF line endings on all platforms' {
+        InModuleScope MCPPosh {
+            $table = ConvertTo-McpMarkdownTable -Rows @([string[]]@('Name', 'Role'), [string[]]@('Anna', 'Admin'))
+            $table | Should -Not -Match "`r"
+            $table | Should -Be "| Name | Role |`n| --- | --- |`n| Anna | Admin |`n"
+        }
+    }
 }

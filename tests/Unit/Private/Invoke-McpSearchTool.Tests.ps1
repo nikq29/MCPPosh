@@ -28,4 +28,10 @@ Describe 'Invoke-McpSearchTool' {
         $result.content[0].text | Should -Match 'No matching sections'
         @($result.structuredContent.results).Count | Should -Be 0
     }
+
+    It 'uses LF line endings on all platforms' {
+        $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'search_documentation'; arguments = @{ query = 'backup' } } }).result
+        $result.content[0].text | Should -Match "`n## 1\. Backup`n"
+        $result.content[0].text | Should -Not -Match "`r"
+    }
 }

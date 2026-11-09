@@ -41,12 +41,12 @@ function Invoke-McpListDocumentsTool {
     $kbName = $Context.KnowledgeBase.Name
     $builder = [System.Text.StringBuilder]::new()
     $filterText = if ($tag) { " with tag '$tag'" } else { '' }
-    $null = $builder.AppendLine("Knowledge base '$kbName': $total document(s)$filterText.")
+    $null = $builder.Append("Knowledge base '$kbName': $total document(s)$filterText.").Append("`n")
     $structured = [System.Collections.Generic.List[object]]::new()
     foreach ($doc in $page) {
         $tagText = if (@($doc.tags).Count -gt 0) { " [tags: $(@($doc.tags) -join ', ')]" } else { '' }
         $summary = if ($doc.summary) { " - $($doc.summary)" } else { '' }
-        $null = $builder.AppendLine("- $($doc.title) (id: $($doc.id))$tagText$summary")
+        $null = $builder.Append("- $($doc.title) (id: $($doc.id))$tagText$summary").Append("`n")
         $structured.Add([ordered]@{
                 id      = [string]$doc.id
                 title   = [string]$doc.title
