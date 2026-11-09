@@ -41,7 +41,7 @@ function Invoke-McpSearchTool {
     }
 
     $builder = [System.Text.StringBuilder]::new()
-    $null = $builder.AppendLine("Found $($results.Count) section(s) in knowledge base '$kbName' for `"$query`":")
+    $null = $builder.Append("Found $($results.Count) section(s) in knowledge base '$kbName' for `"$query`":").Append("`n")
     $structured = [System.Collections.Generic.List[object]]::new()
     $position = 0
     foreach ($result in $results) {
@@ -50,11 +50,11 @@ function Invoke-McpSearchTool {
         elseif ($result.Heading -eq $result.Title -or $result.Heading.StartsWith("$($result.Title) > ")) { $result.Heading }
         else { "$($result.Title) > $($result.Heading)" }
         $tagText = if ($result.Tags.Count -gt 0) { " | tags: $($result.Tags -join ', ')" } else { '' }
-        $null = $builder.AppendLine()
-        $null = $builder.AppendLine("## $position. $location")
-        $null = $builder.AppendLine("document id: $($result.DocumentId) | score: $($result.Score)$tagText")
-        $null = $builder.AppendLine()
-        $null = $builder.AppendLine($result.Text)
+        $null = $builder.Append("`n")
+        $null = $builder.Append("## $position. $location").Append("`n")
+        $null = $builder.Append("document id: $($result.DocumentId) | score: $($result.Score)$tagText").Append("`n")
+        $null = $builder.Append("`n")
+        $null = $builder.Append($result.Text).Append("`n")
         $structured.Add([ordered]@{
                 documentId = $result.DocumentId
                 title      = $result.Title
@@ -65,7 +65,7 @@ function Invoke-McpSearchTool {
                 text       = $result.Text
             })
     }
-    $null = $builder.AppendLine()
+    $null = $builder.Append("`n")
     $null = $builder.Append('Call get_document with a document id to read the complete document.')
     New-McpToolResult -Text $builder.ToString() -Structured ([ordered]@{ results = $structured.ToArray() })
 }
