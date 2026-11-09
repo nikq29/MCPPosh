@@ -34,8 +34,32 @@ function Set-McpDocument {
     .EXAMPLE
         Set-McpDocument -Id vpn-troubleshooting-1a2b3c -AddTags network
 
+        Adds the tag network to a document of the knowledge base Default.
+
     .EXAMPLE
         Get-McpDocument -Tag draft | Set-McpDocument -RemoveTags draft -AddTags reviewed
+
+        Replaces the tag draft with reviewed on all draft documents.
+
+    .EXAMPLE
+        Set-McpDocument -Id vpn-troubleshooting-1a2b3c -Title 'VPN: troubleshooting guide' -PassThru
+
+        Renames a document and returns the updated document.
+
+    .INPUTS
+        MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
+
+    .OUTPUTS
+        None by default. With -PassThru: MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Set-McpDocument.md
+
+    .LINK
+        Get-McpDocument
+
+    .LINK
+        Update-McpDocument
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType('MCPPosh.Document')]

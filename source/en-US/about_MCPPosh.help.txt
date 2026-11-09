@@ -54,6 +54,9 @@ TROUBLESHOOTING NOTE
     Report issues at https://github.com/nikq29/MCPPosh/issues.
 
 SEE ALSO
+    Documentation:     https://github.com/nikq29/MCPPosh/blob/main/docs/README.md
+    Cmdlet reference:  https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/MCPPosh.md
+    Get-Help <cmdlet> -Full, for example Get-Help Add-McpDocument -Full
     https://github.com/nikq29/MCPPosh
     https://modelcontextprotocol.io
 

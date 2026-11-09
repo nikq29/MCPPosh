@@ -49,8 +49,34 @@ function Publish-McpKnowledgeBase {
     .EXAMPLE
         Connect-AzAccount
         Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
+
+        Uploads the changed files of the knowledge base Contoso to the Azure Files share of a hosted server and deletes documents that were removed locally. The storage key is read from the resource group.
+
+    .EXAMPLE
+        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -SasToken $sas -RemoteName Docs
+
+        Publishes with a SAS token into the knowledge base Docs on the share; the container must use MCPPOSH_KNOWLEDGEBASE=Docs.
+
+    .INPUTS
+        None. You cannot pipe objects to this cmdlet.
+
+    .OUTPUTS
+        MCPPosh.PublishResult: KnowledgeBase, Destination, Uploaded, Skipped, Deleted and Revision.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Publish-McpKnowledgeBase.md
+
+    .LINK
+        Export-McpKnowledgeBase
+
+    .LINK
+        Get-McpServer
+
+    .LINK
+        Test-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'ResourceGroup')]
+    [OutputType('MCPPosh.PublishResult')]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string] $Name,
@@ -161,6 +187,7 @@ function Publish-McpKnowledgeBase {
 
         Write-McpJsonFile -Path $stateFile -InputObject $current
         [pscustomobject]@{
+            PSTypeName    = 'MCPPosh.PublishResult'
             KnowledgeBase = $kb.Name
             Destination   = $destination
             Uploaded      = $uploaded

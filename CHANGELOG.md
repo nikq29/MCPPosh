@@ -21,3 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client configuration for Claude Desktop, Claude Code, VS Code and Cursor: `Get-McpClientConfig`.
 - Docker image and Azure Container Apps deployment (Bicep) for central hosting.
 - Sampler-based build, test and release pipeline with publishing to the PowerShell Gallery.
+- Complete English documentation in `docs/`: getting started, concepts, knowledge bases, adding knowledge,
+  search, MCP server, server management, client configuration, HTTP API, Docker and Azure hosting,
+  configuration reference, security, troubleshooting and development.
+- Cmdlet reference in `docs/en-US`, generated from the comment-based help by the new Sampler build
+  workflow `docs` (PlatyPS); `Get-Help <cmdlet> -Online` opens the reference page.
+- Documentation quality tests (`tests/QA/docs.tests.ps1`) and Markdown linting in the CI workflow.
+- `Publish-McpKnowledgeBase` returns `MCPPosh.PublishResult` objects.

@@ -18,6 +18,23 @@ function Set-McpKnowledgeBase {
 
     .EXAMPLE
         Set-McpKnowledgeBase -Name Contoso -Description 'Runbooks and architecture of the Contoso platform. Use it for any question about Contoso.'
+
+        Changes the description that AI agents receive as server instructions. Running servers pick up the change automatically.
+
+    .INPUTS
+        System.String. You can pipe objects with a Name property, for example from Get-McpKnowledgeBase.
+
+    .OUTPUTS
+        None by default. With -PassThru: MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Set-McpKnowledgeBase.md
+
+    .LINK
+        Get-McpKnowledgeBase
+
+    .LINK
+        New-McpKnowledgeBase
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType('MCPPosh.KnowledgeBase')]

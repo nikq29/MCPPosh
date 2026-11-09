@@ -27,12 +27,34 @@ function Register-McpDocumentConverter {
     .EXAMPLE
         Register-McpDocumentConverter -Name Pptx -Extension .pptx -ScriptBlock {
             param($Path)
-            # e.g. use a module of your choice to extract slide text
+            # use a module of your choice to extract the slide text
             @{ Content = (Get-MySlideText -Path $Path) -join "`n`n"; Title = (Split-Path $Path -LeafBase) }
         }
 
+        Adds support for PowerPoint files. The script block returns a hashtable with the Markdown content and the title.
+
     .EXAMPLE
         Register-McpDocumentConverter -Name Email -Extension .eml -ScriptBlock { param($Path) Get-Content $Path -Raw }
+
+        Imports e-mail files as plain text. Register converters in your profile to keep them for new sessions.
+
+    .INPUTS
+        None. You cannot pipe objects to this cmdlet.
+
+    .OUTPUTS
+        MCPPosh.Converter: Name, Extensions, ScriptBlock and Builtin.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Register-McpDocumentConverter.md
+
+    .LINK
+        Get-McpDocumentConverter
+
+    .LINK
+        Unregister-McpDocumentConverter
+
+    .LINK
+        Add-McpDocument
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType('MCPPosh.Converter')]

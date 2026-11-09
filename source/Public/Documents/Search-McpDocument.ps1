@@ -21,8 +21,35 @@ function Search-McpDocument {
     .EXAMPLE
         Search-McpDocument -Query 'restart the VPN connection' -KnowledgeBase Contoso
 
+        Returns the sections of the knowledge base Contoso that match the question best, exactly as the search_documentation tool would.
+
     .EXAMPLE
         Search-McpDocument 'deployment pipeline' -Top 3 | Format-List Title, Heading, Text
+
+        Shows the complete text of the three best matching sections.
+
+    .EXAMPLE
+        Search-McpDocument -Query 'certificate' -Tag vpn -KnowledgeBase Contoso
+
+        Only searches documents that have the tag vpn.
+
+    .INPUTS
+        System.String. You can pipe search queries.
+
+    .OUTPUTS
+        MCPPosh.SearchResult: Score, DocumentId, Title, Heading, Tags, Source, Snippet and Text (the complete section).
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Search-McpDocument.md
+
+    .LINK
+        Get-McpDocument
+
+    .LINK
+        Add-McpDocument
+
+    .LINK
+        Start-McpServer
     #>
     [CmdletBinding()]
     [OutputType('MCPPosh.SearchResult')]

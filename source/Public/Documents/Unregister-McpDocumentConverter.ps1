@@ -11,6 +11,23 @@ function Unregister-McpDocumentConverter {
 
     .EXAMPLE
         Unregister-McpDocumentConverter -Name Email
+
+        Removes the custom converter Email from the current session.
+
+    .INPUTS
+        MCPPosh.Converter. You can pipe converters from Get-McpDocumentConverter.
+
+    .OUTPUTS
+        None.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Unregister-McpDocumentConverter.md
+
+    .LINK
+        Register-McpDocumentConverter
+
+    .LINK
+        Get-McpDocumentConverter
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(

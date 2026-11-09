@@ -18,8 +18,27 @@ function Import-McpKnowledgeBase {
     .EXAMPLE
         Import-McpKnowledgeBase -Path .\contoso-kb.zip
 
+        Restores the knowledge base from the archive under the name stored in the archive.
+
     .EXAMPLE
         Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name ContosoTest
+
+        Imports the archive as a new knowledge base ContosoTest, for example to test changes.
+
+    .INPUTS
+        System.String. You can pipe file objects; their FullName property binds to -Path.
+
+    .OUTPUTS
+        MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Import-McpKnowledgeBase.md
+
+    .LINK
+        Export-McpKnowledgeBase
+
+    .LINK
+        Get-McpKnowledgeBase
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     [OutputType('MCPPosh.KnowledgeBase')]

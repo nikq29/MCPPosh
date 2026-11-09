@@ -26,8 +26,32 @@ function Update-McpDocument {
     .EXAMPLE
         Update-McpDocument -All -KnowledgeBase Contoso
 
+        Re-imports every file and URL document of the knowledge base Contoso whose source changed.
+
     .EXAMPLE
         Get-McpDocument -SourceType Url | Update-McpDocument -Force
+
+        Downloads and converts all web documents of the knowledge base Default again, even if they did not change.
+
+    .EXAMPLE
+        Update-McpDocument -All -RemoveMissing
+
+        Updates all documents and removes documents whose source file no longer exists.
+
+    .INPUTS
+        MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
+
+    .OUTPUTS
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Update-McpDocument.md
+
+    .LINK
+        Add-McpDocument
+
+    .LINK
+        Get-McpDocument
     #>
     [CmdletBinding(DefaultParameterSetName = 'Id', SupportsShouldProcess)]
     [OutputType('MCPPosh.Document')]

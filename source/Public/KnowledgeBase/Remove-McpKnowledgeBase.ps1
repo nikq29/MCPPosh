@@ -12,8 +12,30 @@ function Remove-McpKnowledgeBase {
     .EXAMPLE
         Remove-McpKnowledgeBase -Name OldDocs
 
+        Deletes the knowledge base OldDocs after confirmation.
+
     .EXAMPLE
         Remove-McpKnowledgeBase -Name Test -Confirm:$false
+
+        Deletes the knowledge base Test without asking. Stop servers of the knowledge base first.
+
+    .INPUTS
+        System.String. You can pipe objects with a Name property, for example from Get-McpKnowledgeBase.
+
+    .OUTPUTS
+        None.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpKnowledgeBase.md
+
+    .LINK
+        Get-McpKnowledgeBase
+
+    .LINK
+        Export-McpKnowledgeBase
+
+    .LINK
+        Stop-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param(
