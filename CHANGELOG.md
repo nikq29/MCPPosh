@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   workflow `docs` (PlatyPS); `Get-Help <cmdlet> -Online` opens the reference page.
 - Documentation quality tests (`tests/QA/docs.tests.ps1`) and Markdown linting in the CI workflow.
 - `Publish-McpKnowledgeBase` returns `MCPPosh.PublishResult` objects.
+- End-to-end integration tests for every cmdlet, parameter set and parameter in `tests/Integration`: all built-in
+  formats, URL import from a local web server, generated client configurations started as real processes, foreground
+  and background servers, and publishing to a local stand-in for Azure Files that a server then serves.
+- QA test `tests/QA/integration.tests.ps1` that fails when a cmdlet, parameter set or parameter has no integration
+  test, or when an integration test uses `Mock`.
 
 ### Fixed
 

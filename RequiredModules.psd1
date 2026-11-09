@@ -21,7 +21,8 @@
     'Sampler.GitHubTasks'       = 'latest'
     platyPS                     = 'latest'
 
-
+    # Test-only: PDF text extraction for the integration tests (not a dependency of MCPPosh itself).
+    PSWritePDF                  = 'latest'
 
 }
 
