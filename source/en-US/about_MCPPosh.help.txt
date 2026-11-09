@@ -1,0 +1,64 @@
+TOPIC
+    about_MCPPosh
+
+SHORT DESCRIPTION
+    Serve your own documentation to AI agents through a Model Context Protocol (MCP) server that
+    you manage entirely from PowerShell.
+
+LONG DESCRIPTION
+    MCPPosh builds a knowledge base from your documents and provides it to AI agents such as
+    Claude Desktop, Claude Code, GitHub Copilot in VS Code or Cursor.
+
+    Knowledge bases
+        A knowledge base is a folder below $env:MCPPOSH_HOME (default: ~/.mcpposh) that holds the
+        documents as normalized Markdown, a manifest and a search index. Manage it with
+        New-, Get-, Set- and Remove-McpKnowledgeBase, back it up with Export-/Import-McpKnowledgeBase
+        and publish it to Azure Files with Publish-McpKnowledgeBase. The description of a knowledge
+        base is sent to the agent as MCP server instructions.
+
+    Documents
+        Add-McpDocument imports files, folders, web pages and text. Supported formats: Markdown,
+        text, HTML and web pages, Word (.docx), PDF (with PSWritePDF or pdftotext), CSV/TSV, JSON,
+        YAML, XML and source code. Register-McpDocumentConverter adds custom formats.
+        Get-, Set-, Update- and Remove-McpDocument maintain documents; Search-McpDocument runs the
+        same BM25 search that the agent uses.
+
+    MCP server
+        Start-McpServer -Transport Stdio is started by AI clients (see Get-McpClientConfig).
+        Start-McpServer -Transport Http runs a Streamable HTTP server in the background that you
+        manage with Get-, Stop- and Restart-McpServer and Get-McpServerLog. Test-McpServer checks a
+        server end to end. Documents added while a server runs are available immediately.
+
+        The agent gets the tools search_documentation, get_document and list_documents, and with
+        -AllowWrite also add_note. Every document is an MCP resource
+        mcpposh://<knowledge base>/documents/<id>.
+
+    Security
+        HTTP servers listen on localhost by default. Listening on other addresses requires API keys
+        (Authorization: Bearer <key> or X-API-Key), unless -AllowAnonymous is used behind an
+        authenticating gateway.
+
+EXAMPLES
+    PS C:\> New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation'
+    PS C:\> Add-McpDocument -KnowledgeBase Contoso -Path C:\Docs -Recurse -Tags internal
+    PS C:\> Search-McpDocument -KnowledgeBase Contoso -Query 'vpn connection drops'
+    PS C:\> (Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode).Command
+    PS C:\> Start-McpServer -KnowledgeBase Contoso -Port 5050 -ApiKey $key
+    PS C:\> Test-McpServer -Uri http://localhost:5050/mcp -ApiKey $key -Query 'VPN'
+
+NOTE
+    MCPPosh requires PowerShell 7.2 or later on Windows, Linux or macOS.
+
+TROUBLESHOOTING NOTE
+    Server logs are stored in <knowledge base>/logs; use Get-McpServerLog to show them.
+    Report issues at https://github.com/nikq29/MCPPosh/issues.
+
+SEE ALSO
+    Documentation:     https://github.com/nikq29/MCPPosh/blob/main/docs/README.md
+    Cmdlet reference:  https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/MCPPosh.md
+    Get-Help <cmdlet> -Full, for example Get-Help Add-McpDocument -Full
+    https://github.com/nikq29/MCPPosh
+    https://modelcontextprotocol.io
+
+KEYWORDS
+    MCP, Model Context Protocol, AI, Agent, Documentation, Knowledge Base, Claude, Copilot, RAG

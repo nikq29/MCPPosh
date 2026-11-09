@@ -1,0 +1,228 @@
+name: Build, test and release
+
+# Sampler pipeline:
+#   build   -> ./build.ps1 -Tasks pack (module + nupkg, version from GitVersion)
+#   test    -> ./build.ps1 -Tasks test on Windows, Linux and macOS (QA, unit, integration, coverage)
+#   publish -> ./build.ps1 -Tasks publish (PowerShell Gallery + GitHub release), only for tags v*
+#   docker  -> image validated with the built package; on tags v* built from the Gallery and pushed to GHCR
+#
+# Required repository secret for releases: GALLERY_API_TOKEN (PowerShell Gallery API key).
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_ROLL_FORWARD: Major
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate the module version with GitVersion
+        id: version
+        shell: pwsh
+        run: |
+          dotnet tool install --global GitVersion.Tool --version 5.12.0
+          $gitVersion = dotnet-gitversion | ConvertFrom-Json
+          "Module version: $($gitVersion.NuGetVersionV2)"
+          "version=$($gitVersion.NuGetVersionV2)" >> $env:GITHUB_OUTPUT
+
+      - name: Build and package the module (Sampler)
+        shell: pwsh
+        env:
+          ModuleVersion: ${{ steps.version.outputs.version }}
+        run: ./build.ps1 -ResolveDependency -Tasks pack
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: output
+          path: |
+            output/module/
+            output/*.nupkg
+            output/ReleaseNotes.md
+            output/CHANGELOG.md
+          if-no-files-found: error
+
+  test:
+    name: Test (${{ matrix.os }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: output
+          path: output
+
+      - name: Run the tests (Sampler)
+        shell: pwsh
+        env:
+          ModuleVersion: ${{ needs.build.outputs.version }}
+        run: ./build.ps1 -ResolveDependency -Tasks test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: output/testResults/
+          if-no-files-found: ignore
+
+  analyze:
+    name: Analyze documentation and deployment files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Bicep template
+        run: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
+
+      - name: Lint the Markdown documentation
+        run: npx --yes markdownlint-cli2@0.17.2
+
+      - name: Run PSScriptAnalyzer on the docker and deploy scripts
+        shell: pwsh
+        run: |
+          Install-PSResource -Name PSScriptAnalyzer -Repository PSGallery -TrustRepository -Quiet
+          $results = foreach ($path in './docker', './deploy') { Invoke-ScriptAnalyzer -Path $path -Recurse -Settings ./PSScriptAnalyzerSettings.psd1 }
+          $results | Format-Table -AutoSize -Property Severity, RuleName, ScriptName, Line, Message | Out-String -Width 250
+          if (@($results | Where-Object Severity -EQ 'Error').Count -gt 0) { throw 'PSScriptAnalyzer found errors.' }
+
+  docker:
+    name: Docker image (built package)
+    needs: build
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: output
+          path: output
+
+      - name: Provide the package to the image build
+        run: cp output/*.nupkg docker/packages/
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image from the built package
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          build-args: MCPPOSH_SOURCE=Local
+          load: true
+          tags: mcpposh:ci
+
+      - name: Smoke test the container
+        shell: pwsh
+        run: |
+          docker run -d --name mcpposh -p 8080:8080 -e MCPPOSH_API_KEY=ci-key mcpposh:ci | Out-Null
+          $deadline = (Get-Date).AddSeconds(60)
+          do {
+              Start-Sleep -Seconds 2
+              try { $health = Invoke-RestMethod -Uri http://localhost:8080/health -Headers @{ Authorization = 'Bearer ci-key' } } catch { $health = $null }
+          } until ($health -or (Get-Date) -gt $deadline)
+          docker logs mcpposh
+          if (-not $health) { throw 'The container did not become healthy.' }
+          $body = '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+          $tools = Invoke-RestMethod -Uri http://localhost:8080/mcp -Method Post -Body $body -ContentType 'application/json' -Headers @{ Authorization = 'Bearer ci-key' }
+          $tools.result.tools.name
+          if ($tools.result.tools.name -notcontains 'search_documentation') { throw 'search_documentation is missing.' }
+          $unauthorized = Invoke-WebRequest -Uri http://localhost:8080/mcp -Method Post -Body $body -ContentType 'application/json' -SkipHttpErrorCheck
+          if ($unauthorized.StatusCode -ne 401) { throw "Expected 401 without API key, got $($unauthorized.StatusCode)." }
+
+  publish:
+    name: Publish to the PowerShell Gallery
+    needs: [build, test, analyze]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: output
+          path: output
+
+      - name: Publish the module and the GitHub release (Sampler)
+        shell: pwsh
+        env:
+          ModuleVersion: ${{ needs.build.outputs.version }}
+          GalleryApiToken: ${{ secrets.GALLERY_API_TOKEN }}
+          GitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        run: ./build.ps1 -ResolveDependency -Tasks publish
+
+  docker-release:
+    name: Docker image (from the PowerShell Gallery)
+    needs: [build, publish]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/mcpposh
+          tags: |
+            type=raw,value=${{ needs.build.outputs.version }}
+            type=raw,value=latest,enable=${{ !contains(needs.build.outputs.version, '-') }}
+
+      - name: Build and push the image with MCPPosh from the Gallery
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            MCPPOSH_SOURCE=PSGallery
+            MCPPOSH_VERSION=${{ needs.build.outputs.version }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
