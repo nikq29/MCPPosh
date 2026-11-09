@@ -19,7 +19,7 @@ function Search-McpDocument {
         Name or directory path of the knowledge base to search. The knowledge base named Default is created automatically.
 
     .EXAMPLE
-        Search-McpDocument -Query 'VPN Verbindung neu starten' -KnowledgeBase Contoso
+        Search-McpDocument -Query 'restart the VPN connection' -KnowledgeBase Contoso
 
     .EXAMPLE
         Search-McpDocument 'deployment pipeline' -Top 3 | Format-List Title, Heading, Text
