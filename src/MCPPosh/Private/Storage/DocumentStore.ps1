@@ -182,8 +182,8 @@ function Find-McpDocumentRecord {
             if ($doc.sourceType -eq $SourceType -and $doc.source -eq $Source) { return $doc }
             continue
         }
-        if ($SourceType -eq 'Inline' -and $Title) {
-            if ($doc.sourceType -eq 'Inline' -and $doc.title -eq $Title) { return $doc }
+        if ($SourceType -in 'Inline', 'Agent' -and $Title) {
+            if ($doc.sourceType -eq $SourceType -and $doc.title -eq $Title) { return $doc }
         }
     }
     $null
