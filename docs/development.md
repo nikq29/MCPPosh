@@ -45,9 +45,9 @@ source/                      module source
   Private/<area>/<Verb-Noun>.ps1   internal functions, one per file
   en-US/about_MCPPosh.help.txt     conceptual help
 tests/
-  QA/                        Sampler quality tests and documentation checks
+  QA/                        Sampler quality tests, documentation checks and the integration coverage guard
   Unit/Public, Unit/Private  one test file per function
-  Integration/               real stdio and HTTP server processes
+  Integration/               end-to-end tests of every cmdlet (files, web server, server processes)
   TestHelpers/               shared test helpers
 docs/                        guides and the generated cmdlet reference (docs/en-US)
 docker/                      Dockerfile, entry point and installation script
@@ -92,6 +92,35 @@ Keep source files ASCII-only; use `[char]` escapes for other characters.
   Import-Module ./output/RequiredModules/Pester
   Invoke-Pester ./tests/Unit/Public/Add-McpDocument.Tests.ps1 -Output Detailed
   ```
+
+### Integration tests
+
+The unit tests check single functions. The integration tests in `tests/Integration` use the module the way a user
+does and prove that every cmdlet works end to end:
+
+| File | Covers |
+| --- | --- |
+| `KnowledgeBase.Integration.Tests.ps1` | creating, listing, updating, exporting, importing and removing knowledge bases |
+| `Documents.Integration.Tests.ps1` | every built-in format, folders, inline content, URLs from a local web server, filters, editing, refreshing, search and custom converters |
+| `Client.Integration.Tests.ps1` | every client configuration: stdio configurations are started as processes, HTTP configurations call a running server |
+| `Server.Integration.Tests.ps1` | stdio and HTTP servers in real processes, foreground and background, options, logs, status, restart and stop |
+| `Publish.Integration.Tests.ps1` | incremental publishing, `-Force` and `-Prune`, and a server that serves the published knowledge base |
+
+Rules for integration tests:
+
+- No `Mock`. The only replacement is Azure Files: `Register-McpTestAzFileShare` provides the Az.Storage cmdlets
+  that `Publish-McpKnowledgeBase` uses on top of a local folder.
+- Fixtures are created at runtime (`New-McpTestFixture` creates a file for every built-in converter, including a
+  PDF and a Word document). Adding a built-in converter requires a fixture.
+- Call MCPPosh cmdlets with named, full parameter names. Commands for child processes and thread jobs are written
+  as script block literals (`Start-McpTestProcess`, `ConvertTo-McpTestEncodedCommand`).
+
+The QA test `tests/QA/integration.tests.ps1` reads the integration tests and fails when an exported cmdlet, a
+parameter set or a parameter is not used in any of them, or when an integration test uses `Mock`. A new cmdlet or
+parameter therefore needs an end-to-end test.
+
+The PDF test uses PSWritePDF, which the build installs as a test dependency (`RequiredModules.psd1`); without
+PSWritePDF and `pdftotext` it is skipped.
 
 ## Documentation
 
