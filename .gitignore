@@ -1,0 +1,15 @@
+# Test and build output
+/out/
+/testResults*.xml
+/coverage*.xml
+
+# Local knowledge bases created while developing
+/.mcpposh/
+
+# Editor files
+.vscode/*
+!.vscode/mcp.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
