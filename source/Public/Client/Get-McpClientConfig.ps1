@@ -48,11 +48,32 @@ function Get-McpClientConfig {
     .EXAMPLE
         Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop
 
+        Returns the configuration entry for Claude Desktop. Copy the Json property into the file shown in ConfigFile; Claude Desktop then starts the stdio server itself.
+
     .EXAMPLE
         (Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode).Command
 
+        Returns a claude mcp add command that registers the stdio server in Claude Code.
+
     .EXAMPLE
-        Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKeyPlaceholder
+        Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKeyPlaceholder -AsJson
+
+        Returns a .vscode/mcp.json for a hosted HTTP server. VS Code prompts for the API key instead of storing it in the file.
+
+    .INPUTS
+        None. You cannot pipe objects to this cmdlet.
+
+    .OUTPUTS
+        MCPPosh.ClientConfig: Client, Transport, ServerName, ConfigFile, Json, Command (Claude Code) and Notes. With -AsJson: System.String.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpClientConfig.md
+
+    .LINK
+        Start-McpServer
+
+    .LINK
+        Test-McpServer
     #>
     [CmdletBinding()]
     [OutputType('MCPPosh.ClientConfig', [string])]

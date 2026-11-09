@@ -18,8 +18,30 @@ function Stop-McpServer {
     .EXAMPLE
         Stop-McpServer -KnowledgeBase Contoso
 
+        Stops the HTTP servers of the knowledge base Contoso.
+
     .EXAMPLE
         Get-McpServer | Stop-McpServer
+
+        Stops all local servers listed by Get-McpServer.
+
+    .INPUTS
+        MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+
+    .OUTPUTS
+        None.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Stop-McpServer.md
+
+    .LINK
+        Start-McpServer
+
+    .LINK
+        Get-McpServer
+
+    .LINK
+        Restart-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Filter')]
     param(

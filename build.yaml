@@ -57,8 +57,13 @@ BuildWorkflow:
 
   pack:
     - build
-
     - package_module_nupkg
+
+  # Regenerates the cmdlet reference in docs/en-US from the comment-based help of the built module
+  # (PlatyPS). Run './build.ps1 -Tasks build, docs' after changing the help and commit the result.
+  docs:
+    - Update_markdown_help_source
+    - Remove_ProgressAction_From_Markdown_Help
 
 
 

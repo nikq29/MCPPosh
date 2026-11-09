@@ -54,14 +54,44 @@ function Start-McpServer {
 
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso
-        # Background HTTP server on http://localhost:5050/mcp
+
+        Starts a hidden background HTTP server on http://localhost:5050/mcp and returns its status.
 
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso -Transport Stdio
-        # Used in an AI client's configuration; see Get-McpClientConfig
+
+        Runs the server over stdin/stdout. AI clients use this command in their configuration; see Get-McpClientConfig.
 
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -ApiKey $key -Foreground
+
+        Runs an HTTP server reachable from the network in the current console, for example in a container. Clients must send the API key.
+
+    .EXAMPLE
+        Start-McpServer -KnowledgeBase Contoso -Port 5051 -ApiKey $key -AllowWrite
+
+        Starts a background server that additionally offers the add_note tool, so agents can store new knowledge.
+
+    .INPUTS
+        None. You cannot pipe objects to this cmdlet.
+
+    .OUTPUTS
+        None for -Transport Stdio and for -Foreground (the server runs until it is stopped). MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. for background HTTP servers.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Start-McpServer.md
+
+    .LINK
+        Stop-McpServer
+
+    .LINK
+        Get-McpServer
+
+    .LINK
+        Test-McpServer
+
+    .LINK
+        Get-McpClientConfig
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType('MCPPosh.Server')]

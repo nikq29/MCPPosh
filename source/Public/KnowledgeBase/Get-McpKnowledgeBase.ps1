@@ -12,8 +12,30 @@ function Get-McpKnowledgeBase {
     .EXAMPLE
         Get-McpKnowledgeBase
 
+        Lists all knowledge bases with their number of documents and last update.
+
     .EXAMPLE
         Get-McpKnowledgeBase -Name Contoso | Format-List
+
+        Shows all details of the knowledge base Contoso, including tags, revision and path.
+
+    .INPUTS
+        System.String. You can pipe objects with a Name property.
+
+    .OUTPUTS
+        MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpKnowledgeBase.md
+
+    .LINK
+        New-McpKnowledgeBase
+
+    .LINK
+        Set-McpKnowledgeBase
+
+    .LINK
+        Remove-McpKnowledgeBase
     #>
     [CmdletBinding()]
     [OutputType('MCPPosh.KnowledgeBase')]

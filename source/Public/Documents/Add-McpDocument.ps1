@@ -2,6 +2,7 @@ function Add-McpDocument {
     <#
     .SYNOPSIS
         Adds knowledge to a knowledge base: files, folders, web pages or inline text.
+
     .DESCRIPTION
         Files are converted to Markdown when they are added. Supported out of the box:
         Markdown, text, HTML, Word (.docx), PDF (with PSWritePDF or pdftotext), CSV/TSV,
@@ -11,36 +12,79 @@ function Add-McpDocument {
         Adding the same file or URL again updates the existing document instead of creating a
         duplicate. Inline content (-Content) is matched by its title. Running MCP servers pick up
         changes automatically.
+
     .PARAMETER Path
         Files or folders to import. Wildcards are supported, and Get-ChildItem output can be piped in.
+
     .PARAMETER Recurse
         Import folders recursively.
+
     .PARAMETER Include
         Only import files whose name matches one of these wildcard patterns (e.g. *.md, *.docx).
+
     .PARAMETER Exclude
         Skip files whose name matches one of these wildcard patterns.
+
     .PARAMETER Url
         Web pages or online documents (HTML, Markdown, PDF, Word, JSON ...) to import.
+
     .PARAMETER Content
         Text to store as a document, e.g. a note or a snippet. Requires -Title.
+
     .PARAMETER Title
         Document title. Defaults to the title found in the document (front matter, first heading,
         HTML <title>, Word title) or the file name.
+
     .PARAMETER Tags
         Tags for filtering, e.g. 'runbook', 'api'.
+
     .PARAMETER Format
         Force a converter (e.g. Markdown, Text, Html, Docx, Pdf, Csv, Json, Yaml, Xml, Code or a
         custom converter name) instead of detecting it from the file extension or content type.
+
     .PARAMETER KnowledgeBase
         Name or path of the knowledge base. 'Default' is created automatically.
+
     .EXAMPLE
         Add-McpDocument -Path .\docs -Recurse -Include *.md, *.docx -Tags handbook
+
+        Imports all Markdown and Word files below .\docs into the knowledge base Default and tags them with handbook. Files that were imported before are updated instead of duplicated.
+
     .EXAMPLE
         Get-ChildItem C:\Wiki -Filter *.html -Recurse | Add-McpDocument -KnowledgeBase Contoso
+
+        Pipes HTML files from Get-ChildItem into the knowledge base Contoso. Navigation, scripts and styles are removed; headings, lists, tables and code blocks are kept.
+
     .EXAMPLE
         Add-McpDocument -Url https://learn.microsoft.com/powershell/scripting/overview -Tags powershell
+
+        Downloads a web page, converts it to Markdown and stores the URL as source, so Update-McpDocument can refresh it later.
+
     .EXAMPLE
-        Add-McpDocument -Title 'VPN troubleshooting' -Content "Restart the agent with: Restart-Service vpnagent" -Tags vpn, runbook
+        Add-McpDocument -Title 'VPN troubleshooting' -Content 'Restart the agent with: Restart-Service vpnagent' -Tags vpn, runbook
+
+        Stores a short note as a document. Running the command again with the same title updates the note.
+
+    .INPUTS
+        System.String, System.IO.FileInfo. You can pipe paths or file objects from Get-ChildItem, and objects with a Url or Uri property.
+
+    .OUTPUTS
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md
+
+    .LINK
+        Get-McpDocument
+
+    .LINK
+        Update-McpDocument
+
+    .LINK
+        Register-McpDocumentConverter
+
+    .LINK
+        Search-McpDocument
     #>
     [CmdletBinding(DefaultParameterSetName = 'Path', SupportsShouldProcess)]
     [OutputType('MCPPosh.Document')]

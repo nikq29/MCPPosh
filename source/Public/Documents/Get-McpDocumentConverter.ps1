@@ -15,8 +15,27 @@ function Get-McpDocumentConverter {
     .EXAMPLE
         Get-McpDocumentConverter
 
+        Lists all built-in and custom converters with the file extensions they handle.
+
     .EXAMPLE
         Get-McpDocumentConverter -Extension .docx
+
+        Shows which converter imports Word documents.
+
+    .INPUTS
+        None. You cannot pipe objects to this cmdlet.
+
+    .OUTPUTS
+        MCPPosh.Converter: Name, Extensions, ScriptBlock and Builtin.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocumentConverter.md
+
+    .LINK
+        Register-McpDocumentConverter
+
+    .LINK
+        Unregister-McpDocumentConverter
     #>
     [CmdletBinding()]
     [OutputType('MCPPosh.Converter')]

@@ -18,6 +18,28 @@ function Export-McpKnowledgeBase {
 
     .EXAMPLE
         Export-McpKnowledgeBase -Name Contoso -DestinationPath .\contoso-kb.zip
+
+        Creates a ZIP archive with the metadata, documents and search index of the knowledge base Contoso, for example as a backup.
+
+    .EXAMPLE
+        Get-McpKnowledgeBase | ForEach-Object { Export-McpKnowledgeBase -Name $_.Name -DestinationPath "./backup/$($_.Name).zip" -Force }
+
+        Backs up every knowledge base into its own archive and overwrites older backups.
+
+    .INPUTS
+        System.String. You can pipe objects with a Name property, for example from Get-McpKnowledgeBase.
+
+    .OUTPUTS
+        System.IO.FileInfo. The created ZIP archive.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Export-McpKnowledgeBase.md
+
+    .LINK
+        Import-McpKnowledgeBase
+
+    .LINK
+        Publish-McpKnowledgeBase
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([System.IO.FileInfo])]

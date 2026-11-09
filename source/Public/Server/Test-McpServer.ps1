@@ -27,8 +27,30 @@ function Test-McpServer {
     .EXAMPLE
         Test-McpServer -KnowledgeBase Contoso -Query 'VPN'
 
+        Starts the stdio server like an AI client, performs the MCP handshake, lists the tools and runs a search.
+
     .EXAMPLE
         Test-McpServer -Uri https://mcpposh.azurecontainerapps.io -ApiKey $key
+
+        Checks a hosted HTTP server end to end. Failures are reported in the Error property instead of being thrown.
+
+    .INPUTS
+        MCPPosh.Server. Objects with a Uri or Url property bind to -Uri.
+
+    .OUTPUTS
+        MCPPosh.TestResult: Target, Transport, Success, ProtocolVersion, ServerName, ServerVersion, Instructions, Tools, Documents, SearchResults, TopResult, ElapsedMs and Error.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Test-McpServer.md
+
+    .LINK
+        Start-McpServer
+
+    .LINK
+        Get-McpServer
+
+    .LINK
+        Get-McpClientConfig
     #>
     [CmdletBinding(DefaultParameterSetName = 'Http')]
     [OutputType('MCPPosh.TestResult')]

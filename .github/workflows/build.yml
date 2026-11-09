@@ -93,13 +93,16 @@ jobs:
           if-no-files-found: ignore
 
   analyze:
-    name: Analyze deployment files
+    name: Analyze documentation and deployment files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Build the Bicep template
         run: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
+
+      - name: Lint the Markdown documentation
+        run: npx --yes markdownlint-cli2@0.17.2
 
       - name: Run PSScriptAnalyzer on the docker and deploy scripts
         shell: pwsh

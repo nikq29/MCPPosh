@@ -30,8 +30,38 @@ function Get-McpDocument {
     .EXAMPLE
         Get-McpDocument -KnowledgeBase Contoso -Tag runbook
 
+        Lists all documents of the knowledge base Contoso that have the tag runbook.
+
     .EXAMPLE
         Get-McpDocument -Title '*VPN*' -IncludeContent | Select-Object -ExpandProperty Content
+
+        Shows the Markdown content of all documents in the knowledge base Default whose title contains VPN.
+
+    .EXAMPLE
+        Get-McpDocument -KnowledgeBase Contoso -SourceType Agent
+
+        Lists the notes that AI agents stored with the add_note tool, so they can be reviewed.
+
+    .INPUTS
+        System.String. You can pipe objects with an Id property.
+
+    .OUTPUTS
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md
+
+    .LINK
+        Add-McpDocument
+
+    .LINK
+        Set-McpDocument
+
+    .LINK
+        Remove-McpDocument
+
+    .LINK
+        Search-McpDocument
     #>
     [CmdletBinding()]
     [OutputType('MCPPosh.Document')]

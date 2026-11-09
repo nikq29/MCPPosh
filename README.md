@@ -15,6 +15,20 @@ Add-McpDocument -KnowledgeBase Contoso -Path .\docs -Recurse
 Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop   # configuration for the agent
 ```
 
+## Documentation
+
+The complete documentation is in [docs](docs/README.md):
+
+- [Getting started](docs/getting-started.md) - install, create a knowledge base, connect an agent
+- [Concepts](docs/concepts.md), [Knowledge bases](docs/knowledge-bases.md),
+  [Adding knowledge](docs/adding-knowledge.md), [Search](docs/search.md)
+- [MCP server](docs/mcp-server.md), [Server management](docs/server-management.md),
+  [Client configuration](docs/client-configuration.md), [HTTP API](docs/http-api.md)
+- [Docker](docs/hosting-docker.md), [Azure](docs/hosting-azure.md), [Configuration](docs/configuration.md),
+  [Security](docs/security.md), [Troubleshooting](docs/troubleshooting.md)
+- [Development](docs/development.md) - Sampler build, tests, documentation and releases
+- [Cmdlet reference](docs/en-US/MCPPosh.md) - generated from the comment-based help (`Get-Help <cmdlet> -Full`)
+
 ## Features
 
 - **Add knowledge in many formats**: files, whole folders, pipeline input from `Get-ChildItem`,
@@ -208,9 +222,9 @@ docker run -p 8080:8080 -e MCPPOSH_API_KEY=<key> -e MCPPOSH_KNOWLEDGEBASE=Contos
 Released images are published as `ghcr.io/nikq29/mcpposh:<version>`. To test an unreleased build,
 copy `output/MCPPosh.*.nupkg` to `docker/packages` and build with `--build-arg MCPPOSH_SOURCE=Local`.
 
-[`deploy/azure`](deploy/azure/README.md) contains a Bicep template and `deploy.ps1` that deploy a
-Container App with HTTPS and an API key; the knowledge base lives on Azure Files. You keep
-maintaining the knowledge locally and publish it with PowerShell:
+[`deploy/azure`](deploy/azure/README.md) contains a Bicep template and `deploy.ps1` that deploy a Container App
+with HTTPS and an API key; the knowledge base lives on Azure Files (guide: [docs/hosting-azure.md](docs/hosting-azure.md)).
+You keep maintaining the knowledge locally and publish it with PowerShell:
 
 ```powershell
 ./deploy/azure/deploy.ps1 -ResourceGroupName rg-mcpposh -Image ghcr.io/nikq29/mcpposh:latest -KnowledgeBase Contoso -Publish
@@ -229,14 +243,15 @@ Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 
 | Server | `Start-`, `Stop-`, `Restart-`, `Get-McpServer`, `Test-McpServer`, `Get-McpServerLog` |
 | Clients | `Get-McpClientConfig` |
 
-Help for every cmdlet: `Get-Help Add-McpDocument -Full` and `Get-Help about_MCPPosh`. More examples
-are in [`examples`](examples).
+Help for every cmdlet: `Get-Help Add-McpDocument -Full`, `Get-Help Add-McpDocument -Online` and
+`Get-Help about_MCPPosh`. The [cmdlet reference](docs/en-US/MCPPosh.md) contains the same help as Markdown, and more
+examples are in [`examples`](examples).
 
 ## Storage location and layout
 
 Data is stored below `$env:MCPPOSH_HOME`, by default `~/.mcpposh`:
 
-```
+```text
 ~/.mcpposh/
 ├── knowledgebases/<name>/
 │   ├── knowledgebase.json   # name, description

@@ -19,8 +19,30 @@ function Restart-McpServer {
     .EXAMPLE
         Restart-McpServer -KnowledgeBase Contoso
 
+        Restarts the local HTTP server of the knowledge base Contoso with its previous port and options.
+
     .EXAMPLE
         Restart-McpServer -Port 8080 -ApiKey $key
+
+        Restarts the server on port 8080. API keys are never stored, so servers with authentication need the key again.
+
+    .INPUTS
+        MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+
+    .OUTPUTS
+        MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version.
+
+    .LINK
+        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Restart-McpServer.md
+
+    .LINK
+        Start-McpServer
+
+    .LINK
+        Stop-McpServer
+
+    .LINK
+        Get-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType('MCPPosh.Server')]
