@@ -2,6 +2,7 @@ function Start-McpServer {
     <#
     .SYNOPSIS
         Starts an MCP server that provides a knowledge base to AI agents.
+
     .DESCRIPTION
         Transport 'Stdio' runs the server in the current process and talks JSON-RPC over
         stdin/stdout. This is what AI clients such as Claude Desktop, Claude Code, VS Code or
@@ -13,34 +14,52 @@ function Start-McpServer {
         Use -Foreground for containers (e.g. Azure Container Apps) or debugging.
 
         Documents added or changed while the server runs are picked up automatically.
+
     .PARAMETER KnowledgeBase
         Name or directory path of the knowledge base to serve.
+
     .PARAMETER Transport
-        Stdio or Http.
+        Stdio runs the server over stdin/stdout for AI clients; Http serves the Streamable HTTP transport (default).
+
     .PARAMETER Port
         TCP port for the HTTP transport.
+
     .PARAMETER ListenAddress
         Address to listen on. 'localhost' (default) only accepts local connections. Use '*' to
         listen on all interfaces (requires -ApiKey or -AllowAnonymous; on Windows also admin
         rights or a URL ACL: netsh http add urlacl url=http://+:<port>/ user=<user>).
+
     .PARAMETER ApiKey
         One or more API keys. Clients must send 'Authorization: Bearer <key>' or 'X-API-Key: <key>'.
         Defaults to the comma-separated keys in $env:MCPPOSH_API_KEY.
+
     .PARAMETER AllowedOrigin
         Browser origins allowed to call the server (CORS), e.g. https://my-app.example.com.
+
     .PARAMETER AllowWrite
         Adds the add_note tool so the AI agent can store new knowledge.
+
     .PARAMETER AllowAnonymous
         Allows listening on a non-loopback address without an API key (e.g. behind a gateway
         that authenticates requests).
+
     .PARAMETER Foreground
         Run the HTTP server in the current process (blocks until Ctrl+C).
+
+    .PARAMETER StartTimeoutSeconds
+        Seconds to wait for a background HTTP server to answer its health check before the start is considered failed.
+
+    .PARAMETER BackgroundChild
+        Internal switch used by the background process that Start-McpServer starts itself. Do not use it directly.
+
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso
         # Background HTTP server on http://localhost:5050/mcp
+
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso -Transport Stdio
         # Used in an AI client's configuration; see Get-McpClientConfig
+
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -ApiKey $key -Foreground
     #>

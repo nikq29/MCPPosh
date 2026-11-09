@@ -1,4 +1,19 @@
 function Get-McpClientConfigPath {
+    <#
+    .SYNOPSIS
+        Returns the configuration file location of an AI client.
+
+    .DESCRIPTION
+        Returns where the configuration of an AI client is stored on the current platform, for example claude_desktop_config.json for Claude Desktop, so users know where to paste the generated JSON.
+
+    .PARAMETER Client
+        The AI client: ClaudeDesktop, ClaudeCode, VSCode, Cursor or Generic.
+
+    .EXAMPLE
+        Get-McpClientConfigPath -Client ClaudeDesktop
+
+        Returns for example %APPDATA%\Claude\claude_desktop_config.json on Windows.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param(

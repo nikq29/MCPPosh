@@ -2,6 +2,22 @@ function Write-McpTextFile {
     <#
     .SYNOPSIS
         Atomically writes UTF-8 text (no BOM): write to a temp file, then rename over the target.
+
+    .DESCRIPTION
+        Writes text as UTF-8 without byte order mark to a temporary file in the target directory and then renames it over the target, so readers such as a running server never see a partially written file. Retries while another process holds the target open.
+
+    .PARAMETER Path
+        Path of the file to write. The parent directory is created when it does not exist.
+
+    .PARAMETER Content
+        The text to write. An empty string creates an empty file.
+
+    .EXAMPLE
+        Write-McpTextFile -Path (Join-Path $kb.Path 'documents/note-1a2b3c.md') -Content "# Note
+
+        Text"
+
+        Writes a document atomically.
     #>
     [CmdletBinding()]
     param(

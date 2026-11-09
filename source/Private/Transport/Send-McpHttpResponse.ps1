@@ -1,4 +1,31 @@
 function Send-McpHttpResponse {
+    <#
+    .SYNOPSIS
+        Writes an HTTP response of the HTTP transport.
+
+    .DESCRIPTION
+        Sets the status code, headers (including Cache-Control: no-store and X-Content-Type-Options: nosniff) and the UTF-8 body of an HttpListenerResponse.
+
+    .PARAMETER Response
+        The HttpListenerResponse to write to.
+
+    .PARAMETER StatusCode
+        The HTTP status code to send, for example 200, 202 or 401.
+
+    .PARAMETER Body
+        The response body. An empty body sends Content-Length 0.
+
+    .PARAMETER ContentType
+        The Content-Type of the body; JSON with UTF-8 by default.
+
+    .PARAMETER Headers
+        Additional response headers such as Allow, WWW-Authenticate or CORS headers.
+
+    .EXAMPLE
+        Send-McpHttpResponse -Response $httpContext.Response -StatusCode 405 -Headers @{ Allow = 'POST' }
+
+        Sends 405 Method Not Allowed.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

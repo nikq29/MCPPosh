@@ -2,10 +2,32 @@ function Split-McpMarkdownSection {
     <#
     .SYNOPSIS
         Splits Markdown into sections by heading, then into chunks of at most MaxChars characters.
+
+    .DESCRIPTION
+        Splits Markdown at headings (ignoring headings inside code fences) and returns chunks with the heading path, for example Setup > Requirements. Sections longer than the maximum size are split at paragraph and line boundaries.
+
+    .PARAMETER Content
+        The Markdown text to split into sections.
+
+    .PARAMETER MaxChars
+        Maximum number of characters per chunk; longer sections are split further.
+
+    .EXAMPLE
+        Split-McpMarkdownSection -Content "# A
+
+        Text A
+
+        ## B
+
+        Text B"
+
+        Returns two chunks with the headings A and A > B.
+
     .OUTPUTS
         Ordered dictionaries with 'heading' (heading path, e.g. "Setup > Requirements") and 'text'.
     #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [AllowEmptyString()]
         [string] $Content,

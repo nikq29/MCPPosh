@@ -1,5 +1,21 @@
 function ConvertTo-McpDateTime {
+    <#
+    .SYNOPSIS
+        Converts a stored timestamp to a DateTime value.
+
+    .DESCRIPTION
+        Converts an ISO 8601 timestamp string from a manifest or state file to a UTC DateTime. DateTime values are returned unchanged and empty values return $null.
+
+    .PARAMETER Value
+        The timestamp to convert: an ISO 8601 string, a DateTime value, an empty string or $null.
+
+    .EXAMPLE
+        ConvertTo-McpDateTime -Value '2026-01-31T08:15:00.000Z'
+
+        Returns the DateTime 2026-01-31 08:15:00 (UTC).
+    #>
     [CmdletBinding()]
+    [OutputType([datetime])]
     param(
         [AllowNull()]
         [object] $Value

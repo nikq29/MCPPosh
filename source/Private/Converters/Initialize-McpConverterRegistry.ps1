@@ -1,4 +1,16 @@
 function Initialize-McpConverterRegistry {
+    <#
+    .SYNOPSIS
+        Registers the built-in document converters.
+
+    .DESCRIPTION
+        Resets the converter registry of the module and registers the built-in converters for Markdown, text, HTML, Word, PDF, CSV, JSON, YAML, XML and source code. Called when the module is imported.
+
+    .EXAMPLE
+        Initialize-McpConverterRegistry
+
+        Restores the built-in converters and removes custom converters.
+    #>
     [CmdletBinding()]
     param()
 

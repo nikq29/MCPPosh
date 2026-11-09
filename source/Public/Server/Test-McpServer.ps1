@@ -2,21 +2,31 @@ function Test-McpServer {
     <#
     .SYNOPSIS
         Checks an MCP server end-to-end like an AI client would.
+
     .DESCRIPTION
         Performs the MCP handshake (initialize), lists the tools, counts the documents and,
         with -Query, runs a search. Works against HTTP servers (-Uri, local or e.g. in Azure)
         and against the stdio server of a local knowledge base (-KnowledgeBase), which is
         exactly what AI clients start.
+
     .PARAMETER Uri
         Base URL or MCP endpoint of an HTTP server, e.g. http://localhost:5050/mcp.
+
     .PARAMETER ApiKey
         API key for the HTTP server.
+
     .PARAMETER KnowledgeBase
         Test the stdio server for this knowledge base.
+
     .PARAMETER Query
         Optional search query to run with the search_documentation tool.
+
+    .PARAMETER TimeoutSeconds
+        Seconds to wait for each response of the server before the test fails with a timeout.
+
     .EXAMPLE
         Test-McpServer -KnowledgeBase Contoso -Query 'VPN'
+
     .EXAMPLE
         Test-McpServer -Uri https://mcpposh.azurecontainerapps.io -ApiKey $key
     #>
@@ -41,6 +51,7 @@ function Test-McpServer {
 
     process {
         $watch = [System.Diagnostics.Stopwatch]::StartNew()
+        $requestTimeout = $TimeoutSeconds
         $result = [ordered]@{
             PSTypeName      = 'MCPPosh.TestResult'
             Target          = $null
@@ -65,13 +76,13 @@ function Test-McpServer {
                 $result.Target = $endpoint.AbsoluteUri
                 $headers = @{}
                 if ($ApiKey) { $headers['Authorization'] = "Bearer $ApiKey" }
-                $send = { param($Message) Invoke-McpHttpRpc -Endpoint $endpoint -Message $Message -Headers $headers -TimeoutSeconds $TimeoutSeconds }
+                $send = { param($Message) Invoke-McpHttpRpc -Endpoint $endpoint -Message $Message -Headers $headers -TimeoutSeconds $requestTimeout }
             }
             else {
                 $kb = Resolve-McpKnowledgeBase -KnowledgeBase $KnowledgeBase
                 $result.Target = "stdio: $($kb.Name)"
                 $client = Start-McpStdioClient -KbPath $kb.Path
-                $send = { param($Message) Invoke-McpStdioRpc -Client $client -Message $Message -TimeoutSeconds $TimeoutSeconds }
+                $send = { param($Message) Invoke-McpStdioRpc -Client $client -Message $Message -TimeoutSeconds $requestTimeout }
             }
 
             $requestId = 0

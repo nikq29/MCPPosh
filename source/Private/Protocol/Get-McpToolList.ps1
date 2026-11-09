@@ -1,5 +1,21 @@
 function Get-McpToolList {
+    <#
+    .SYNOPSIS
+        Handles the MCP method tools/list.
+
+    .DESCRIPTION
+        Returns the tool definitions with JSON schemas and annotations: search_documentation, get_document and list_documents, plus add_note when the server was started with write access. The descriptions name the knowledge base.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .EXAMPLE
+        (Get-McpToolList -Context $context).tools.name
+
+        Returns search_documentation, get_document and list_documents.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context

@@ -2,10 +2,16 @@ function Get-McpKnowledgeBase {
     <#
     .SYNOPSIS
         Lists knowledge bases or gets a specific one.
+
+    .DESCRIPTION
+        Lists the knowledge bases below $env:MCPPOSH_HOME (or ~/.mcpposh) or returns a specific one, including the number of documents, characters, tags and the current revision.
+
     .PARAMETER Name
         Name (wildcards allowed) or directory path of a knowledge base. Lists all when omitted.
+
     .EXAMPLE
         Get-McpKnowledgeBase
+
     .EXAMPLE
         Get-McpKnowledgeBase -Name Contoso | Format-List
     #>

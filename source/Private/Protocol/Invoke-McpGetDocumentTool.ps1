@@ -1,4 +1,22 @@
 function Invoke-McpGetDocumentTool {
+    <#
+    .SYNOPSIS
+        Runs the MCP tool get_document.
+
+    .DESCRIPTION
+        Returns the Markdown content of a document with title, format, source and tags. Long documents are returned in pages: offset and maxChars select the part, and the result says how to continue.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Arguments
+        The tool arguments with id and optional offset and maxChars.
+
+    .EXAMPLE
+        Invoke-McpGetDocumentTool -Context $context -Arguments ([ordered]@{ id = 'install-1a2b3c' })
+
+        Returns the first 20000 characters of the document.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

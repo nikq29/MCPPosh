@@ -1,5 +1,24 @@
 function Invoke-McpInitialize {
+    <#
+    .SYNOPSIS
+        Handles the MCP method initialize.
+
+    .DESCRIPTION
+        Negotiates the protocol version (the requested version when supported, otherwise the newest), records the client information and returns the server capabilities (tools, resources), the server information and the instructions.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Params
+        The params object of the initialize request with protocolVersion, capabilities and clientInfo.
+
+    .EXAMPLE
+        Invoke-McpInitialize -Context $context -Params ([ordered]@{ protocolVersion = '2025-06-18' })
+
+        Returns the initialize result for protocol version 2025-06-18.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context,
@@ -34,6 +53,6 @@ function Invoke-McpInitialize {
             title   = "MCPPosh - $($kb.Name)"
             version = $script:ModuleVersion
         }
-        instructions    = Get-McpServerInstructions -Context $Context
+        instructions    = Get-McpServerInstruction -Context $Context
     }
 }

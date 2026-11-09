@@ -2,6 +2,17 @@ function Invoke-McpPdfTextExtraction {
     <#
     .SYNOPSIS
         Extracts text from a PDF using PSWritePDF (preferred) or pdftotext (Poppler).
+
+    .DESCRIPTION
+        Extracts the text of a PDF with Convert-PDFToText from the PSWritePDF module when it is installed, otherwise with the pdftotext tool from Poppler. Throws an error with installation instructions when neither is available.
+
+    .PARAMETER Path
+        Path of the PDF file whose text is extracted.
+
+    .EXAMPLE
+        Invoke-McpPdfTextExtraction -Path ./manual.pdf
+
+        Returns the text of the PDF.
     #>
     [CmdletBinding()]
     [OutputType([string])]

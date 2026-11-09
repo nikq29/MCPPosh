@@ -2,6 +2,7 @@ function Register-McpDocumentConverter {
     <#
     .SYNOPSIS
         Registers a custom converter so Add-McpDocument can import additional file formats.
+
     .DESCRIPTION
         The script block receives the file path and returns either a Markdown string or a
         hashtable with Content (required), Title and Tags. Custom converters take precedence
@@ -10,12 +11,26 @@ function Register-McpDocumentConverter {
         Registrations last for the current PowerShell session; put them in your profile to make
         them permanent. Running servers do not need the converter: documents are converted when
         they are added.
+
+    .PARAMETER Name
+        Name of the converter. It is stored as the document format and can be passed to Add-McpDocument -Format.
+
+    .PARAMETER Extension
+        One or more file extensions handled by the converter, with or without the leading dot (for example .eml).
+
+    .PARAMETER ScriptBlock
+        Script block that receives the file path and returns Markdown text or a hashtable with Content, Title and Tags.
+
+    .PARAMETER Force
+        Replaces an existing custom converter with the same name instead of failing.
+
     .EXAMPLE
         Register-McpDocumentConverter -Name Pptx -Extension .pptx -ScriptBlock {
             param($Path)
             # e.g. use a module of your choice to extract slide text
             @{ Content = (Get-MySlideText -Path $Path) -join "`n`n"; Title = (Split-Path $Path -LeafBase) }
         }
+
     .EXAMPLE
         Register-McpDocumentConverter -Name Email -Extension .eml -ScriptBlock { param($Path) Get-Content $Path -Raw }
     #>

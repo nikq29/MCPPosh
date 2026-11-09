@@ -1,4 +1,22 @@
 function Invoke-McpListDocumentsTool {
+    <#
+    .SYNOPSIS
+        Runs the MCP tool list_documents.
+
+    .DESCRIPTION
+        Lists the documents of the knowledge base with id, title, tags, format and summary, optionally filtered by tag and paged with limit and offset.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Arguments
+        The tool arguments with optional tag, limit and offset.
+
+    .EXAMPLE
+        Invoke-McpListDocumentsTool -Context $context -Arguments ([ordered]@{ tag = 'runbook' })
+
+        Lists all documents with the tag runbook.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

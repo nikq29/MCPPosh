@@ -1,4 +1,25 @@
 function Initialize-McpKnowledgeBaseFolder {
+    <#
+    .SYNOPSIS
+        Creates the folder structure and metadata of a knowledge base.
+
+    .DESCRIPTION
+        Creates the documents, index and logs folders of a knowledge base and writes knowledgebase.json and an empty manifest.json when they do not exist yet. Existing files are not changed.
+
+    .PARAMETER Path
+        Directory of the knowledge base. It is created together with its subfolders when needed.
+
+    .PARAMETER Name
+        Name of the knowledge base that is stored in knowledgebase.json.
+
+    .PARAMETER Description
+        Description of the knowledge base that is stored in knowledgebase.json and sent to AI agents.
+
+    .EXAMPLE
+        Initialize-McpKnowledgeBaseFolder -Path (Join-Path (Get-McpKnowledgeBaseRoot) 'Contoso') -Name Contoso -Description 'Contoso IT documentation'
+
+        Creates the knowledge base Contoso in the default location.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

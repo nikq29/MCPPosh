@@ -1,5 +1,21 @@
 function Get-McpResourceTemplateList {
+    <#
+    .SYNOPSIS
+        Handles the MCP method resources/templates/list.
+
+    .DESCRIPTION
+        Returns the resource template mcpposh://<knowledge base>/documents/{id}, which clients can use to read any document of the knowledge base by its id.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .EXAMPLE
+        Get-McpResourceTemplateList -Context $context
+
+        Returns the resourceTemplates result with one template.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context

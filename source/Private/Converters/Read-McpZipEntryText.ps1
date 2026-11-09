@@ -1,4 +1,23 @@
 function Read-McpZipEntryText {
+    <#
+    .SYNOPSIS
+        Reads a text entry from a ZIP archive.
+
+    .DESCRIPTION
+        Returns the UTF-8 content of an entry of an opened ZIP archive, for example word/document.xml of a Word document, or $null when the entry does not exist.
+
+    .PARAMETER Archive
+        The opened System.IO.Compression.ZipArchive to read from.
+
+    .PARAMETER EntryName
+        Full name of the archive entry to read, for example word/document.xml.
+
+    .EXAMPLE
+        $archive = [System.IO.Compression.ZipFile]::OpenRead('./Handbook.docx')
+        Read-McpZipEntryText -Archive $archive -EntryName 'word/document.xml'
+
+        Returns the XML of the document body.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param(

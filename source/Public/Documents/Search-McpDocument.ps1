@@ -2,16 +2,25 @@ function Search-McpDocument {
     <#
     .SYNOPSIS
         Searches a knowledge base with the same BM25 search the AI agent uses.
+
     .DESCRIPTION
         Useful to check which sections an agent will find for a question before connecting it.
+
     .PARAMETER Query
         Search terms or a natural-language question.
+
     .PARAMETER Top
         Maximum number of results (sections).
+
     .PARAMETER Tag
         Only search documents that have at least one of these tags.
+
+    .PARAMETER KnowledgeBase
+        Name or directory path of the knowledge base to search. The knowledge base named Default is created automatically.
+
     .EXAMPLE
         Search-McpDocument -Query 'VPN Verbindung neu starten' -KnowledgeBase Contoso
+
     .EXAMPLE
         Search-McpDocument 'deployment pipeline' -Top 3 | Format-List Title, Heading, Text
     #>

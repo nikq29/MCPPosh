@@ -1,4 +1,22 @@
 function Invoke-McpToolCall {
+    <#
+    .SYNOPSIS
+        Handles the MCP method tools/call.
+
+    .DESCRIPTION
+        Validates the tool name and arguments of a tools/call request and runs the tool. Unknown tools are protocol errors; failures while running a tool are returned as tool results with isError so the model can react.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Params
+        The params object of the request with the tool name and its arguments.
+
+    .EXAMPLE
+        Invoke-McpToolCall -Context $context -Params ([ordered]@{ name = 'list_documents'; arguments = [ordered]@{} })
+
+        Runs list_documents and returns its tool result.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

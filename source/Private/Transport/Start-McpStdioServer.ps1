@@ -2,11 +2,21 @@ function Start-McpStdioServer {
     <#
     .SYNOPSIS
         Runs the MCP server over stdio: one JSON-RPC message per line on stdin/stdout.
+
     .DESCRIPTION
         stdout carries nothing but JSON-RPC messages, so all PowerShell host streams are
         silenced and diagnostics go to the log file only.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .EXAMPLE
+        Start-McpStdioServer -Context (New-McpServerContext -KnowledgeBase $kb -Transport Stdio)
+
+        Serves JSON-RPC messages on stdin/stdout until stdin is closed.
     #>
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Internal helper; it is started by Start-McpServer for AI clients and must not prompt.')]
     param(
         [Parameter(Mandatory)]
         [object] $Context

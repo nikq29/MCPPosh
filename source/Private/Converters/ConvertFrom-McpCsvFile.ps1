@@ -1,5 +1,21 @@
 function ConvertFrom-McpCsvFile {
+    <#
+    .SYNOPSIS
+        Converts a CSV or TSV file to a Markdown table.
+
+    .DESCRIPTION
+        Reads a CSV or TSV file with Import-Csv and converts it to a Markdown table. The delimiter of CSV files is detected from the first line (comma, semicolon or tab).
+
+    .PARAMETER Path
+        Path of the .csv or .tsv file to convert. The first line must contain the column headers.
+
+    .EXAMPLE
+        ConvertFrom-McpCsvFile -Path ./contacts.csv
+
+        Returns a hashtable whose Content is a Markdown table with one row per record.
+    #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
         [string] $Path

@@ -2,6 +2,21 @@ function Get-McpWebDocument {
     <#
     .SYNOPSIS
         Downloads a URL and converts it to Markdown based on its content type.
+
+    .DESCRIPTION
+        Downloads a web page or online document to a temporary file and converts it based on the Content-Type header (HTML, Markdown, PDF, Word, CSV, JSON, YAML, XML) or the URL extension. Relative links in HTML are resolved against the URL.
+
+    .PARAMETER Url
+        Absolute http or https URL of the page or document to download.
+
+    .PARAMETER Format
+        Name of the converter to use instead of detecting it from the content type.
+
+    .EXAMPLE
+        Get-McpWebDocument -Url https://learn.microsoft.com/powershell/scripting/overview
+
+        Returns a hashtable with the Markdown Content, the page Title and the Format Html.
+
     .OUTPUTS
         A hashtable with Content, Title and Format.
     #>

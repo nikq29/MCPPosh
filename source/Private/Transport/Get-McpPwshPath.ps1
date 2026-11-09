@@ -1,4 +1,16 @@
 function Get-McpPwshPath {
+    <#
+    .SYNOPSIS
+        Returns the path of the PowerShell 7 executable.
+
+    .DESCRIPTION
+        Returns the path of pwsh in $PSHOME, or the first pwsh found on the PATH. Used to start background servers and stdio test processes, and in client configurations.
+
+    .EXAMPLE
+        Get-McpPwshPath
+
+        Returns for example C:\Program Files\PowerShell\7\pwsh.exe.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param()

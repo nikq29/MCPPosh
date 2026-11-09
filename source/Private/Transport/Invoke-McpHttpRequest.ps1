@@ -2,6 +2,23 @@ function Invoke-McpHttpRequest {
     <#
     .SYNOPSIS
         Handles one HTTP request and returns the status code that was sent.
+
+    .DESCRIPTION
+        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER HttpContext
+        The HttpListenerContext of the request to handle.
+
+    .PARAMETER Settings
+        Hashtable with the configured ApiKeys, AllowedOrigins and IsLoopback flag.
+
+    .EXAMPLE
+        $status = Invoke-McpHttpRequest -Context $context -HttpContext $listener.GetContext() -Settings $settings
+
+        Handles the next request and returns its status code.
     #>
     [CmdletBinding()]
     [OutputType([int])]

@@ -2,8 +2,16 @@ function Remove-McpKnowledgeBase {
     <#
     .SYNOPSIS
         Deletes a knowledge base including all of its documents.
+
+    .DESCRIPTION
+        Deletes a knowledge base folder including all documents, the search index and the logs. Knowledge bases that are served by a running MCP server are not removed.
+
+    .PARAMETER Name
+        Names or directory paths of the knowledge bases to delete. Accepts the Name property through the pipeline.
+
     .EXAMPLE
         Remove-McpKnowledgeBase -Name OldDocs
+
     .EXAMPLE
         Remove-McpKnowledgeBase -Name Test -Confirm:$false
     #>

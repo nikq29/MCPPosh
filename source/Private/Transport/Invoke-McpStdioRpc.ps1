@@ -1,4 +1,25 @@
 function Invoke-McpStdioRpc {
+    <#
+    .SYNOPSIS
+        Sends a JSON-RPC message to a stdio MCP server process.
+
+    .DESCRIPTION
+        Writes a JSON-RPC message as one line to the stdin of a stdio server started with Start-McpStdioClient and reads stdout lines until the response with the same id arrives. Non-JSON output on stdout is reported as an error.
+
+    .PARAMETER Client
+        The client handle returned by Start-McpStdioClient.
+
+    .PARAMETER Message
+        The JSON-RPC message to send, as an ordered dictionary.
+
+    .PARAMETER TimeoutSeconds
+        Seconds to wait for the response before the request fails.
+
+    .EXAMPLE
+        Invoke-McpStdioRpc -Client $client -Message ([ordered]@{ jsonrpc = '2.0'; id = 1; method = 'tools/list' })
+
+        Returns the parsed tools/list response.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

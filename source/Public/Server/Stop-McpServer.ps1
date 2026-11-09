@@ -2,14 +2,22 @@ function Stop-McpServer {
     <#
     .SYNOPSIS
         Stops MCPPosh HTTP servers that run on this machine.
+
+    .DESCRIPTION
+        Stops MCPPosh HTTP servers that run on this machine, in the background or in another console, and removes their state files. Without parameters the only running server is stopped.
+
     .PARAMETER KnowledgeBase
         Stop the servers of this knowledge base.
+
     .PARAMETER Port
         Stop the server on this port.
+
     .PARAMETER All
-        Stop all servers.
+        Stops all MCPPosh HTTP servers that were started on this machine.
+
     .EXAMPLE
         Stop-McpServer -KnowledgeBase Contoso
+
     .EXAMPLE
         Get-McpServer | Stop-McpServer
     #>

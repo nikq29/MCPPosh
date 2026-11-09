@@ -2,10 +2,26 @@ function ConvertTo-McpMarkdown {
     <#
     .SYNOPSIS
         Converts a file to Markdown using the matching converter.
+
+    .DESCRIPTION
+        Selects the converter for a file (or the converter named with -Format), runs it and normalizes its result to a hashtable with Content, Title, Format and Tags. Converters may return a string, a hashtable or an object with a Content property.
+
+    .PARAMETER Path
+        Path of the file to convert to Markdown.
+
+    .PARAMETER Format
+        Name of the converter to use instead of detecting it from the file extension.
+
+    .EXAMPLE
+        ConvertTo-McpMarkdown -Path ./Handbook.docx
+
+        Converts the Word document and returns Content, Title, Format (Docx) and Tags.
+
     .OUTPUTS
         A hashtable with Content, Title, Format and Tags.
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
         [string] $Path,

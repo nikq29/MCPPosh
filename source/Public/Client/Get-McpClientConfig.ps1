@@ -2,6 +2,7 @@ function Get-McpClientConfig {
     <#
     .SYNOPSIS
         Generates the configuration to connect an AI client to an MCPPosh server.
+
     .DESCRIPTION
         Produces the JSON snippet (and for Claude Code the 'claude mcp add' command) for:
           ClaudeDesktop  claude_desktop_config.json ("mcpServers")
@@ -12,30 +13,43 @@ function Get-McpClientConfig {
 
         With -Transport Stdio (default) the client starts the server itself via pwsh. With
         -Transport Http the client connects to a running server (local or hosted, e.g. Azure).
+
     .PARAMETER KnowledgeBase
         Knowledge base to serve (stdio) or to name the server after.
+
     .PARAMETER Client
-        The AI client.
+        AI client to create the configuration for: ClaudeDesktop, ClaudeCode, VSCode, Cursor or Generic.
+
     .PARAMETER Transport
         Stdio (client starts the server) or Http (client connects to -Uri).
+
     .PARAMETER Uri
         MCP endpoint for -Transport Http. Defaults to the local server of the knowledge base.
+
     .PARAMETER ApiKey
         API key for -Transport Http. Use -ApiKeyPlaceholder to reference an environment variable instead.
+
     .PARAMETER ApiKeyPlaceholder
         Writes an environment variable reference such as ${env:MCPPOSH_API_KEY} instead of the key.
+
     .PARAMETER ServerName
         Name of the server entry. Defaults to 'mcpposh-<knowledge base>'.
+
     .PARAMETER AllowWrite
         Stdio only: lets the agent add notes (add_note tool).
+
     .PARAMETER UseModuleName
         Stdio only: import the module by name (requires MCPPosh in $env:PSModulePath) instead of by path.
+
     .PARAMETER AsJson
         Return only the JSON text.
+
     .EXAMPLE
         Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop
+
     .EXAMPLE
         (Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode).Command
+
     .EXAMPLE
         Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKeyPlaceholder
     #>

@@ -2,16 +2,30 @@ function Update-McpDocument {
     <#
     .SYNOPSIS
         Re-imports file and URL documents from their original source when the source changed.
+
     .DESCRIPTION
         For file documents the source file hash is compared; URL documents are downloaded again.
         Inline documents and agent notes have no source and are skipped. Use -Force to re-import
         even unchanged sources (e.g. after installing PDF support or registering a converter).
+
     .PARAMETER Id
         Documents to update. Use -All to update every document.
+
+    .PARAMETER All
+        Updates every document of the knowledge base instead of the documents named with -Id.
+
+    .PARAMETER Force
+        Re-imports documents even when the source has not changed, for example after installing PDF support.
+
     .PARAMETER RemoveMissing
         Remove file documents whose source file no longer exists.
+
+    .PARAMETER KnowledgeBase
+        Name or directory path of the knowledge base that contains the documents. Defaults to Default.
+
     .EXAMPLE
         Update-McpDocument -All -KnowledgeBase Contoso
+
     .EXAMPLE
         Get-McpDocument -SourceType Url | Update-McpDocument -Force
     #>

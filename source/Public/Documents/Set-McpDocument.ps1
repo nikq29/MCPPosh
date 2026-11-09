@@ -2,21 +2,38 @@ function Set-McpDocument {
     <#
     .SYNOPSIS
         Changes the title, tags or content of a document.
+
+    .DESCRIPTION
+        Changes the title, the tags or the Markdown content of an existing document and refreshes its search index. Use -AddTags and -RemoveTags to edit tags incrementally.
+
     .PARAMETER Id
-        Id of the document.
+        Id of the document to change. Accepts the Id property of objects from Get-McpDocument through the pipeline.
+
     .PARAMETER Title
-        New title.
+        New title of the document. The title is also indexed for the search.
+
     .PARAMETER Tags
-        Replaces all tags.
+        Replaces all tags of the document with these tags. Pass an empty array to remove all tags.
+
     .PARAMETER AddTags
-        Tags to add.
+        Tags to add to the existing tags of the document.
+
     .PARAMETER RemoveTags
-        Tags to remove.
+        Tags to remove from the existing tags of the document.
+
     .PARAMETER Content
         Replaces the Markdown content. Note that Update-McpDocument re-imports file and URL
         documents from their source and would overwrite manual content changes.
+
+    .PARAMETER KnowledgeBase
+        Name or directory path of the knowledge base that contains the document. Defaults to Default.
+
+    .PARAMETER PassThru
+        Returns the updated document object. By default the cmdlet does not produce output.
+
     .EXAMPLE
         Set-McpDocument -Id vpn-troubleshooting-1a2b3c -AddTags network
+
     .EXAMPLE
         Get-McpDocument -Tag draft | Set-McpDocument -RemoveTags draft -AddTags reviewed
     #>
@@ -70,7 +87,7 @@ function Set-McpDocument {
             $metadata = @{ KnowledgeBase = $kb; Id = $Id }
             if ($Title) { $metadata['Title'] = $Title }
             if ($tagsChanged) { $metadata['Tags'] = [string[]]@($newTags) }
-            $updated = Set-McpDocumentMetadata @metadata
+            $updated = Set-McpDocumentProperty @metadata
         }
 
         if ($PassThru) {

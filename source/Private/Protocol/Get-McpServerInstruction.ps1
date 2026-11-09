@@ -1,4 +1,19 @@
-function Get-McpServerInstructions {
+function Get-McpServerInstruction {
+    <#
+    .SYNOPSIS
+        Builds the MCP server instructions for AI agents.
+
+    .DESCRIPTION
+        Builds the instructions text sent in the initialize result: which knowledge base the server provides, its description, how to use search_documentation and get_document, and add_note when write access is enabled.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .EXAMPLE
+        Get-McpServerInstruction -Context $context
+
+        Returns the instructions text.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param(

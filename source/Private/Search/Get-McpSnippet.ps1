@@ -1,4 +1,25 @@
 function Get-McpSnippet {
+    <#
+    .SYNOPSIS
+        Returns a short excerpt around the first query match.
+
+    .DESCRIPTION
+        Collapses whitespace in a text and returns an excerpt of about 240 characters that starts shortly before the first occurrence of a query word, with ellipses where text was cut.
+
+    .PARAMETER Text
+        The text of the search result chunk to take the excerpt from.
+
+    .PARAMETER Query
+        The search query; the excerpt is placed around the first of its words found in the text.
+
+    .PARAMETER Length
+        Maximum length of the excerpt in characters, without the ellipses.
+
+    .EXAMPLE
+        Get-McpSnippet -Text $chunk.text -Query 'restart vpn service'
+
+        Returns the part of the chunk that mentions the VPN restart.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param(
@@ -25,7 +46,7 @@ function Get-McpSnippet {
     $start = if ($position -lt 0) { 0 } else { [Math]::Max(0, $position - 60) }
     $end = [Math]::Min($flat.Length, $start + $Length)
     $snippet = $flat.Substring($start, $end - $start).Trim()
-    if ($start -gt 0) { $snippet = '…' + $snippet }
-    if ($end -lt $flat.Length) { $snippet = $snippet + '…' }
+    if ($start -gt 0) { $snippet = [string][char]0x2026 + $snippet }
+    if ($end -lt $flat.Length) { $snippet = $snippet + [char]0x2026 }
     $snippet
 }

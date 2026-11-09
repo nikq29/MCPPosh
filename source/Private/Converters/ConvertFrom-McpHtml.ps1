@@ -2,11 +2,24 @@ function ConvertFrom-McpHtml {
     <#
     .SYNOPSIS
         Converts HTML to Markdown (headings, lists, links, emphasis, code blocks and tables).
+
     .DESCRIPTION
         A pragmatic, dependency-free converter for documentation pages. It prefers the <main> or
         <article> element when present and drops scripts, styles, navigation and footers.
+
+    .PARAMETER Html
+        The HTML markup to convert, for example a complete page or a fragment.
+
+    .PARAMETER BaseUrl
+        URL of the page, used to turn relative links into absolute links.
+
+    .EXAMPLE
+        ConvertFrom-McpHtml -Html '<h1>VPN</h1><p>Restart the <b>agent</b>.</p>' -BaseUrl 'https://docs.example.com/'
+
+        Returns a hashtable whose Content is "# VPN`n`nRestart the **agent**."
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [AllowEmptyString()]
         [string] $Html,
@@ -14,6 +27,7 @@ function ConvertFrom-McpHtml {
         [string] $BaseUrl
     )
 
+    $baseUri = $BaseUrl
     $title = $null
     $titleMatch = [regex]::Match($Html, '(?is)<title[^>]*>(.*?)</title>')
     if ($titleMatch.Success) {
@@ -79,7 +93,7 @@ function ConvertFrom-McpHtml {
             $text = Get-McpHtmlInnerText -Html $m.Groups[2].Value
             if (-not $text) { return '' }
             if (-not $href -or $href.StartsWith('#') -or $href -match '^(?i)javascript:') { return $text }
-            "[$text]($(Resolve-McpUrl -Href ([System.Net.WebUtility]::HtmlDecode($href)) -BaseUrl $BaseUrl))"
+            "[$text]($(Resolve-McpUrl -Href ([System.Net.WebUtility]::HtmlDecode($href)) -BaseUrl $baseUri))"
         })
     $body = [regex]::Replace($body, '(?is)<(strong|b)\b[^>]*>(.*?)</\1>', '**$2**')
     $body = [regex]::Replace($body, '(?is)<(em|i)\b[^>]*>(.*?)</\1>', '*$2*')
