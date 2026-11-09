@@ -131,11 +131,13 @@ $script:AzStubs = @{
 }
 
 function Register-McpTestAzStub {
-    <# Defines global stub functions for the Az.Storage cmdlets so they can be mocked without Az installed. #>
+    <#
+        Defines global stub functions for the Az.Storage cmdlets. Functions take precedence over cmdlets, so the
+        stubs shadow an installed Az.Storage module and Pester mocks them with untyped parameters. Without this the
+        mocks would inherit the typed parameters of the real cmdlets (for example -Context [IStorageContext]).
+    #>
     foreach ($stub in $script:AzStubs.GetEnumerator()) {
-        if (-not (Get-Command -Name $stub.Key -ErrorAction SilentlyContinue)) {
-            Set-Item -Path "function:global:$($stub.Key)" -Value $stub.Value
-        }
+        Set-Item -Path "function:global:$($stub.Key)" -Value $stub.Value
     }
 }
 

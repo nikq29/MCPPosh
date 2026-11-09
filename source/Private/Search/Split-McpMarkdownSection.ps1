@@ -49,13 +49,13 @@ function Split-McpMarkdownSection {
         $null = $buffer.Clear()
     }
 
-    foreach ($line in ($Content -split "`n")) {
+    foreach ($line in ($Content -split '\r?\n')) {
         $fenceMatch = [regex]::Match($line, '^\s{0,3}(`{3,}|~{3,})')
         if ($fenceMatch.Success) {
             $char = $fenceMatch.Groups[1].Value[0]
             if ($null -eq $fenceChar) { $fenceChar = $char }
             elseif ($fenceChar -eq $char) { $fenceChar = $null }
-            $null = $buffer.AppendLine($line)
+            $null = $buffer.Append($line).Append("`n")
             continue
         }
         if ($null -eq $fenceChar) {
@@ -69,7 +69,7 @@ function Split-McpMarkdownSection {
                 continue
             }
         }
-        $null = $buffer.AppendLine($line)
+        $null = $buffer.Append($line).Append("`n")
     }
     . $flush
 
