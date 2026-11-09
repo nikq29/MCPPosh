@@ -23,4 +23,10 @@ Describe 'Invoke-McpListDocumentsTool' {
         $page = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'list_documents'; arguments = @{ limit = 1 } } }).result
         $page.content[0].text | Should -Match 'offset=1'
     }
+
+    It 'uses LF line endings on all platforms' {
+        $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'list_documents'; arguments = @{} } }).result
+        $result.content[0].text | Should -Match "2 document\(s\)\.`n- "
+        $result.content[0].text | Should -Not -Match "`r"
+    }
 }

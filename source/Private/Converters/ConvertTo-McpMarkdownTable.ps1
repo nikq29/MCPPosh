@@ -31,9 +31,9 @@ function ConvertTo-McpMarkdownTable {
         $cells = for ($c = 0; $c -lt $columnCount; $c++) {
             if ($c -lt $Rows[$r].Count) { ConvertTo-McpMarkdownTableCell -Value $Rows[$r][$c] } else { '' }
         }
-        $null = $builder.Append('| ').Append(($cells -join ' | ')).AppendLine(' |')
+        $null = $builder.Append('| ').Append(($cells -join ' | ')).Append(" |`n")
         if ($r -eq 0) {
-            $null = $builder.Append('|').Append((@(1..$columnCount | ForEach-Object { ' --- ' }) -join '|')).AppendLine('|')
+            $null = $builder.Append('|').Append((@(1..$columnCount | ForEach-Object { ' --- ' }) -join '|')).Append("|`n")
         }
     }
     $builder.ToString()

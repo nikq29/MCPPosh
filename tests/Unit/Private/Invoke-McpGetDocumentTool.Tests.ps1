@@ -31,4 +31,11 @@ Describe 'Invoke-McpGetDocumentTool' {
         $result.isError | Should -BeTrue
         $result.content[0].text | Should -Match 'was not found'
     }
+
+    It 'uses LF line endings on all platforms' {
+        $doc = Get-McpDocument -KnowledgeBase Proto -Title Onboarding
+        $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'get_document'; arguments = @{ id = $doc.Id; maxChars = 500 } } }).result
+        $result.content[0].text | Should -Match "^Document: Onboarding`n"
+        $result.content[0].text | Should -Not -Match "`r"
+    }
 }
