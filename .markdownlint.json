@@ -1,0 +1,14 @@
+{
+    "default": true,
+    "MD013": {
+        "line_length": 120,
+        "tables": false,
+        "code_blocks": false
+    },
+    "MD024": false,
+    "MD029": {
+        "style": "one_or_ordered"
+    },
+    "MD034": false,
+    "no-hard-tabs": true
+}

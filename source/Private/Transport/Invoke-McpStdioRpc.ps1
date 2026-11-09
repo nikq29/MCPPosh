@@ -1,0 +1,57 @@
+function Invoke-McpStdioRpc {
+    <#
+    .SYNOPSIS
+        Sends a JSON-RPC message to a stdio MCP server process.
+
+    .DESCRIPTION
+        Writes a JSON-RPC message as one line to the stdin of a stdio server started with Start-McpStdioClient and reads stdout lines until the response with the same id arrives. Non-JSON output on stdout is reported as an error.
+
+    .PARAMETER Client
+        The client handle returned by Start-McpStdioClient.
+
+    .PARAMETER Message
+        The JSON-RPC message to send, as an ordered dictionary.
+
+    .PARAMETER TimeoutSeconds
+        Seconds to wait for the response before the request fails.
+
+    .EXAMPLE
+        Invoke-McpStdioRpc -Client $client -Message ([ordered]@{ jsonrpc = '2.0'; id = 1; method = 'tools/list' })
+
+        Returns the parsed tools/list response.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [object] $Client,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary] $Message,
+
+        [int] $TimeoutSeconds = 30
+    )
+
+    $Client.Process.StandardInput.WriteLine((ConvertTo-McpJson -Compress -InputObject $Message))
+    $Client.Process.StandardInput.Flush()
+    if (-not $Message.Contains('id')) { return $null }
+
+    $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ($true) {
+        $remaining = [int]($deadline - [datetime]::UtcNow).TotalMilliseconds
+        if ($remaining -le 0) { throw "Timed out after $TimeoutSeconds seconds waiting for a response to '$($Message['method'])'." }
+        $readTask = $Client.Process.StandardOutput.ReadLineAsync()
+        if (-not $readTask.Wait($remaining)) { throw "Timed out after $TimeoutSeconds seconds waiting for a response to '$($Message['method'])'." }
+        $line = $readTask.Result
+        if ($null -eq $line) {
+            $stderr = if ($Client.ErrorTask.Wait(2000)) { $Client.ErrorTask.Result } else { '' }
+            throw "The stdio server exited unexpectedly. $stderr"
+        }
+        try {
+            $parsed = ConvertFrom-McpJson -Json $line
+        }
+        catch {
+            throw "The stdio server wrote non-JSON output to stdout: $line"
+        }
+        if ($parsed -is [System.Collections.IDictionary] -and $parsed['id'] -eq $Message['id']) { return $parsed }
+    }
+}
