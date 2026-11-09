@@ -74,7 +74,7 @@ function Add-McpDocument {
 
         [string[]] $Tags = @(),
 
-        [ArgumentCompleter({ param($c, $p, $w) (Get-McpDocumentConverter).Name | Where-Object { $_ -like "$w*" } })]
+        [ArgumentCompletions('Markdown', 'Text', 'Html', 'Docx', 'Pdf', 'Csv', 'Json', 'Yaml', 'Xml', 'Code')]
         [string] $Format,
 
         [string] $KnowledgeBase = 'Default'
@@ -91,12 +91,8 @@ function Add-McpDocument {
             ConvertTo-McpDocumentObject -Record $Saved.Record -KnowledgeBase $kb
         }
 
-        $matchesFilter = {
-            param([string] $FileName)
-            if ($Include -and -not ($Include | Where-Object { $FileName -like $_ })) { return $false }
-            if ($Exclude -and ($Exclude | Where-Object { $FileName -like $_ })) { return $false }
-            $true
-        }
+        $includePatterns = @($Include | Where-Object { $_ })
+        $excludePatterns = @($Exclude | Where-Object { $_ })
     }
 
     process {
@@ -149,12 +145,15 @@ function Add-McpDocument {
                         if ($item.PSIsContainer) {
                             $children = Get-ChildItem -LiteralPath $item.FullName -File -Recurse:$Recurse -ErrorAction SilentlyContinue |
                                 Where-Object { $_.FullName -notmatch '[\\/](\.git|\.svn|\.hg|node_modules|\.mcpposh)[\\/]' }
-                            foreach ($child in $children) {
-                                if (& $matchesFilter $child.Name) { $files.Add($child.FullName) }
-                            }
+                            $candidates = @($children)
                         }
-                        elseif (& $matchesFilter $item.Name) {
-                            $files.Add($item.FullName)
+                        else {
+                            $candidates = @($item)
+                        }
+                        foreach ($candidate in $candidates) {
+                            $included = $includePatterns.Count -eq 0 -or @($includePatterns | Where-Object { $candidate.Name -like $_ }).Count -gt 0
+                            $excluded = $excludePatterns.Count -gt 0 -and @($excludePatterns | Where-Object { $candidate.Name -like $_ }).Count -gt 0
+                            if ($included -and -not $excluded) { $files.Add($candidate.FullName) }
                         }
                     }
                 }

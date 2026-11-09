@@ -41,15 +41,17 @@ function Get-McpServerLog {
     process {
         $kb = Resolve-McpKnowledgeBase -KnowledgeBase $KnowledgeBase
         $logDirectory = Join-Path -Path $kb.Path -ChildPath 'logs'
-        $logFile = switch ($PSCmdlet.ParameterSetName) {
-            'Port' { Join-Path -Path $logDirectory -ChildPath "server-$Port.log" }
-            'Stdio' { Join-Path -Path $logDirectory -ChildPath 'server-stdio.log' }
-            default {
-                Get-ChildItem -LiteralPath $logDirectory -Filter 'server-*.log' -File -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Name -notmatch '\.(stdout|stderr)\.log$' } |
-                    Sort-Object -Property LastWriteTimeUtc -Descending |
-                    Select-Object -First 1 -ExpandProperty FullName
-            }
+        $logFile = if ($Stdio) {
+            Join-Path -Path $logDirectory -ChildPath 'server-stdio.log'
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'Port') {
+            Join-Path -Path $logDirectory -ChildPath "server-$Port.log"
+        }
+        else {
+            Get-ChildItem -LiteralPath $logDirectory -Filter 'server-*.log' -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -notmatch '\.(stdout|stderr)\.log$' } |
+                Sort-Object -Property LastWriteTimeUtc -Descending |
+                Select-Object -First 1 -ExpandProperty FullName
         }
 
         if (-not $logFile -or -not (Test-Path -LiteralPath $logFile)) {

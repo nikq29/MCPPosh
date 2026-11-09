@@ -2,10 +2,50 @@ function Save-McpDocument {
     <#
     .SYNOPSIS
         Inserts or updates a document (content, search index and manifest record).
+
+    .DESCRIPTION
+        Inserts a new document or updates an existing one (matched by id, source or title) while holding the knowledge base lock. Writes the normalized Markdown content and the search index first and the manifest last, so a running server never sees a manifest entry without its files. Unchanged documents are not rewritten.
+
+    .PARAMETER KnowledgeBase
+        The resolved knowledge base (see Resolve-McpKnowledgeBase) to store the document in.
+
+    .PARAMETER Content
+        The Markdown content of the document. It is normalized before it is stored and hashed.
+
+    .PARAMETER Title
+        Title of the document. It is shown to the agent and indexed for the search.
+
+    .PARAMETER Format
+        Name of the converter that produced the content, for example Markdown, Docx or Html.
+
+    .PARAMETER SourceType
+        Origin of the document: File, Url, Inline (added with -Content) or Agent (added with add_note).
+
+    .PARAMETER Source
+        Full path or URL of the source for documents of type File and Url.
+
+    .PARAMETER Tags
+        Tags of the document. Empty values are removed and duplicates are merged.
+
+    .PARAMETER SourceHash
+        SHA-256 hash of the source file, used by Update-McpDocument to detect changes.
+
+    .PARAMETER Id
+        Id of an existing document to update. An error is thrown when it does not exist.
+
+    .PARAMETER MergeExistingTags
+        Keeps the tags of an existing document in addition to the tags passed with -Tags.
+
+    .EXAMPLE
+        Save-McpDocument -KnowledgeBase $kb -Title 'VPN' -Content '# VPN' -SourceType Inline -Tags vpn
+
+        Adds or updates the inline document VPN and returns a hashtable with Record, Created and Changed.
+
     .OUTPUTS
         A hashtable with Record, Created and Changed.
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
         [object] $KnowledgeBase,
@@ -40,7 +80,8 @@ function Save-McpDocument {
     $hash = Get-McpSha256 -Text $normalized
     $cleanTags = @($Tags | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() } | Sort-Object -Unique)
 
-    Invoke-McpKnowledgeBaseLock -KbPath $kbPath -ScriptBlock {
+    $kbLock = Lock-McpKnowledgeBase -KbPath $kbPath
+    try {
         $manifest = Read-McpManifest -KbPath $kbPath
         $documents = [System.Collections.Generic.List[object]]::new()
         foreach ($doc in $manifest['documents']) { $documents.Add($doc) }
@@ -94,5 +135,8 @@ function Save-McpDocument {
         $manifest['documents'] = $documents.ToArray()
         Save-McpManifest -KbPath $kbPath -Manifest $manifest
         @{ Record = $record; Created = (-not $existing); Changed = $true }
+    }
+    finally {
+        $kbLock.Dispose()
     }
 }

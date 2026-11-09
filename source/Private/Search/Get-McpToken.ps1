@@ -2,9 +2,20 @@ function Get-McpToken {
     <#
     .SYNOPSIS
         Splits text into normalized search tokens (lowercase, diacritics folded, stop words removed, light stemming).
+
+    .DESCRIPTION
+        Splits text into search tokens: lowercase, German sharp s expanded, diacritics removed, words shorter than two characters and English/German stop words dropped, and common suffixes stripped so that singular and plural forms match.
+
+    .PARAMETER Text
+        The text to tokenize, for example a document chunk, a heading or a search query.
+
+    .EXAMPLE
+        Get-McpToken -Text 'Die Server-Konfigurationen'
+
+        Returns the tokens serv and konfiguration.
     #>
     [CmdletBinding()]
-    [OutputType([string[]])]
+    [OutputType([string[]], [object[]])]
     param(
         [AllowEmptyString()]
         [AllowNull()]
@@ -16,7 +27,7 @@ function Get-McpToken {
         return , $tokens.ToArray()
     }
 
-    $folded = $Text.ToLowerInvariant().Replace('ß', 'ss')
+    $folded = $Text.ToLowerInvariant().Replace([string][char]0x00DF, 'ss')
     $folded = [regex]::Replace($folded.Normalize([System.Text.NormalizationForm]::FormD), '\p{Mn}+', '')
     $suffixes = $script:McpSuffixes
     $stopWords = $script:McpStopWords

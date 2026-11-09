@@ -2,9 +2,22 @@ function Get-McpSearchIndex {
     <#
     .SYNOPSIS
         Loads (and caches) the in-memory search index of a knowledge base.
+
     .DESCRIPTION
         The cache is keyed by the manifest's timestamp and size, so documents added from another
         PowerShell session become searchable without restarting a running server.
+
+    .PARAMETER KbPath
+        Directory of the knowledge base whose search index is loaded.
+
+    .PARAMETER Force
+        Rebuilds the in-memory index even when the manifest has not changed.
+
+    .EXAMPLE
+        $index = Get-McpSearchIndex -KbPath $kb.Path
+        $index.Chunks.Count
+
+        Loads the index and returns the number of indexed chunks.
     #>
     [CmdletBinding()]
     param(

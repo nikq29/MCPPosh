@@ -2,14 +2,22 @@ function Import-McpKnowledgeBase {
     <#
     .SYNOPSIS
         Imports a knowledge base from a ZIP archive created by Export-McpKnowledgeBase.
+
+    .DESCRIPTION
+        Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name. Only knowledge base files are extracted and paths are validated.
+
     .PARAMETER Path
-        The ZIP archive.
+        Path of the ZIP archive created by Export-McpKnowledgeBase. Accepts the FullName property of files through the pipeline.
+
     .PARAMETER Name
         Name for the imported knowledge base. Defaults to the name stored in the archive.
+
     .PARAMETER Force
         Replace an existing knowledge base with the same name.
+
     .EXAMPLE
         Import-McpKnowledgeBase -Path .\contoso-kb.zip
+
     .EXAMPLE
         Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name ContosoTest
     #>

@@ -2,6 +2,23 @@ function Write-McpLog {
     <#
     .SYNOPSIS
         Appends a line to the server log. Never writes to stdout (reserved for stdio JSON-RPC).
+
+    .DESCRIPTION
+        Appends a timestamped line to the log file of the server and, for foreground HTTP servers, to the console. It never writes to stdout of a stdio server, where only JSON-RPC messages are allowed, and logging errors are ignored.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext; it defines the log file and console echo.
+
+    .PARAMETER Message
+        The text of the log entry; it is written after the timestamp and level.
+
+    .PARAMETER Level
+        Severity of the message: INFO, WARN, ERROR or DEBUG.
+
+    .EXAMPLE
+        Write-McpLog -Context $context -Level WARN -Message 'Rejected request from origin evil.example.com'
+
+        Appends a warning to the server log.
     #>
     [CmdletBinding()]
     param(

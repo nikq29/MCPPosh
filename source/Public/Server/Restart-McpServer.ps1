@@ -2,11 +2,23 @@ function Restart-McpServer {
     <#
     .SYNOPSIS
         Restarts local MCPPosh HTTP servers with their previous settings.
+
     .DESCRIPTION
         API keys are never stored. If the server required an API key, pass -ApiKey again or set
         $env:MCPPOSH_API_KEY.
+
+    .PARAMETER KnowledgeBase
+        Restart the local HTTP servers of this knowledge base (name, wildcard or directory path).
+
+    .PARAMETER Port
+        Restart the local HTTP server that listens on this port.
+
+    .PARAMETER ApiKey
+        API keys for the restarted server. Required when the server used API keys, because keys are never stored.
+
     .EXAMPLE
         Restart-McpServer -KnowledgeBase Contoso
+
     .EXAMPLE
         Restart-McpServer -Port 8080 -ApiKey $key
     #>

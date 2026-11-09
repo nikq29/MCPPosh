@@ -2,6 +2,7 @@ function Publish-McpKnowledgeBase {
     <#
     .SYNOPSIS
         Publishes a local knowledge base to an Azure Files share used by a hosted MCPPosh server.
+
     .DESCRIPTION
         Maintain your documentation locally with Add-McpDocument and publish it to the file share
         that the MCPPosh container (e.g. in Azure Container Apps) mounts at /data. The running
@@ -12,28 +13,39 @@ function Publish-McpKnowledgeBase {
         share that no longer exist locally.
 
         Requires the Az.Storage module (Install-Module Az.Storage).
+
     .PARAMETER Name
-        Local knowledge base.
+        Name or directory path of the local knowledge base to publish.
+
     .PARAMETER StorageAccountName
         Storage account that holds the share.
+
     .PARAMETER ShareName
         Azure Files share mounted by the container (the Bicep template creates 'mcpposh').
+
     .PARAMETER StorageAccountKey
-        Storage account key.
+        Access key of the storage account that holds the Azure Files share.
+
     .PARAMETER SasToken
         SAS token with read, write, create, list and delete permissions on the share.
+
     .PARAMETER ResourceGroupName
         Resource group of the storage account; the key is read with Get-AzStorageAccountKey
         (requires Connect-AzAccount).
+
     .PARAMETER Context
         An existing Azure Storage context (New-AzStorageContext).
+
     .PARAMETER RemoteName
         Knowledge base name on the share. Defaults to the local name; must match
         MCPPOSH_KNOWLEDGEBASE of the container.
+
     .PARAMETER Prune
         Delete documents on the share that no longer exist locally.
+
     .PARAMETER Force
         Upload all files, not only the changed ones.
+
     .EXAMPLE
         Connect-AzAccount
         Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
@@ -98,13 +110,17 @@ function Publish-McpKnowledgeBase {
     $snapshot = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('mcpposh-publish-' + [guid]::NewGuid().ToString('N'))
     $null = New-Item -ItemType Directory -Path $snapshot -Force
     try {
-        $files = Invoke-McpKnowledgeBaseLock -KbPath $kb.Path -ScriptBlock {
-            foreach ($file in (Get-McpKnowledgeBaseFile -KbPath $kb.Path)) {
+        $kbLock = Lock-McpKnowledgeBase -KbPath $kb.Path
+        try {
+            $files = foreach ($file in (Get-McpKnowledgeBaseFile -KbPath $kb.Path)) {
                 $copy = Join-Path -Path $snapshot -ChildPath $file.RelativePath
                 $null = New-Item -ItemType Directory -Path ([System.IO.Path]::GetDirectoryName($copy)) -Force
                 Copy-Item -LiteralPath $file.FullPath -Destination $copy
                 [pscustomobject]@{ FullPath = $copy; RelativePath = $file.RelativePath; Hash = Get-McpSha256 -Path $copy }
             }
+        }
+        finally {
+            $kbLock.Dispose()
         }
 
         foreach ($directory in 'knowledgebases', $remoteRoot, "$remoteRoot/documents", "$remoteRoot/index") {

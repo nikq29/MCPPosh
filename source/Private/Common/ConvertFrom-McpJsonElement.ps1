@@ -1,5 +1,22 @@
 function ConvertFrom-McpJsonElement {
+    <#
+    .SYNOPSIS
+        Converts a System.Text.Json element to PowerShell values.
+
+    .DESCRIPTION
+        Recursively converts a JsonElement to an ordered dictionary (objects), an object array (arrays), a string, a long or double (numbers), a boolean or $null. Used by ConvertFrom-McpJson.
+
+    .PARAMETER Element
+        The System.Text.Json.JsonElement to convert, usually the root element of a parsed JsonDocument.
+
+    .EXAMPLE
+        $document = [System.Text.Json.JsonDocument]::Parse('[1, true]')
+        ConvertFrom-McpJsonElement -Element $document.RootElement
+
+        Returns an object array with the values 1 and $true.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary], [object[]], [string], [long], [int], [double], [bool])]
     param(
         [Parameter(Mandatory)]
         [System.Text.Json.JsonElement] $Element

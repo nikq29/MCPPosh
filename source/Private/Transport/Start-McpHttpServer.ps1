@@ -2,13 +2,35 @@ function Start-McpHttpServer {
     <#
     .SYNOPSIS
         Runs the MCP Streamable HTTP transport (JSON responses, stateless) until stopped.
+
     .DESCRIPTION
-        Endpoints:
-          POST /mcp     JSON-RPC requests (200 + JSON) and notifications (202)
-          GET  /mcp     405 (no server-initiated SSE stream)
-          GET  /health  liveness probe; details only for authorized callers
+        Runs the MCP Streamable HTTP transport with HttpListener until it is stopped: writes the server state file, serves /mcp, /health and /, and removes the state file on exit. Responses are JSON (no server-initiated SSE stream) and the server is stateless.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Port
+        TCP port the HTTP listener binds to, for example 5050 or 8080.
+
+    .PARAMETER ListenAddress
+        localhost for local connections only, * for all interfaces, or a specific host name.
+
+    .PARAMETER ApiKeys
+        API keys accepted as Bearer token or X-API-Key header. Without keys no authentication is required.
+
+    .PARAMETER AllowedOrigins
+        Browser origins allowed for CORS. Other origins are rejected on /mcp.
+
+    .PARAMETER AllowAnonymous
+        Records that the server was started without API key on a non-loopback address on purpose.
+
+    .EXAMPLE
+        Start-McpHttpServer -Context $context -Port 5050 -ListenAddress localhost -ApiKeys 'secret-key'
+
+        Serves http://localhost:5050/mcp until Ctrl+C is pressed.
     #>
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Internal helper; the public cmdlet Start-McpServer implements ShouldProcess.')]
     param(
         [Parameter(Mandatory)]
         [object] $Context,

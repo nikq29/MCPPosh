@@ -1,6 +1,24 @@
 function Split-McpTextBySize {
+    <#
+    .SYNOPSIS
+        Splits a long text into chunks of limited size.
+
+    .DESCRIPTION
+        Splits text into chunks of at most the given number of characters, preferring paragraph boundaries, then line boundaries, and hard-wrapping only single lines that are longer than the limit.
+
+    .PARAMETER Text
+        The text of a section that is longer than the chunk size.
+
+    .PARAMETER MaxChars
+        Maximum number of characters per returned chunk.
+
+    .EXAMPLE
+        Split-McpTextBySize -Text $longSection -MaxChars 1500
+
+        Returns an array of strings with at most 1500 characters each.
+    #>
     [CmdletBinding()]
-    [OutputType([string[]])]
+    [OutputType([string[]], [System.Array])]
     param(
         [Parameter(Mandatory)]
         [string] $Text,

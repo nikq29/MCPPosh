@@ -1,4 +1,19 @@
 function ConvertTo-McpMarkdownTable {
+    <#
+    .SYNOPSIS
+        Creates a Markdown table from rows of cells.
+
+    .DESCRIPTION
+        Creates a Markdown table from an array of rows, each an array of cell values. The first row becomes the header; shorter rows are padded and pipe characters in cells are escaped.
+
+    .PARAMETER Rows
+        The table rows as an array of string arrays; the first row contains the column headers.
+
+    .EXAMPLE
+        ConvertTo-McpMarkdownTable -Rows @(,[string[]]@('Name', 'Role'), [string[]]@('Anna', 'Admin'))
+
+        Returns a two-column Markdown table with one data row.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param(

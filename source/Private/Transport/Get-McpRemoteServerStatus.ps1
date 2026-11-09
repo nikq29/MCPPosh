@@ -1,4 +1,22 @@
 function Get-McpRemoteServerStatus {
+    <#
+    .SYNOPSIS
+        Returns the status of a remote MCPPosh server.
+
+    .DESCRIPTION
+        Calls the /health endpoint of an MCPPosh HTTP server (for example in Azure) and returns an MCPPosh.Server object with the status, knowledge base, number of documents, revision, uptime and version. Details require a valid API key.
+
+    .PARAMETER Uri
+        Base URL or MCP endpoint of the server, for example https://docs.example.com/mcp.
+
+    .PARAMETER ApiKey
+        API key sent as Bearer token so that the health endpoint returns the details.
+
+    .EXAMPLE
+        Get-McpRemoteServerStatus -Uri 'https://docs.example.com/mcp' -ApiKey $key
+
+        Returns the status of the remote server.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

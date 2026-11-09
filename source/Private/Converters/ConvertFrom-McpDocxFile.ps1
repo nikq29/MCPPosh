@@ -2,8 +2,20 @@ function ConvertFrom-McpDocxFile {
     <#
     .SYNOPSIS
         Converts a Word document (.docx) to Markdown using only .NET (no Word installation required).
+
+    .DESCRIPTION
+        Reads word/document.xml from a .docx package with System.IO.Compression and converts headings (including localized heading styles), paragraphs, numbered and bulleted lists and tables to Markdown. The title is taken from the document properties or the first heading.
+
+    .PARAMETER Path
+        Path of the Word document (.docx) to convert. Legacy .doc files are not supported.
+
+    .EXAMPLE
+        ConvertFrom-McpDocxFile -Path ./Handbook.docx
+
+        Returns a hashtable with the Markdown Content and the Title of the document.
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
         [string] $Path

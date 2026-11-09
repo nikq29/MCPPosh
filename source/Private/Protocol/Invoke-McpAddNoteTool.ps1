@@ -1,4 +1,22 @@
 function Invoke-McpAddNoteTool {
+    <#
+    .SYNOPSIS
+        Runs the MCP tool add_note.
+
+    .DESCRIPTION
+        Stores a Markdown note from the AI agent as a document of source type Agent with the tag agent-note. A note with the same title is updated. Only available when the server runs with -AllowWrite.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Arguments
+        The tool arguments with title, content and optional tags.
+
+    .EXAMPLE
+        Invoke-McpAddNoteTool -Context $context -Arguments ([ordered]@{ title = 'Printer'; content = 'Use driver v3.' })
+
+        Saves the note and returns a tool result with its document id.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

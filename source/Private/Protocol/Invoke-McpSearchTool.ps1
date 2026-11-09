@@ -1,4 +1,22 @@
 function Invoke-McpSearchTool {
+    <#
+    .SYNOPSIS
+        Runs the MCP tool search_documentation.
+
+    .DESCRIPTION
+        Searches the knowledge base with BM25 and returns the best matching sections as Markdown text plus structured content with document ids, titles, headings, scores, tags and resource URIs.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Arguments
+        The tool arguments with query and optional limit and tags.
+
+    .EXAMPLE
+        Invoke-McpSearchTool -Context $context -Arguments ([ordered]@{ query = 'vpn restart'; limit = 3 })
+
+        Returns up to three matching sections.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

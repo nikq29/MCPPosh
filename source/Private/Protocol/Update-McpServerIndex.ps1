@@ -3,8 +3,23 @@ function Update-McpServerIndex {
     .SYNOPSIS
         Reloads knowledge base metadata and the search index when the manifest changed.
         Checks the file system at most once per second.
+
+    .DESCRIPTION
+        Returns the search index of a running server and reloads it, together with the knowledge base description, when manifest.json changed. The file system is checked at most once per second, so documents added from PowerShell become available without a restart.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Force
+        Checks and reloads the index immediately, ignoring the one-second interval.
+
+    .EXAMPLE
+        $index = Update-McpServerIndex -Context $context
+
+        Returns the current search index of the server.
     #>
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Refreshes the in-memory index of a running server; no persistent state is changed.')]
     param(
         [Parameter(Mandatory)]
         [object] $Context,

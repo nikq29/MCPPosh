@@ -2,9 +2,20 @@ function Export-McpKnowledgeBase {
     <#
     .SYNOPSIS
         Exports a knowledge base to a ZIP archive (backup or transfer to another machine).
+
     .DESCRIPTION
         The archive contains the knowledge base metadata, manifest, documents and search index.
         Logs and lock files are not included. Restore it with Import-McpKnowledgeBase.
+
+    .PARAMETER Name
+        Name or directory path of the knowledge base to export. Accepts the Name property through the pipeline.
+
+    .PARAMETER DestinationPath
+        Path of the ZIP archive to create. Relative paths are resolved against the current location.
+
+    .PARAMETER Force
+        Overwrites an existing archive at the destination path.
+
     .EXAMPLE
         Export-McpKnowledgeBase -Name Contoso -DestinationPath .\contoso-kb.zip
     #>
@@ -29,7 +40,8 @@ function Export-McpKnowledgeBase {
         if (-not $PSCmdlet.ShouldProcess($target, "Export knowledge base '$($kb.Name)'")) { return }
 
         $files = Get-McpKnowledgeBaseFile -KbPath $kb.Path
-        Invoke-McpKnowledgeBaseLock -KbPath $kb.Path -ScriptBlock {
+        $kbLock = Lock-McpKnowledgeBase -KbPath $kb.Path
+        try {
             if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
             $directory = [System.IO.Path]::GetDirectoryName($target)
             if (-not [System.IO.Directory]::Exists($directory)) { $null = [System.IO.Directory]::CreateDirectory($directory) }
@@ -42,6 +54,9 @@ function Export-McpKnowledgeBase {
             finally {
                 $archive.Dispose()
             }
+        }
+        finally {
+            $kbLock.Dispose()
         }
         Get-Item -LiteralPath $target
     }

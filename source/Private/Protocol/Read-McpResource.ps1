@@ -1,5 +1,24 @@
 function Read-McpResource {
+    <#
+    .SYNOPSIS
+        Handles the MCP method resources/read.
+
+    .DESCRIPTION
+        Returns the Markdown content of the document addressed by a mcpposh://<knowledge base>/documents/<id> URI. Unknown URIs or documents result in the resource-not-found error -32002.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Params
+        The params object of the request with the uri of the resource to read.
+
+    .EXAMPLE
+        Read-McpResource -Context $context -Params ([ordered]@{ uri = 'mcpposh://Contoso/documents/install-1a2b3c' })
+
+        Returns the contents result with the Markdown text.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context,

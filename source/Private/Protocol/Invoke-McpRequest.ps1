@@ -2,10 +2,26 @@ function Invoke-McpRequest {
     <#
     .SYNOPSIS
         Validates and dispatches a parsed JSON-RPC message.
+
+    .DESCRIPTION
+        Validates a parsed JSON-RPC message (version, method, id and params) and dispatches it to the handler of the MCP method. Handler exceptions become JSON-RPC errors with the code carried by New-McpRpcError, or internal errors.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Message
+        The parsed JSON-RPC message, an ordered dictionary as returned by ConvertFrom-McpJson.
+
+    .EXAMPLE
+        Invoke-McpRequest -Context $context -Message ([ordered]@{ jsonrpc = '2.0'; id = 1; method = 'tools/list' })
+
+        Returns the response dictionary with the tool list.
+
     .OUTPUTS
         A response dictionary, or $null for notifications and client responses.
     #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context,

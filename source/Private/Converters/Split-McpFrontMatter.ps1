@@ -2,15 +2,31 @@ function Split-McpFrontMatter {
     <#
     .SYNOPSIS
         Separates YAML front matter from Markdown and extracts 'title' and 'tags'.
+
+    .DESCRIPTION
+        Separates YAML front matter (between --- lines at the start) from the Markdown body and extracts the title and the tags or keywords, written as an inline list or as a YAML list.
+
+    .PARAMETER Text
+        The complete Markdown text, optionally starting with YAML front matter.
+
+    .EXAMPLE
+        Split-McpFrontMatter -Text "---
+        title: Setup
+        tags: [intern, setup]
+        ---
+        # Setup"
+
+        Returns Body "# Setup", Title "Setup" and Tags intern and setup.
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [AllowEmptyString()]
         [string] $Text
     )
 
     $result = @{ Body = $Text; Title = $null; Tags = @() }
-    $match = [regex]::Match($Text, '\A﻿?---[ \t]*\r?\n(?<fm>[\s\S]*?)\r?\n(---|\.\.\.)[ \t]*(\r?\n|\z)')
+    $match = [regex]::Match($Text, '\A\uFEFF?---[ \t]*\r?\n(?<fm>[\s\S]*?)\r?\n(---|\.\.\.)[ \t]*(\r?\n|\z)')
     if (-not $match.Success) {
         return $result
     }

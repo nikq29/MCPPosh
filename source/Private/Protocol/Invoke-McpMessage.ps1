@@ -2,6 +2,21 @@ function Invoke-McpMessage {
     <#
     .SYNOPSIS
         Handles one raw JSON-RPC message (single request, notification or batch).
+
+    .DESCRIPTION
+        Parses one raw JSON-RPC message from a transport, dispatches a single request, a notification or a batch, and returns the serialized response. Returns $null when nothing has to be sent back; invalid JSON results in a parse error response.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Json
+        The raw JSON-RPC message as received on stdin or in the HTTP request body.
+
+    .EXAMPLE
+        Invoke-McpMessage -Context $context -Json '{"jsonrpc":"2.0","id":1,"method":"ping"}'
+
+        Returns {"jsonrpc":"2.0","id":1,"result":{}}.
+
     .OUTPUTS
         The JSON response text, or $null when nothing has to be sent back (notifications).
     #>

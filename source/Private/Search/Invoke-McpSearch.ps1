@@ -2,6 +2,29 @@ function Invoke-McpSearch {
     <#
     .SYNOPSIS
         Ranks chunks of a search index against a query using BM25.
+
+    .DESCRIPTION
+        Scores the chunks of a search index with BM25 (k1 = 1.2, b = 0.75). Unknown query terms are expanded to indexed terms with the same prefix, chunks matching more query terms get a small boost, results can be filtered by tag and at most three chunks per document are returned.
+
+    .PARAMETER Index
+        The in-memory search index as returned by Get-McpSearchIndex.
+
+    .PARAMETER Query
+        Search terms or a natural-language question.
+
+    .PARAMETER Top
+        Maximum number of results (chunks) to return.
+
+    .PARAMETER Tags
+        Only return chunks of documents that have at least one of these tags.
+
+    .PARAMETER MaxPerDocument
+        Maximum number of chunks returned from the same document.
+
+    .EXAMPLE
+        Invoke-McpSearch -Index (Get-McpSearchIndex -KbPath $kb.Path) -Query 'vpn connection drops' -Top 3
+
+        Returns the three best matching sections as MCPPosh.SearchResult objects.
     #>
     [CmdletBinding()]
     param(

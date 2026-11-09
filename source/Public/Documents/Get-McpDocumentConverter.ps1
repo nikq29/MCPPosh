@@ -2,8 +2,19 @@ function Get-McpDocumentConverter {
     <#
     .SYNOPSIS
         Lists the available document converters (formats) and their file extensions.
+
+    .DESCRIPTION
+        Lists the built-in and custom document converters that Add-McpDocument uses to turn files into Markdown, together with the file extensions each converter handles.
+
+    .PARAMETER Name
+        Name of the converter to return. Wildcards are supported; all converters are returned by default.
+
+    .PARAMETER Extension
+        Only return the converter that handles this file extension, for example .docx or docx.
+
     .EXAMPLE
         Get-McpDocumentConverter
+
     .EXAMPLE
         Get-McpDocumentConverter -Extension .docx
     #>

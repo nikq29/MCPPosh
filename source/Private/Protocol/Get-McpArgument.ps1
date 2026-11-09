@@ -2,8 +2,38 @@ function Get-McpArgument {
     <#
     .SYNOPSIS
         Reads and validates a tool argument. Throws an argument error (returned to the model as a tool error).
+
+    .DESCRIPTION
+        Reads a tool argument from the arguments of a tools/call request and validates its type (string, integer or string array), whether it is required and the allowed integer range. Validation errors are thrown as ArgumentException and reported to the model as tool errors so it can correct the call.
+
+    .PARAMETER Arguments
+        The arguments dictionary of the tools/call request.
+
+    .PARAMETER Name
+        Name of the argument to read, for example query or limit.
+
+    .PARAMETER Type
+        Expected type of the argument: String, Integer or StringArray.
+
+    .PARAMETER Required
+        Throws an error when the argument is missing, null or (for strings) empty.
+
+    .PARAMETER Default
+        Value returned when the argument is missing and not required.
+
+    .PARAMETER Minimum
+        Smallest allowed value for Integer arguments.
+
+    .PARAMETER Maximum
+        Largest allowed value for Integer arguments.
+
+    .EXAMPLE
+        Get-McpArgument -Arguments $arguments -Name 'limit' -Type Integer -Default 5 -Minimum 1 -Maximum 20
+
+        Returns the limit argument or 5 when it is missing.
     #>
     [CmdletBinding()]
+    [OutputType([string], [int], [string[]], [object[]])]
     param(
         [Parameter(Mandatory)]
         [System.Collections.IDictionary] $Arguments,

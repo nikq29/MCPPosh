@@ -2,20 +2,34 @@ function Get-McpDocument {
     <#
     .SYNOPSIS
         Lists the documents of a knowledge base.
+
+    .DESCRIPTION
+        Returns the documents stored in a knowledge base as MCPPosh.Document objects. Filter by id, title, tag, format or source type, and add the Markdown content with -IncludeContent.
+
     .PARAMETER Id
         Document ids (wildcards allowed).
+
     .PARAMETER Title
         Filter by title (wildcards allowed).
+
     .PARAMETER Tag
         Only documents that have at least one of these tags.
+
     .PARAMETER Format
         Only documents of these formats (Markdown, Html, Docx, ...).
+
     .PARAMETER SourceType
         Only documents from these sources: File, Url, Inline or Agent (notes added by the AI agent).
+
     .PARAMETER IncludeContent
         Adds the Markdown content as a Content property.
+
+    .PARAMETER KnowledgeBase
+        Name or directory path of the knowledge base. The knowledge base named Default is created automatically.
+
     .EXAMPLE
         Get-McpDocument -KnowledgeBase Contoso -Tag runbook
+
     .EXAMPLE
         Get-McpDocument -Title '*VPN*' -IncludeContent | Select-Object -ExpandProperty Content
     #>

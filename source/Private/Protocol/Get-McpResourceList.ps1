@@ -1,5 +1,24 @@
 function Get-McpResourceList {
+    <#
+    .SYNOPSIS
+        Handles the MCP method resources/list.
+
+    .DESCRIPTION
+        Returns the documents of the knowledge base as MCP resources (URI mcpposh://<knowledge base>/documents/<id>, title, description, MIME type text/markdown and size), sorted by title and paged with a cursor of 500 entries.
+
+    .PARAMETER Context
+        The server context created by New-McpServerContext.
+
+    .PARAMETER Params
+        The params object of the request; an optional cursor selects the next page.
+
+    .EXAMPLE
+        Get-McpResourceList -Context $context -Params ([ordered]@{})
+
+        Returns the first page of resources.
+    #>
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param(
         [Parameter(Mandatory)]
         [object] $Context,

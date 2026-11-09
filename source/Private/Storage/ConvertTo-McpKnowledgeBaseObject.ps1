@@ -1,4 +1,19 @@
 function ConvertTo-McpKnowledgeBaseObject {
+    <#
+    .SYNOPSIS
+        Converts a resolved knowledge base to a summary object.
+
+    .DESCRIPTION
+        Reads the manifest of a knowledge base and returns an MCPPosh.KnowledgeBase object with name, description, number of documents, total characters, tags, revision and timestamps.
+
+    .PARAMETER KnowledgeBase
+        The resolved knowledge base (see Resolve-McpKnowledgeBase) to summarize.
+
+    .EXAMPLE
+        ConvertTo-McpKnowledgeBaseObject -KnowledgeBase (Resolve-McpKnowledgeBase -KnowledgeBase Contoso)
+
+        Returns the summary of the knowledge base Contoso.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
