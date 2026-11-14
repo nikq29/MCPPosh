@@ -960,8 +960,12 @@ try
                 {
                     Write-Progress -Activity 'PSResourceGet:' -PercentComplete $progressPercentage -CurrentOperation 'Restoring Build Dependencies' -Status ('Saving module {0}' -f $savePSResourceParameters.Name)
 
+                    # Only search the configured gallery. PSResourceGet also registers MicrosoftArtifactRegistry with a
+                    # higher priority, which answers every module with "package: Not Found"; that error stops the
+                    # build in CI, where pwsh runs with $ErrorActionPreference = 'Stop'.
                     $savePSResourceParameters = @{
                         Path            = $PSDependTarget
+                        Repository      = $Gallery
                         TrustRepository = $true
                         Confirm         = $false
                     }
