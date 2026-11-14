@@ -31,3 +31,13 @@ Describe 'Invoke-McpToolCall' {
         $result.content[0].text | Should -Match 'query'
     }
 }
+
+Describe 'Invoke-McpToolCall (error details)' {
+    It 'hides the details of unexpected tool failures' {
+        Mock -ModuleName MCPPosh Invoke-McpSearchTool { throw [System.IO.IOException]::new('Access to /secret/path denied') }
+        $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'search_documentation'; arguments = @{ query = 'x' } } }).result
+        $result.isError | Should -BeTrue
+        $result.content[0].text | Should -Not -Match 'secret'
+        $result.content[0].text | Should -Match 'internal error'
+    }
+}

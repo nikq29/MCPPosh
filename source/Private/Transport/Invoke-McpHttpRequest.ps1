@@ -4,7 +4,7 @@ function Invoke-McpHttpRequest {
         Handles one HTTP request and returns the status code that was sent.
 
     .DESCRIPTION
-        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
+        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -111,12 +111,29 @@ function Invoke-McpHttpRequest {
                     -Body (ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32600 -Message "Unsupported MCP-Protocol-Version: $protocolVersion"))
                 return 400
             }
-            if ($request.ContentLength64 -gt 10MB) {
+            # Only JSON is accepted. This also stops cross-site "simple" requests (text/plain, form data)
+            # that browsers send without a CORS preflight.
+            $mediaType = ([string]$request.ContentType -split ';')[0].Trim().ToLowerInvariant()
+            if ($mediaType -ne 'application/json') {
+                Send-McpHttpResponse -Response $response -StatusCode 415 -Headers $corsHeaders -Body '{"error":"Content-Type must be application/json"}'
+                return 415
+            }
+            if ($request.ContentLength64 -gt $script:McpMaxRequestBytes) {
                 Send-McpHttpResponse -Response $response -StatusCode 413 -Headers $corsHeaders -Body '{"error":"Request too large"}'
                 return 413
             }
 
-            $reader = [System.IO.StreamReader]::new($request.InputStream, $script:Utf8NoBom)
+            # Count the bytes while reading: chunked requests have no Content-Length.
+            $buffer = [System.IO.MemoryStream]::new()
+            try {
+                $null = Copy-McpStreamWithLimit -Source $request.InputStream -Destination $buffer -MaxBytes $script:McpMaxRequestBytes -Description 'request body'
+            }
+            catch [System.IO.InvalidDataException] {
+                Send-McpHttpResponse -Response $response -StatusCode 413 -Headers $corsHeaders -Body '{"error":"Request too large"}'
+                return 413
+            }
+            $buffer.Position = 0
+            $reader = [System.IO.StreamReader]::new($buffer, $script:Utf8NoBom)
             try { $body = $reader.ReadToEnd() } finally { $reader.Dispose() }
 
             $json = Invoke-McpMessage -Context $Context -Json $body

@@ -20,7 +20,7 @@ Import-McpKnowledgeBase [-Path] <String> [-Name <String>] [-Force]
 
 ## DESCRIPTION
 Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name.
-Only knowledge base files are extracted and paths are validated.
+Only knowledge base files are extracted and paths are validated. Archives with invalid document ids, more than 100000 entries or more than 1 GB of uncompressed content are rejected.
 
 ## EXAMPLES
 

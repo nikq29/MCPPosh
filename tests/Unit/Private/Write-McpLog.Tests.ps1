@@ -29,3 +29,16 @@ Describe 'Write-McpLog' {
         }
     }
 }
+
+Describe 'Write-McpLog (log injection)' {
+    It 'escapes line breaks and control characters so clients cannot forge log lines' {
+        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+            param($TestHome)
+            $context = [pscustomobject]@{ LogPath = (Join-Path $TestHome 'logs/injection.log'); EchoLog = $false }
+            Write-McpLog -Context $context -Message "search `"x`nINJECTED [ERROR] forged`r`tend$([char]0)`""
+            $lines = @(Get-Content -LiteralPath $context.LogPath)
+            $lines.Count | Should -Be 1
+            $lines[0] | Should -BeLike '*x\nINJECTED `[ERROR`] forged\r\tend\u0000"'
+        }
+    }
+}

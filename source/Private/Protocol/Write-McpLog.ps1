@@ -32,7 +32,18 @@ function Write-McpLog {
         [string] $Level = 'INFO'
     )
 
-    $line = '{0} [{1}] {2}' -f [datetime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ'), $Level, $Message
+    # Messages contain client input (search queries, note titles): escape line breaks and other control
+    # characters so a client cannot forge additional log lines.
+    $safeMessage = [regex]::Replace($Message, '[\x00-\x1F\x7F\u0085\u2028\u2029]', {
+            param($m)
+            switch ($m.Value) {
+                "`r" { '\r' }
+                "`n" { '\n' }
+                "`t" { '\t' }
+                default { '\u{0:x4}' -f [int][char]$m.Value }
+            }
+        })
+    $line = '{0} [{1}] {2}' -f [datetime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ'), $Level, $safeMessage
     if ($Context.LogPath) {
         try {
             $directory = [System.IO.Path]::GetDirectoryName($Context.LogPath)

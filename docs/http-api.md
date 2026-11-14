@@ -37,8 +37,8 @@ Servers that listen on a non-loopback address require API keys unless they were 
 
 ## POST /mcp
 
-Send a JSON-RPC 2.0 message as the request body with `Content-Type: application/json`. Clients should send
-`Accept: application/json, text/event-stream`.
+Send a JSON-RPC 2.0 message as the request body with `Content-Type: application/json`; other content types are
+rejected with `415 Unsupported Media Type`. Clients should send `Accept: application/json, text/event-stream`.
 
 | Request | Response |
 | --- | --- |
@@ -49,7 +49,9 @@ Send a JSON-RPC 2.0 message as the request body with `Content-Type: application/
 Optional header `MCP-Protocol-Version`: when it names a version the server does not support, the request is rejected
 with `400 Bad Request`. Supported versions are `2025-11-25`, `2025-06-18`, `2025-03-26` and `2024-11-05`.
 
-Request bodies larger than 10 MB are rejected with `413 Payload Too Large`.
+Request bodies larger than 10 MB are rejected with `413 Payload Too Large`. The size is counted while the body is
+read, so the limit also applies to chunked requests without `Content-Length`. A batch may contain at most 100
+messages.
 
 ## Origin check and CORS
 
@@ -59,7 +61,10 @@ Browsers send an `Origin` header. The server
 - allows origins listed with `-AllowedOrigin` (or `MCPPOSH_ALLOWED_ORIGINS`) and answers them with CORS headers
   (`Access-Control-Allow-Origin`, `-Headers`, `-Methods`, `-Expose-Headers`),
 - otherwise allows only `localhost`, `127.0.0.1` and `::1` origins when it listens on a loopback address (protection
-  against DNS rebinding), and all origins when it listens on other addresses,
+  against DNS rebinding),
+- on other addresses allows all origins when the server requires an API key (a foreign web page cannot know the key),
+  and no browser origins when it runs with `-AllowAnonymous` (a gateway may authenticate with cookies that a foreign
+  page could ride on),
 - rejects all other origins with `403 Forbidden`.
 
 ## GET /health
@@ -85,6 +90,7 @@ container probes; it never requires a key.
 | 404 | unknown path |
 | 405 | wrong method for the path |
 | 413 | request body larger than 10 MB |
+| 415 | `POST /mcp` without `Content-Type: application/json` |
 | 500 | unexpected server error |
 
 All responses contain `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`.

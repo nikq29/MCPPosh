@@ -4,7 +4,7 @@ function Import-McpKnowledgeBase {
         Imports a knowledge base from a ZIP archive created by Export-McpKnowledgeBase.
 
     .DESCRIPTION
-        Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name. Only knowledge base files are extracted and paths are validated.
+        Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name. Only knowledge base files are extracted and paths are validated. Archives with invalid document ids, more than 100000 entries or more than 1 GB of uncompressed content are rejected.
 
     .PARAMETER Path
         Path of the ZIP archive created by Export-McpKnowledgeBase. Accepts the FullName property of files through the pipeline.
@@ -65,6 +65,10 @@ function Import-McpKnowledgeBase {
             $stagingRoot = [System.IO.Path]::GetFullPath($staging) + [System.IO.Path]::DirectorySeparatorChar
             $archive = [System.IO.Compression.ZipFile]::OpenRead($source)
             try {
+                if ($archive.Entries.Count -gt $script:McpMaxArchiveEntries) {
+                    throw "'$source' contains more than $($script:McpMaxArchiveEntries) entries."
+                }
+                $extractedBytes = 0L
                 foreach ($entry in $archive.Entries) {
                     if (-not $entry.Name) { continue }
                     $relative = $entry.FullName.Replace('\', '/')
@@ -77,7 +81,16 @@ function Import-McpKnowledgeBase {
                         throw "Archive entry '$relative' points outside the target folder."
                     }
                     $null = [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($destination))
-                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $destination, $true)
+                    # Count the bytes actually decompressed instead of trusting the sizes stored in the archive.
+                    $entryStream = $entry.Open()
+                    $fileStream = [System.IO.File]::Create($destination)
+                    try {
+                        $extractedBytes += Copy-McpStreamWithLimit -Source $entryStream -Destination $fileStream -MaxBytes ($script:McpMaxArchiveBytes - $extractedBytes) -Description "uncompressed content of '$source'"
+                    }
+                    finally {
+                        $fileStream.Dispose()
+                        $entryStream.Dispose()
+                    }
                 }
             }
             finally {
@@ -87,6 +100,13 @@ function Import-McpKnowledgeBase {
             $metaPath = Join-Path -Path $staging -ChildPath 'knowledgebase.json'
             if (-not (Test-Path -LiteralPath $metaPath) -or -not (Test-Path -LiteralPath (Join-Path $staging 'manifest.json'))) {
                 throw "'$source' is not an MCPPosh knowledge base archive (knowledgebase.json or manifest.json is missing)."
+            }
+            # Document ids become file names; reject manifests whose ids could address files outside the
+            # knowledge base (for example '../../secret' or absolute paths).
+            foreach ($document in @((Read-McpManifest -KbPath $staging)['documents'])) {
+                if (-not (Test-McpDocumentId -Id ([string]$document.id))) {
+                    throw "'$source' contains the invalid document id '$($document.id)'. Document ids only contain letters, digits, '_' and '-'."
+                }
             }
             $meta = Read-McpJsonFile -Path $metaPath
             $targetName = if ($Name) { $Name } else { [string]$meta.name }

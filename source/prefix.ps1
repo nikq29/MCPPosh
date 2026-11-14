@@ -20,6 +20,13 @@ $script:Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 # MCP protocol revisions this server can speak, newest first.
 $script:McpSupportedProtocolVersions = @('2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05')
 
+# Resource limits against oversized input and decompression bombs.
+$script:McpMaxRequestBytes = 10MB       # HTTP request body, counted while reading (also for chunked requests)
+$script:McpMaxBatchSize = 100           # JSON-RPC messages per batch
+$script:McpMaxArchiveBytes = 1GB        # uncompressed size of all files in an imported knowledge base archive
+$script:McpMaxArchiveEntries = 100000   # files in an imported knowledge base archive
+$script:McpMaxZipEntryBytes = 64MB      # uncompressed size of one part read from a .docx file
+
 # Search index cache, keyed by knowledge base path.
 $script:McpIndexCache = @{}
 

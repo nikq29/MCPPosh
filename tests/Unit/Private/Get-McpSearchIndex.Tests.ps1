@@ -40,3 +40,26 @@ Describe 'Get-McpSearchIndex' {
         }
     }
 }
+
+Describe 'Get-McpSearchIndex (manipulated manifest)' {
+    It 'skips documents whose id points outside the knowledge base and writes nothing there' {
+        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+            param($TestHome)
+            $outside = Join-Path $TestHome 'outside-index'
+            New-Item -ItemType Directory -Path $outside -Force | Out-Null
+            Set-Content -Path (Join-Path $outside 'secret.md') -Value 'TOP SECRET'
+            $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
+            $manifest = Read-McpManifest -KbPath $kb.Path
+            $manifest['documents'] = @($manifest['documents']) + @(
+                [ordered]@{ id = (Join-Path $outside 'secret'); title = 'absolute'; format = 'Markdown'; sourceType = 'Inline'; tags = @() }
+                [ordered]@{ id = '../../../outside-index/secret'; title = 'relative'; format = 'Markdown'; sourceType = 'Inline'; tags = @() }
+            )
+            Save-McpManifest -KbPath $kb.Path -Manifest $manifest
+
+            $index = Get-McpSearchIndex -KbPath $kb.Path -Force
+            $index.Documents.Count | Should -Be 2
+            @($index.Chunks | Where-Object { $_.text -match 'TOP SECRET' }).Count | Should -Be 0
+            Get-ChildItem -LiteralPath $outside -Name | Should -Be 'secret.md' -Because 'no index file may be written outside the knowledge base'
+        }
+    }
+}

@@ -47,7 +47,8 @@ is created automatically.
 | Code | Cause | Fix |
 | --- | --- | --- |
 | 401 | missing or wrong API key | send `Authorization: Bearer <key>` or `X-API-Key`; after a restart pass `-ApiKey` again |
-| 403 | browser origin not allowed | add the origin with `-AllowedOrigin` |
+| 403 | browser origin not allowed | add the origin with `-AllowedOrigin` (required for browser clients of `-AllowAnonymous` servers) |
+| 415 | `Content-Type` is not `application/json` | send `Content-Type: application/json` |
 | 405 | `GET /mcp` or wrong method | MCP requests use `POST /mcp`; the server has no SSE stream |
 | 400 | unsupported `MCP-Protocol-Version` header | update the client or remove the header |
 | 413 | request larger than 10 MB | send smaller requests |

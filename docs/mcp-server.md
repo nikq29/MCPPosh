@@ -141,15 +141,16 @@ Protocol errors are returned as JSON-RPC errors:
 | Code | Meaning |
 | --- | --- |
 | -32700 | parse error: the message is not valid JSON |
-| -32600 | invalid request (wrong `jsonrpc` version, invalid id, empty batch, unsupported protocol version header) |
+| -32600 | invalid request (wrong `jsonrpc` version, invalid id, empty batch, batch with more than 100 messages, unsupported protocol version header) |
 | -32601 | method not found |
 | -32602 | invalid params, unknown tool, `add_note` without write access |
-| -32603 | internal error |
+| -32603 | internal error; details are written to the server log only |
 | -32002 | resource not found |
 | -32001 | unauthorized (HTTP transport without a valid API key) |
 
 Problems while running a tool, for example a missing `query` or an unknown document id, are returned as a normal tool
-result with `isError: true`, so the model can correct the call.
+result with `isError: true`, so the model can correct the call. Unexpected failures (for example file system errors)
+are reported as a generic tool error; the details are only written to the server log.
 
 ## Example session
 

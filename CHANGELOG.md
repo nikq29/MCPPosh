@@ -39,3 +39,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown tables, search chunks and the text of the MCP tool results use LF line endings on every platform;
   on Windows they contained CRLF. Documents with CRLF line endings are chunked without carriage returns.
 - The `Publish-McpKnowledgeBase` unit tests no longer fail when the Az.Storage module is installed.
+
+### Security
+
+- Document ids from `manifest.json` are validated before they are used as file names. A manipulated manifest (from
+  an imported archive or a shared folder) could make a server return, write or delete `.md` and `.json` files
+  outside the knowledge base. `Import-McpKnowledgeBase` rejects such archives, and documents with invalid ids are
+  ignored by the search index and never turned into paths.
+- `Import-McpKnowledgeBase` rejects archives with more than 100000 entries or more than 1 GB of uncompressed content,
+  counted while extracting; Word documents are read with a limit of 64 MB per decompressed part.
+- The HTTP transport counts the request body while reading, so the 10 MB limit also applies to chunked requests;
+  batches are limited to 100 messages.
+- `POST /mcp` requires `Content-Type: application/json` (`415` otherwise), and servers started with
+  `-AllowAnonymous` on a network address reject browser origins that are not listed with `-AllowedOrigin`.
+- Internal errors and unexpected tool failures are reported to clients without exception details; the details are
+  only written to the server log. Line breaks and control characters in logged client input are escaped.
+- `Stop-McpServer` no longer stops a process whose identity cannot be confirmed (missing or unreadable start time
+  of a non-PowerShell process).
+- The Docker image verifies the SHA-256 checksum of the PowerShell archive, and the GitHub Actions in the workflow
+  are pinned to commit SHAs (kept up to date by Dependabot).

@@ -4,7 +4,7 @@ function Get-McpDocumentContent {
         Reads the Markdown content of a document.
 
     .DESCRIPTION
-        Returns the normalized Markdown content of a document from the documents folder of a knowledge base, or $null when the content file does not exist.
+        Returns the normalized Markdown content of a document from the documents folder of a knowledge base, or $null when the content file does not exist or the id is not a valid document id.
 
     .PARAMETER KbPath
         Directory of the knowledge base that contains the document.
@@ -27,6 +27,9 @@ function Get-McpDocumentContent {
         [string] $Id
     )
 
+    if (-not (Test-McpDocumentId -Id $Id)) {
+        return $null
+    }
     $paths = Get-McpDocumentPath -KbPath $KbPath -Id $Id
     if (-not (Test-Path -LiteralPath $paths.Content -PathType Leaf)) {
         return $null
