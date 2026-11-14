@@ -104,7 +104,8 @@ name, so only changed files are uploaded the next time.
 | HTTP request body | at most 10 MB, `Content-Type: application/json`, complete within 30 seconds |
 | JSON-RPC batch | at most 100 messages |
 | `Import-McpKnowledgeBase` | at most 100000 archive entries and 1 GB uncompressed content |
-| Word (.docx) import | at most 64 MB per decompressed part |
+| Word (.docx) import | at most 64 MB per decompressed part, no document type definitions (DTDs) |
+| URL import (`-Url`) | at most 100 MB per download |
 | URL import | at most 5 redirects, `http` and `https` only |
 | Stop words | English and German |
 

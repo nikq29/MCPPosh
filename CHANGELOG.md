@@ -54,6 +54,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   closed. Before, one client that stopped sending in the middle of a request blocked the server for everyone.
 - `add_note` is limited to 1000 agent notes and 10 million characters of agent notes per knowledge base and to
   30 notes per minute per server, so an agent cannot fill the disk or keep the server busy rebuilding the index.
+- API keys are compared as SHA-256 hashes in constant time; before, the response time revealed the key length.
+- Without a valid API key, `/health` no longer reports the version and the root page `/` no longer names the
+  knowledge base.
+- The XML of Word documents is parsed without document type definitions; documents that contain one are rejected
+  (entity expansion).
+- `Add-McpDocument -Url` and `Update-McpDocument` reject downloads larger than 100 MB before converting them.
+- The `claude mcp add` command from `Get-McpClientConfig` quotes the server name and the URL, and uses PowerShell
+  quoting on Windows; before, a `$` or backtick in a knowledge base path was expanded when the command was pasted
+  into PowerShell.
 - `POST /mcp` requires `Content-Type: application/json` (`415` otherwise), and servers started with
   `-AllowAnonymous` on a network address reject browser origins that are not listed with `-AllowedOrigin`.
 - Internal errors and unexpected tool failures are reported to clients without exception details; the details are

@@ -4,7 +4,7 @@ function Invoke-McpHttpRequest {
         Handles one HTTP request and returns the status code that was sent.
 
     .DESCRIPTION
-        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), body timeout of 30 seconds (the connection is aborted and 408 is returned), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
+        Handles one request of the HTTP transport: / (information, knowledge base name only when authorized), /health (status, version and details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), body timeout of 30 seconds (the connection is aborted and 408 is returned), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -57,8 +57,10 @@ function Invoke-McpHttpRequest {
                 Send-McpHttpResponse -Response $response -StatusCode 405 -Headers @{ Allow = 'GET' }
                 return 405
             }
+            # The knowledge base name is only shown to authorized clients (always, when no API key is required).
+            $title = if ($authorized) { "MCPPosh MCP server for knowledge base '$($Context.KnowledgeBase.Name)'." } else { 'MCPPosh MCP server.' }
             Send-McpHttpResponse -Response $response -StatusCode 200 -ContentType 'text/plain; charset=utf-8' `
-                -Body "MCPPosh MCP server for knowledge base '$($Context.KnowledgeBase.Name)'.`nMCP endpoint (Streamable HTTP): /mcp`nHealth: /health`n"
+                -Body "$title`nMCP endpoint (Streamable HTTP): /mcp`nHealth: /health`n"
             return 200
         }
 
@@ -67,8 +69,10 @@ function Invoke-McpHttpRequest {
                 Send-McpHttpResponse -Response $response -StatusCode 405 -Headers @{ Allow = 'GET' }
                 return 405
             }
-            $health = [ordered]@{ status = 'ok'; server = 'MCPPosh'; version = $script:ModuleVersion }
+            # Without a valid key only liveness is reported; the exact version would help attackers pick exploits.
+            $health = [ordered]@{ status = 'ok'; server = 'MCPPosh' }
             if ($authorized) {
+                $health['version'] = $script:ModuleVersion
                 $index = Update-McpServerIndex -Context $Context
                 $health['knowledgeBase'] = $Context.KnowledgeBase.Name
                 $health['description'] = $Context.KnowledgeBase.Description

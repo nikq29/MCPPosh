@@ -57,6 +57,20 @@ Describe 'Invoke-McpHttpRequest' {
         (Invoke-TestHttp -Path '/missing').Code | Should -Be 404
     }
 
+    It 'reveals the knowledge base name and the version only to authorized clients' {
+        $root = (Invoke-TestHttp -Path '/').Body
+        $root | Should -Match 'Streamable HTTP'
+        $root | Should -Not -Match 'Proto'
+        (Invoke-TestHttp -Path '/' -Headers @{ Authorization = 'Bearer k1' }).Body | Should -Match "knowledge base 'Proto'"
+        (Invoke-TestHttp -Path '/' -ApiKeys @()).Body | Should -Match "knowledge base 'Proto'"
+
+        $anonymous = (Invoke-TestHttp -Path '/health').Body | ConvertFrom-Json
+        $anonymous.PSObject.Properties.Name | Should -Be @('status', 'server')
+        $authorized = (Invoke-TestHttp -Path '/health' -Headers @{ Authorization = 'Bearer k1' }).Body | ConvertFrom-Json
+        $authorized.version | Should -Not -BeNullOrEmpty
+        $authorized.knowledgeBase | Should -Be 'Proto'
+    }
+
     It 'requires the API key and handles JSON-RPC over POST' {
         $ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
         $unauthorized = Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping

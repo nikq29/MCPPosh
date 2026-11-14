@@ -30,6 +30,7 @@ $script:McpMaxNotesPerMinute = 30       # add_note calls per minute and server
 $script:McpMaxArchiveBytes = 1GB        # uncompressed size of all files in an imported knowledge base archive
 $script:McpMaxArchiveEntries = 100000   # files in an imported knowledge base archive
 $script:McpMaxZipEntryBytes = 64MB      # uncompressed size of one part read from a .docx file
+$script:McpMaxDownloadBytes = 100MB     # size of a page or document downloaded with Add-McpDocument -Url
 
 # Search index cache, keyed by knowledge base path.
 $script:McpIndexCache = @{}

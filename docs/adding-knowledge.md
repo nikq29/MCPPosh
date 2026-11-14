@@ -26,8 +26,8 @@ Get-ChildItem \\server\wiki -Filter *.html -Recurse | Add-McpDocument -Knowledge
 Add-McpDocument -KnowledgeBase Contoso -Url https://learn.microsoft.com/powershell/scripting/overview -Tags powershell
 ```
 
-The URL is downloaded (at most five redirects, user agent `MCPPosh (PowerShell MCP documentation server)`) and
-converted based on the `Content-Type` header:
+The URL is downloaded (at most five redirects and 100 MB, user agent `MCPPosh (PowerShell MCP documentation server)`)
+and converted based on the `Content-Type` header:
 
 | Content type | Converter |
 | --- | --- |

@@ -29,6 +29,15 @@ Describe 'Get-McpClientConfig' {
         ($config.Json | ConvertFrom-Json).mcpServers.'mcpposh-srv'.type | Should -Be 'stdio'
     }
 
+    It 'quotes the server name in the claude mcp add command' {
+        $name = 'my docs; rm -rf x'
+        $quoted = InModuleScope MCPPosh -Parameters @{ Name = $name } { param($Name) ConvertTo-McpShellArgument -Value $Name }
+        # The test environment sets MCPPOSH_HOME, which adds '-e MCPPOSH_HOME=...' before the name.
+        (Get-McpClientConfig -KnowledgeBase Srv -Client ClaudeCode -ServerName $name).Command | Should -BeLike "claude mcp add* $quoted -- *"
+        (Get-McpClientConfig -KnowledgeBase Srv -Client ClaudeCode -Transport Http -Uri 'https://docs.example.com/mcp' -ServerName $name).Command |
+            Should -BeLike "claude mcp add --transport http $quoted https://docs.example.com/mcp"
+    }
+
     It 'imports the module by name when requested or when it is installed in a module folder' {
         (Get-McpClientConfig -KnowledgeBase Srv -UseModuleName -AsJson | ConvertFrom-Json).mcpServers.'mcpposh-srv'.args[-1] | Should -Match '^Import-Module MCPPosh;'
         InModuleScope MCPPosh {

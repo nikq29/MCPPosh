@@ -24,4 +24,14 @@ Describe 'Test-McpApiKey' {
             Test-McpApiKey -ApiKeys 'secret' | Should -BeFalse
         }
     }
+
+    It 'compares keys of different lengths and non-ASCII keys correctly' {
+        InModuleScope MCPPosh {
+            Test-McpApiKey -AuthorizationHeader 'Bearer secre' -ApiKeys 'secret' | Should -BeFalse
+            Test-McpApiKey -AuthorizationHeader 'Bearer secret-and-more' -ApiKeys 'secret' | Should -BeFalse
+            Test-McpApiKey -AuthorizationHeader 'Bearer a-much-longer-second-key' -ApiKeys 'short', 'a-much-longer-second-key' | Should -BeTrue
+            Test-McpApiKey -ApiKeyHeader "schl$([char]0x00FC)ssel" -ApiKeys "schl$([char]0x00FC)ssel" | Should -BeTrue
+            Test-McpApiKey -ApiKeyHeader 'schlussel' -ApiKeys "schl$([char]0x00FC)ssel" | Should -BeFalse
+        }
+    }
 }

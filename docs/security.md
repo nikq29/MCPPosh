@@ -45,7 +45,10 @@ stdin and stdout. They do not open network ports.
   origins that are not listed with `-AllowedOrigin`, because a gateway may authenticate with cookies.
 - **No TLS**: the server speaks plain HTTP. Use HTTPS through a reverse proxy or a platform ingress (the Azure
   template does this) whenever traffic leaves the machine.
-- **Health endpoint**: `/health` only reports `status`, `server` and `version` without a key.
+- **Health endpoint**: without a key, `/health` only reports `status` and `server`, and the root page `/` does not
+  name the knowledge base. The version and all details require the key, so they do not help an attacker.
+- **API key comparison**: keys are compared as SHA-256 hashes in constant time, so response times reveal neither
+  the key nor its length.
 - **Request size**: request bodies are limited to 10 MB, counted while reading (also for chunked requests), and
   batches to 100 messages.
 - **Slow clients**: the server handles one request at a time. A request body that does not arrive completely within
@@ -72,11 +75,15 @@ untrusted content can therefore store instructions that later agents read (store
 
 ## Imports
 
-- `-Url` only accepts `http` and `https` URLs and follows at most five redirects.
+- `-Url` only accepts `http` and `https` URLs, follows at most five redirects and rejects downloads larger than
+  100 MB before converting them.
 - `Import-McpKnowledgeBase` only extracts the expected knowledge base files from an archive and rejects entries that
   would be written outside the target folder, documents with invalid ids, more than 100000 entries and more than 1 GB
   of uncompressed content (counted while extracting, so decompression bombs are stopped).
-- Word documents are read with a limit of 64 MB per decompressed part.
+- Word documents are read with a limit of 64 MB per decompressed part, and their XML is parsed without document type
+  definitions (DTDs), so entity expansion and external entities cannot be used; documents with a DTD are rejected.
+- The `claude mcp add` command from `Get-McpClientConfig` quotes every value in single quotes (PowerShell quoting on
+  Windows, POSIX quoting elsewhere), so a knowledge base path or server name cannot run commands when it is pasted.
 - Custom converters (`Register-McpDocumentConverter`) run arbitrary PowerShell code in your session; only register
   converters you trust.
 - PDF extraction runs PSWritePDF or `pdftotext` on the imported files.
