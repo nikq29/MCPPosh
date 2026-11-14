@@ -89,6 +89,55 @@ Describe 'Invoke-McpHttpRequest' {
         }
     }
 
+    It 'closes the connection when the request body does not arrive in time' {
+        InModuleScope MCPPosh { $script:McpRequestBodyTimeoutSeconds = 1 }
+        $tcp = [System.Net.Sockets.TcpClient]::new('localhost', $script:Port)
+        Register-McpTestDisposeAfter -InputObject $tcp -Seconds 15
+        try {
+            # Announce 1000 bytes, send only a few and keep the connection open (stalled or malicious client).
+            $stream = $tcp.GetStream()
+            $head = "POST /mcp HTTP/1.1`r`nHost: localhost:$($script:Port)`r`nAuthorization: Bearer k1`r`nContent-Type: application/json`r`nContent-Length: 1000`r`n`r`n{`"jsonrpc`""
+            $bytes = [System.Text.Encoding]::ASCII.GetBytes($head)
+            $stream.Write($bytes, 0, $bytes.Length)
+            $stream.Flush()
+
+            $httpContext = $script:Listener.GetContext()
+            $settings = @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $true }
+            $watch = [System.Diagnostics.Stopwatch]::StartNew()
+            $status = InModuleScope MCPPosh -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
+                param($Context, $HttpContext, $Settings)
+                Invoke-McpHttpRequest -Context $Context -HttpContext $HttpContext -Settings $Settings
+            }
+            $watch.Elapsed.TotalSeconds | Should -BeLessThan 10
+            $status | Should -Be 408
+
+            # The client gets 408 (unless the platform resets the connection) and the server closes the connection:
+            # reading ends with 0 bytes or a reset instead of timing out.
+            $tcp.ReceiveTimeout = 5000
+            $received = [System.Text.StringBuilder]::new()
+            $chunk = [byte[]]::new(4096)
+            $closed = $false
+            try {
+                while (($read = $stream.Read($chunk, 0, $chunk.Length)) -gt 0) {
+                    $null = $received.Append([System.Text.Encoding]::ASCII.GetString($chunk, 0, $read))
+                }
+                $closed = $true
+            }
+            catch [System.IO.IOException] {
+                $socketError = $_.Exception.InnerException
+                $closed = -not ($socketError -is [System.Net.Sockets.SocketException] -and $socketError.SocketErrorCode -eq 'TimedOut')
+            }
+            $closed | Should -BeTrue
+            if ($received.Length -gt 0) {
+                $received.ToString() | Should -Match '^HTTP/1\.1 408 '
+            }
+        }
+        finally {
+            $tcp.Dispose()
+            InModuleScope MCPPosh { $script:McpRequestBodyTimeoutSeconds = 30 }
+        }
+    }
+
     It 'checks origins, protocol versions and answers CORS preflight requests' {
         $ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
         (Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping -Headers @{ Authorization = 'Bearer k1'; Origin = 'https://evil.example.com' }).Code | Should -Be 403

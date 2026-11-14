@@ -148,6 +148,31 @@ function Unregister-McpTestAzStub {
     Remove-Variable -Name McpTestAzFileShareRoot, McpTestAzFileShareLog -Scope Global -ErrorAction SilentlyContinue
 }
 
+function Register-McpTestDisposeAfter {
+    <#
+        Disposes an object (stream, socket) after a delay on a thread pool thread. Tests of timeouts use it as a
+        safety net: if the code under test stops enforcing its timeout, the blocked read ends and the test fails
+        instead of hanging the test run.
+    #>
+    param(
+        [Parameter(Mandatory)] [System.IDisposable] $InputObject,
+        [int] $Seconds = 15
+    )
+
+    if (-not ('McpTestDisposer' -as [type])) {
+        Add-Type -TypeDefinition @'
+public static class McpTestDisposer
+{
+    public static void DisposeAfter(System.IDisposable target, int milliseconds)
+    {
+        System.Threading.Tasks.Task.Delay(milliseconds).ContinueWith(_ => { try { target.Dispose(); } catch { } });
+    }
+}
+'@
+    }
+    [McpTestDisposer]::DisposeAfter($InputObject, $Seconds * 1000)
+}
+
 #region Integration test helpers
 
 function Get-McpTestFreePort {

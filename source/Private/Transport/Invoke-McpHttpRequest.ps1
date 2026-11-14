@@ -4,7 +4,7 @@ function Invoke-McpHttpRequest {
         Handles one HTTP request and returns the status code that was sent.
 
     .DESCRIPTION
-        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
+        Handles one request of the HTTP transport: / (information), /health (status, details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), body timeout of 30 seconds (the connection is aborted and 408 is returned), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -123,14 +123,30 @@ function Invoke-McpHttpRequest {
                 return 413
             }
 
-            # Count the bytes while reading: chunked requests have no Content-Length.
+            # Count the bytes while reading: chunked requests have no Content-Length. The server handles one
+            # request at a time, so the deadline keeps a client that stops sending from blocking all others.
             $buffer = [System.IO.MemoryStream]::new()
             try {
-                $null = Copy-McpStreamWithLimit -Source $request.InputStream -Destination $buffer -MaxBytes $script:McpMaxRequestBytes -Description 'request body'
+                $null = Copy-McpStreamWithLimit -Source $request.InputStream -Destination $buffer -MaxBytes $script:McpMaxRequestBytes -TimeoutSeconds $script:McpRequestBodyTimeoutSeconds -Description 'request body'
             }
             catch [System.IO.InvalidDataException] {
                 Send-McpHttpResponse -Response $response -StatusCode 413 -Headers $corsHeaders -Body '{"error":"Request too large"}'
                 return 413
+            }
+            catch [System.TimeoutException] {
+                # Answer 408 and drop the connection: the rest of the body is never read, and aborting also ends
+                # the pending read on the request stream.
+                Write-McpLog -Context $Context -Level WARN -Message "Closed connection from $($request.RemoteEndPoint): $($_.Exception.Message)"
+                try {
+                    $response.KeepAlive = $false
+                    Send-McpHttpResponse -Response $response -StatusCode 408 -Headers $corsHeaders -Body '{"error":"Request timeout: the request body was not received in time"}'
+                }
+                catch {
+                    # The client may already be gone; the connection is aborted either way.
+                    $null = $_
+                }
+                $response.Abort()
+                return 408
             }
             $buffer.Position = 0
             $reader = [System.IO.StreamReader]::new($buffer, $script:Utf8NoBom)

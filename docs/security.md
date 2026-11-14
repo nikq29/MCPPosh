@@ -48,6 +48,9 @@ stdin and stdout. They do not open network ports.
 - **Health endpoint**: `/health` only reports `status`, `server` and `version` without a key.
 - **Request size**: request bodies are limited to 10 MB, counted while reading (also for chunked requests), and
   batches to 100 messages.
+- **Slow clients**: the server handles one request at a time. A request body that does not arrive completely within
+  30 seconds is answered with `408` and the connection is closed, so a stalled or malicious client cannot block the
+  server for others.
 - **Error details**: internal errors are reported to clients without details; exception messages (which can contain
   file paths) are only written to the server log. Client input is written to the log with line breaks and control
   characters escaped, so clients cannot forge log lines.
@@ -57,6 +60,11 @@ stdin and stdout. They do not open network ports.
 `add_note` is only offered when the server runs with `-AllowWrite`. Agent notes are stored with the source type
 `Agent` and the tag `agent-note`, can only add or update notes (never change or delete other documents) and are
 limited to 200000 characters. Review them regularly with `Get-McpDocument -SourceType Agent`.
+
+To keep an agent from filling the disk or keeping the server busy, a knowledge base holds at most 1000 agent notes
+with at most 10 million characters in total, and a server accepts at most 30 notes per minute. Updating a note with
+the same title is still possible when the limits are reached. Documents added by people do not count. When a limit
+is reached, `add_note` returns an error that tells the agent what to do; remove old notes with `Remove-McpDocument`.
 
 Notes written by one agent are served to every agent that uses the knowledge base later. An agent that processed
 untrusted content can therefore store instructions that later agents read (stored prompt injection). Enable
