@@ -53,6 +53,10 @@ Request bodies larger than 10 MB are rejected with `413 Payload Too Large`. The 
 read, so the limit also applies to chunked requests without `Content-Length`. A batch may contain at most 100
 messages.
 
+The complete request body must arrive within 30 seconds. Otherwise the server answers `408 Request Timeout` and closes
+the connection. The server handles one request at a time, so this keeps a client that stops sending from blocking
+everyone else.
+
 ## Origin check and CORS
 
 Browsers send an `Origin` header. The server
@@ -89,6 +93,7 @@ container probes; it never requires a key.
 | 403 | origin not allowed |
 | 404 | unknown path |
 | 405 | wrong method for the path |
+| 408 | request body not received within 30 seconds (the connection is closed) |
 | 413 | request body larger than 10 MB |
 | 415 | `POST /mcp` without `Content-Type: application/json` |
 | 500 | unexpected server error |

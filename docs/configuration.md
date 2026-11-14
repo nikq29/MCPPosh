@@ -100,7 +100,8 @@ name, so only changed files are uploaded the next time.
 | `list_documents` page size | 100 by default, 1-500 |
 | `resources/list` page size | 500 |
 | `add_note` | title at most 200, content at most 200000 characters |
-| HTTP request body | at most 10 MB, `Content-Type: application/json` |
+| Agent notes (`add_note`) | at most 1000 notes and 10 million characters per knowledge base, 30 notes per minute per server |
+| HTTP request body | at most 10 MB, `Content-Type: application/json`, complete within 30 seconds |
 | JSON-RPC batch | at most 100 messages |
 | `Import-McpKnowledgeBase` | at most 100000 archive entries and 1 GB uncompressed content |
 | Word (.docx) import | at most 64 MB per decompressed part |

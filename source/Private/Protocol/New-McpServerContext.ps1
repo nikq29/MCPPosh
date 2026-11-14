@@ -59,5 +59,7 @@ function New-McpServerContext {
         ProtocolVersion = $script:McpSupportedProtocolVersions[0]
         ClientInfo      = $null
         RequestCount    = 0L
+        # Times of the recent add_note calls, for the per-minute limit.
+        NoteWriteTimes  = [System.Collections.Generic.Queue[datetime]]::new()
     }
 }

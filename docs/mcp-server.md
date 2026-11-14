@@ -100,6 +100,10 @@ Only available when the server runs with `-AllowWrite`. Stores a Markdown note i
 Notes get the source type `Agent` and the tag `agent-note`. A note with the same title is updated. The result reports
 whether the note was created, updated or unchanged, together with its document id.
 
+A knowledge base holds at most 1000 agent notes with at most 10 million characters in total, and a server accepts at
+most 30 notes per minute. Beyond these limits the tool returns an error result (`isError`) that explains the limit;
+updating an existing note with the same title still works. See [Security](security.md#write-access).
+
 ## Write access
 
 By default agents can only read. Start the server with `-AllowWrite` (or the client configuration with

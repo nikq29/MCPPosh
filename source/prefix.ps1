@@ -22,7 +22,11 @@ $script:McpSupportedProtocolVersions = @('2025-11-25', '2025-06-18', '2025-03-26
 
 # Resource limits against oversized input and decompression bombs.
 $script:McpMaxRequestBytes = 10MB       # HTTP request body, counted while reading (also for chunked requests)
+$script:McpRequestBodyTimeoutSeconds = 30 # time a client has to send the complete HTTP request body
 $script:McpMaxBatchSize = 100           # JSON-RPC messages per batch
+$script:McpMaxAgentNotes = 1000         # notes stored with add_note per knowledge base
+$script:McpMaxAgentNoteChars = 10000000 # characters of all notes stored with add_note per knowledge base
+$script:McpMaxNotesPerMinute = 30       # add_note calls per minute and server
 $script:McpMaxArchiveBytes = 1GB        # uncompressed size of all files in an imported knowledge base archive
 $script:McpMaxArchiveEntries = 100000   # files in an imported knowledge base archive
 $script:McpMaxZipEntryBytes = 64MB      # uncompressed size of one part read from a .docx file

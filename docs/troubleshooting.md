@@ -52,6 +52,7 @@ is created automatically.
 | 405 | `GET /mcp` or wrong method | MCP requests use `POST /mcp`; the server has no SSE stream |
 | 400 | unsupported `MCP-Protocol-Version` header | update the client or remove the header |
 | 413 | request larger than 10 MB | send smaller requests |
+| 408 | request body not received within 30 seconds | check the network between client and server; a proxy that holds back the body can cause it |
 
 ## Background server does not start
 

@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counted while extracting; Word documents are read with a limit of 64 MB per decompressed part.
 - The HTTP transport counts the request body while reading, so the 10 MB limit also applies to chunked requests;
   batches are limited to 100 messages.
+- A request body that does not arrive completely within 30 seconds is answered with `408` and the connection is
+  closed. Before, one client that stopped sending in the middle of a request blocked the server for everyone.
+- `add_note` is limited to 1000 agent notes and 10 million characters of agent notes per knowledge base and to
+  30 notes per minute per server, so an agent cannot fill the disk or keep the server busy rebuilding the index.
 - `POST /mcp` requires `Content-Type: application/json` (`415` otherwise), and servers started with
   `-AllowAnonymous` on a network address reject browser origins that are not listed with `-AllowedOrigin`.
 - Internal errors and unexpected tool failures are reported to clients without exception details; the details are
