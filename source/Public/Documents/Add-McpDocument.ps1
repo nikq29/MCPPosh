@@ -69,7 +69,7 @@ function Add-McpDocument {
         System.String, System.IO.FileInfo. You can pipe paths or file objects from Get-ChildItem, and objects with a Url or Uri property.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
         https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md

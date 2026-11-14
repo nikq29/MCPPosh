@@ -19,7 +19,7 @@ function Save-McpDocument {
         Name of the converter that produced the content, for example Markdown, Docx or Html.
 
     .PARAMETER SourceType
-        Origin of the document: File, Url, Inline (added with -Content) or Agent (added with add_note).
+        Origin of the document: File, Url, Inline (added with -Content), Agent (added with add_note) or Imported (kept from an archive by Set-McpDocument).
 
     .PARAMETER Source
         Full path or URL of the source for documents of type File and Url.
@@ -59,7 +59,7 @@ function Save-McpDocument {
 
         [string] $Format = 'Markdown',
 
-        [ValidateSet('File', 'Url', 'Inline', 'Agent')]
+        [ValidateSet('File', 'Url', 'Inline', 'Agent', 'Imported')]
         [string] $SourceType = 'Inline',
 
         [string] $Source,

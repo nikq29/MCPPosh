@@ -9,6 +9,8 @@ security model and recommendations.
   else: no files outside the knowledge base, no commands, no other knowledge bases. Document ids are file names and
   may only contain letters, digits, `_` and `-`; documents with other ids in `manifest.json` (for example from a
   manipulated archive or share) are ignored, so they can never address files outside the knowledge base.
+  The sources of file and URL documents are only read again by `Update-McpDocument`, never by the server (see
+  [Imports](#imports)).
 - Put only documentation into a knowledge base that every user of the connected agents may read. Use separate
   knowledge bases (and servers) for different audiences.
 - Content of documents is passed to the language model. Do not import secrets such as passwords or API keys.
@@ -77,6 +79,14 @@ untrusted content can therefore store instructions that later agents read (store
 
 - `-Url` only accepts `http` and `https` URLs, follows at most five redirects and rejects downloads larger than
   100 MB before converting them.
+- `Import-McpKnowledgeBase` imports documents that were added from files or URLs with the source type `Imported`,
+  which `Update-McpDocument` never reads from its source. Otherwise an archive could name any file of the importing
+  user (for example `~/.ssh/id_rsa`) or any URL of the internal network as a source, and the next
+  `Update-McpDocument -All` would copy it into the knowledge base, where every agent can read it. `-TrustSource`
+  keeps the sources; use it only for archives you created yourself.
+- `Update-McpDocument` reads the paths and URLs stored in `manifest.json` with the rights of the current user. When
+  several people work directly on a knowledge base on a share, everyone with write access to the share can choose
+  these sources, so only run `Update-McpDocument` on shared knowledge bases whose writers you trust.
 - `Import-McpKnowledgeBase` only extracts the expected knowledge base files from an archive and rejects entries that
   would be written outside the target folder, documents with invalid ids, more than 100000 entries and more than 1 GB
   of uncompressed content (counted while extracting, so decompression bombs are stopped).

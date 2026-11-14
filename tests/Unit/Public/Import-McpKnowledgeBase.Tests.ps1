@@ -66,6 +66,82 @@ Describe 'Import-McpKnowledgeBase (untrusted archives)' {
         Get-McpKnowledgeBase -Name $Name -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 
+    Context 'documents with sources chosen by the archive author' {
+        BeforeAll {
+            # Stands in for a file of the importing user, for example ~/.ssh/id_rsa or ~/.aws/credentials.
+            $script:Secret = Join-Path $script:TestHome 'victim-secret.txt'
+            Set-Content -Path $script:Secret -Value 'CANARY-SECRET do not leak'
+            function New-SourceArchive {
+                param([string] $Name, [object] $SourceType = 'File')
+                New-TestArchive -Name $Name -Documents @(
+                    @{ id = 'onboarding-1a2b3c'; title = 'Onboarding'; format = 'Text'; sourceType = $SourceType; source = $script:Secret; sourceHash = 'x'; tags = @() }
+                    @{ id = 'portal-1a2b3c'; title = 'Portal'; format = 'Html'; sourceType = 'Url'; source = 'http://127.0.0.1:9/internal'; tags = @() }
+                    @{ id = 'welcome-1a2b3c'; title = 'Welcome'; format = 'Markdown'; sourceType = 'Inline'; tags = @() }
+                ) -Files @{
+                    'documents/onboarding-1a2b3c.md' = 'Harmless onboarding text.'
+                    'documents/portal-1a2b3c.md'     = 'Harmless portal text.'
+                    'documents/welcome-1a2b3c.md'    = '# Welcome'
+                }
+            }
+        }
+
+        It 'imports File and Url documents as Imported documents that keep their content' {
+            $zip = New-SourceArchive -Name 'Sources'
+            Import-McpKnowledgeBase -Path $zip -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+            $warnings | Should -HaveCount 1
+            "$warnings" | Should -BeLike '*2 document(s)*-TrustSource*'
+
+            $docs = @(Get-McpDocument -KnowledgeBase Sources -IncludeContent)
+            ($docs | Where-Object Id -EQ 'onboarding-1a2b3c').SourceType | Should -Be 'Imported'
+            ($docs | Where-Object Id -EQ 'portal-1a2b3c').SourceType | Should -Be 'Imported'
+            ($docs | Where-Object Id -EQ 'welcome-1a2b3c').SourceType | Should -Be 'Inline'
+            ($docs | Where-Object Id -EQ 'onboarding-1a2b3c').Content | Should -Match 'Harmless onboarding'
+            @(Get-McpDocument -KnowledgeBase Sources -SourceType Imported).Count | Should -Be 2
+
+            $manifest = Get-Content -Raw (Join-Path (Get-McpKnowledgeBase -Name Sources).Path 'manifest.json') | ConvertFrom-Json -AsHashtable
+            @($manifest.documents | Where-Object { $_.Contains('sourceHash') }) | Should -BeNullOrEmpty
+        }
+
+        It 'never lets Update-McpDocument read the sources of an untrusted archive' {
+            Update-McpDocument -KnowledgeBase Sources -All -Force -Confirm:$false | Should -BeNullOrEmpty
+            $content = (Get-McpDocument -KnowledgeBase Sources -Id onboarding-1a2b3c -IncludeContent).Content
+            $content | Should -Not -Match 'CANARY-SECRET'
+            $content | Should -Match 'Harmless onboarding'
+            (Search-McpDocument -KnowledgeBase Sources -Query 'CANARY') | Should -BeNullOrEmpty
+        }
+
+        It 'keeps Imported documents editable with Set-McpDocument' {
+            Set-McpDocument -KnowledgeBase Sources -Id onboarding-1a2b3c -AddTags reviewed
+            $doc = Get-McpDocument -KnowledgeBase Sources -Id onboarding-1a2b3c
+            $doc.Tags | Should -Contain 'reviewed'
+            $doc.SourceType | Should -Be 'Imported'
+        }
+
+        It 'converts the source type <Label> so it cannot reach the File branch of Update-McpDocument' -ForEach @(
+            @{ Name = 'LowerCase'; Label = "'file'"; SourceType = 'file' }
+            @{ Name = 'ArrayType'; Label = "@('Inline', 'File')"; SourceType = @('Inline', 'File') }
+            @{ Name = 'UnknownType'; Label = "'Bogus'"; SourceType = 'Bogus' }
+        ) {
+            $zip = New-SourceArchive -Name $Name -SourceType $SourceType
+            Import-McpKnowledgeBase -Path $zip -WarningAction SilentlyContinue | Out-Null
+            (Get-McpDocument -KnowledgeBase $Name -Id onboarding-1a2b3c).SourceType | Should -Be 'Imported'
+            Update-McpDocument -KnowledgeBase $Name -All -Force -Confirm:$false | Out-Null
+            (Get-McpDocument -KnowledgeBase $Name -Id onboarding-1a2b3c -IncludeContent).Content | Should -Not -Match 'CANARY-SECRET'
+        }
+
+        It 'keeps the sources with -TrustSource' {
+            $zip = New-SourceArchive -Name 'Trusted'
+            Import-McpKnowledgeBase -Path $zip -TrustSource -WarningVariable warnings | Out-Null
+            $warnings | Should -BeNullOrEmpty
+            $doc = Get-McpDocument -KnowledgeBase Trusted -Id onboarding-1a2b3c
+            $doc.SourceType | Should -Be 'File'
+            $doc.Source | Should -Be $script:Secret
+            # The archive is trusted, so its sources are read again.
+            Update-McpDocument -KnowledgeBase Trusted -Id onboarding-1a2b3c -Confirm:$false | Out-Null
+            (Get-McpDocument -KnowledgeBase Trusted -Id onboarding-1a2b3c -IncludeContent).Content | Should -Match 'CANARY-SECRET'
+        }
+    }
+
     It 'rejects archives whose content exceeds the size limit' {
         $zip = New-TestArchive -Name 'Big' -Files @{ 'documents/big-1a2b3c.md' = ('x' * 5000) }
         InModuleScope MCPPosh { $script:McpMaxArchiveBytes = 1000 }

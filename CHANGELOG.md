@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- `Import-McpKnowledgeBase` imports documents that were added from files or URLs with the new source type
+  `Imported`, which `Update-McpDocument` skips. Before, an archive could name any local file (for example
+  `~/.ssh/id_rsa`) or internal URL as the source of a document, and the next `Update-McpDocument -All` copied it
+  into the knowledge base, where every connected agent could read it. The new switch `-TrustSource` keeps the
+  sources for archives you created yourself. `Update-McpDocument` only reads sources whose type is exactly `File`
+  or `Url`, so differently cased or non-string types in a manipulated manifest are skipped.
 - Document ids from `manifest.json` are validated before they are used as file names. A manipulated manifest (from
   an imported archive or a shared folder) could make a server return, write or delete `.md` and `.json` files
   outside the knowledge base. `Import-McpKnowledgeBase` rejects such archives, and documents with invalid ids are

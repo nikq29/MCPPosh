@@ -50,7 +50,7 @@ function Set-McpDocument {
         MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 
     .OUTPUTS
-        None by default. With -PassThru: MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        None by default. With -PassThru: MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
         https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Set-McpDocument.md

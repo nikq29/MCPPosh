@@ -158,7 +158,8 @@ Get-McpDocument -KnowledgeBase Contoso -Tag obsolete | Remove-McpDocument
 ```
 
 - `Update-McpDocument` compares the SHA-256 hash of source files with the hash from the last import and downloads
-  URL documents again. Inline documents and agent notes have no source and are skipped.
+  URL documents again. Inline documents and agent notes have no source and are skipped, as are `Imported` documents
+  from an archive imported without `-TrustSource` (see [Back up and transfer](knowledge-bases.md#back-up-and-transfer)).
 - `Set-McpDocument -Content` changes the content directly. A later `Update-McpDocument` of a file or URL document
   overwrites manual content changes with the source.
 - All changing cmdlets support `-WhatIf` and `-Confirm`.

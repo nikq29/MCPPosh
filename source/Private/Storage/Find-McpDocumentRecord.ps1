@@ -13,7 +13,7 @@ function Find-McpDocumentRecord {
         Id of the document to find. When it is set, the other criteria are ignored.
 
     .PARAMETER SourceType
-        Source type of the document: File, Url, Inline or Agent. Determines whether Source or Title is compared.
+        Source type of the document: File, Url, Inline, Agent or Imported. Determines whether Source or Title is compared.
 
     .PARAMETER Source
         Full path or URL of the source, compared for documents of type File and Url.

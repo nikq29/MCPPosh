@@ -27,7 +27,8 @@ Update-McpDocument [-All] [-Force] [-RemoveMissing] [-KnowledgeBase <String>]
 
 ## DESCRIPTION
 For file documents the source file hash is compared; URL documents are downloaded again.
-Inline documents and agent notes have no source and are skipped.
+Inline documents and agent notes have no source and are skipped, as are documents that
+Import-McpKnowledgeBase imported with the source type Imported.
 Use -Force to re-import
 even unchanged sources (e.g.
 after installing PDF support or registering a converter).
@@ -173,7 +174,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 ## OUTPUTS
 
-### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
+### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
 ## NOTES
 
 ## RELATED LINKS
