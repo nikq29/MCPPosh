@@ -18,3 +18,11 @@ Describe 'Test-McpKnowledgeBaseName' {
         InModuleScope MCPPosh -Parameters @{ Name = $_ } { param($Name) Test-McpKnowledgeBaseName -Name $Name | Should -BeFalse }
     }
 }
+
+Describe 'Test-McpKnowledgeBaseName (trailing newline)' {
+    It 'rejects names with a trailing newline' {
+        InModuleScope MCPPosh {
+            Test-McpKnowledgeBaseName -Name "Contoso`n" | Should -BeFalse
+        }
+    }
+}

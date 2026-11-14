@@ -23,7 +23,18 @@ Describe 'Test-McpOriginAllowed' {
             Test-McpOriginAllowed -Origin 'http://localhost:3000' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://evil.example.com' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeFalse
             Test-McpOriginAllowed -Origin 'null' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeFalse
-            Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
+            Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
+        }
+    }
+}
+
+Describe 'Test-McpOriginAllowed (network servers)' {
+    It 'accepts any origin only when the server requires an API key' {
+        InModuleScope MCPPosh {
+            Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
+            Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeFalse
+            Test-McpOriginAllowed -Origin $null -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
+            Test-McpOriginAllowed -Origin 'https://app.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @('https://app.example.com'); IsLoopback = $false } | Should -BeTrue
         }
     }
 }

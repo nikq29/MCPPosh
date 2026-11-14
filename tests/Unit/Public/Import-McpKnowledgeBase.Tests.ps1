@@ -41,3 +41,51 @@ Describe 'Import-McpKnowledgeBase' {
         { Import-McpKnowledgeBase -Path (Join-Path $script:TestHome 'missing.zip') } | Should -Throw '*was not found*'
     }
 }
+
+Describe 'Import-McpKnowledgeBase (untrusted archives)' {
+    BeforeAll {
+        function New-TestArchive {
+            param([string] $Name, [object[]] $Documents = @(), [hashtable] $Files = @{})
+            $folder = Join-Path $script:TestHome "archive-$Name"
+            New-Item -ItemType Directory -Path (Join-Path $folder 'documents') -Force | Out-Null
+            Set-Content -Path (Join-Path $folder 'knowledgebase.json') -Value (@{ schemaVersion = 1; name = $Name; description = '' } | ConvertTo-Json)
+            Set-Content -Path (Join-Path $folder 'manifest.json') -Value (@{ schemaVersion = 1; revision = 1; documents = $Documents } | ConvertTo-Json -Depth 5)
+            foreach ($file in $Files.GetEnumerator()) { Set-Content -Path (Join-Path $folder $file.Key) -Value $file.Value }
+            $zip = "$folder.zip"
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($folder, $zip)
+            $zip
+        }
+    }
+
+    It 'rejects the document id <BadId> that points outside the knowledge base' -ForEach @(
+        @{ Name = 'EvilRelative'; BadId = '../../../outside/secret' }
+        @{ Name = 'EvilAbsolute'; BadId = '/etc/secret' }
+    ) {
+        $zip = New-TestArchive -Name $Name -Documents @(@{ id = $BadId; title = 'innocent'; format = 'Markdown'; sourceType = 'Inline'; tags = @() })
+        { Import-McpKnowledgeBase -Path $zip } | Should -Throw '*invalid document id*'
+        Get-McpKnowledgeBase -Name $Name -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+    }
+
+    It 'rejects archives whose content exceeds the size limit' {
+        $zip = New-TestArchive -Name 'Big' -Files @{ 'documents/big-1a2b3c.md' = ('x' * 5000) }
+        InModuleScope MCPPosh { $script:McpMaxArchiveBytes = 1000 }
+        try {
+            { Import-McpKnowledgeBase -Path $zip } | Should -Throw '*exceeds the limit*'
+        }
+        finally {
+            InModuleScope MCPPosh { $script:McpMaxArchiveBytes = 1GB }
+        }
+        Get-McpKnowledgeBase -Name 'Big' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+    }
+
+    It 'rejects archives with too many entries' {
+        $zip = New-TestArchive -Name 'Many' -Files @{ 'documents/one-1a2b3c.md' = 'one'; 'documents/two-1a2b3c.md' = 'two' }
+        InModuleScope MCPPosh { $script:McpMaxArchiveEntries = 3 }
+        try {
+            { Import-McpKnowledgeBase -Path $zip } | Should -Throw '*more than 3 entries*'
+        }
+        finally {
+            InModuleScope MCPPosh { $script:McpMaxArchiveEntries = 100000 }
+        }
+    }
+}

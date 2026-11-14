@@ -29,13 +29,23 @@ function Test-McpServerProcess {
 
     $current = Get-McpProcessStartTime -ProcessId $ProcessId
     if (-not $current) { return $false }
-    if (-not $ProcessStartTime) { return $true }
+    if (-not $ProcessStartTime) {
+        # Without a recorded start time the process id may have been reused by an unrelated process
+        # (Stop-McpServer kills what this function confirms), so require at least a PowerShell process.
+        try {
+            return [System.Diagnostics.Process]::GetProcessById($ProcessId).ProcessName -in 'pwsh', 'powershell'
+        }
+        catch {
+            return $false
+        }
+    }
     try {
         $expected = [datetime]::Parse($ProcessStartTime, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
         $actual = [datetime]::Parse($current, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
         return [Math]::Abs(($expected - $actual).TotalSeconds) -lt 2
     }
     catch {
-        return $true
+        # An unreadable start time cannot confirm the process identity.
+        return $false
     }
 }

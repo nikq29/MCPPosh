@@ -18,3 +18,12 @@ Describe 'Get-McpDocumentPath' {
         }
     }
 }
+
+Describe 'Get-McpDocumentPath (invalid ids)' {
+    It 'throws for ids that would address files outside the knowledge base' {
+        InModuleScope MCPPosh {
+            { Get-McpDocumentPath -KbPath '/kb' -Id '../../etc/secret' } | Should -Throw '*Invalid document id*'
+            { Get-McpDocumentPath -KbPath '/kb' -Id '/etc/secret' } | Should -Throw '*Invalid document id*'
+        }
+    }
+}

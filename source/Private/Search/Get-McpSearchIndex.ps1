@@ -41,6 +41,12 @@ function Get-McpSearchIndex {
 
     foreach ($doc in $manifest['documents']) {
         $docId = [string]$doc.id
+        if (-not (Test-McpDocumentId -Id $docId)) {
+            # A manipulated manifest (imported archive, shared folder) must not reach files outside the
+            # knowledge base: such documents are neither searchable nor readable.
+            Write-Verbose "Skipping document with invalid id '$docId' in '$KbPath'."
+            continue
+        }
         $docs[$docId] = $doc
         $paths = Get-McpDocumentPath -KbPath $KbPath -Id $docId
         $index = $null

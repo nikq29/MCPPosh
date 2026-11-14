@@ -42,3 +42,16 @@ Describe 'Invoke-McpRequest' {
         }
     }
 }
+
+Describe 'Invoke-McpRequest (error details)' {
+    It 'does not reveal exception details to clients' {
+        InModuleScope MCPPosh -Parameters @{ Context = $script:Context } {
+            param($Context)
+            Mock Get-McpToolList { throw 'Could not read /secret/path/file.json' }
+            $response = Invoke-McpRequest -Context $Context -Message ([ordered]@{ jsonrpc = '2.0'; id = 4; method = 'tools/list' })
+            $response.error.code | Should -Be -32603
+            $response.error.message | Should -Not -Match 'secret'
+            $response.error.message | Should -Match 'server log'
+        }
+    }
+}

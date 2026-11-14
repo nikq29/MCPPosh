@@ -23,10 +23,11 @@ Describe 'Invoke-McpHttpRequest' {
         $script:Base = "http://localhost:$($script:Port)"
 
         function Invoke-TestHttp {
-            param([string] $Path, [string] $Method = 'GET', [string] $Body, [hashtable] $Headers = @{}, [string[]] $ApiKeys = @('k1'), [string[]] $AllowedOrigins = @())
+            param([string] $Path, [string] $Method = 'GET', [string] $Body, [hashtable] $Headers = @{}, [string[]] $ApiKeys = @('k1'), [string[]] $AllowedOrigins = @(), [string] $ContentType = 'application/json', [switch] $Chunked)
             $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::new($Method), "$($script:Base)$Path")
             foreach ($h in $Headers.GetEnumerator()) { $null = $request.Headers.TryAddWithoutValidation($h.Key, [string]$h.Value) }
-            if ($Body) { $request.Content = [System.Net.Http.StringContent]::new($Body, [System.Text.Encoding]::UTF8, 'application/json') }
+            if ($Body) { $request.Content = [System.Net.Http.StringContent]::new($Body, [System.Text.Encoding]::UTF8, $ContentType) }
+            if ($Chunked) { $request.Headers.TransferEncodingChunked = $true }
             $client = [System.Net.Http.HttpClient]::new()
             $pending = $client.SendAsync($request)
             $httpContext = $script:Listener.GetContext()
@@ -66,6 +67,26 @@ Describe 'Invoke-McpHttpRequest' {
         ($ok.Body | ConvertFrom-Json).id | Should -Be 1
         (Invoke-TestHttp -Path '/mcp' -Method POST -Body '{"jsonrpc":"2.0","method":"notifications/initialized"}' -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 202
         (Invoke-TestHttp -Path '/mcp' -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 405
+    }
+
+    It 'requires a JSON content type' {
+        $ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
+        (Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping -ContentType 'text/plain' -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 415
+        (Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping -ContentType 'application/x-www-form-urlencoded' -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 415
+    }
+
+    It 'limits the request body also for chunked requests without Content-Length' {
+        $ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
+        (Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping -Chunked -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 200
+        InModuleScope MCPPosh { $script:McpMaxRequestBytes = 1KB }
+        try {
+            $large = '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"pad":"' + ('x' * 4000) + '"}}'
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $large -Chunked -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 413
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $large -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 413
+        }
+        finally {
+            InModuleScope MCPPosh { $script:McpMaxRequestBytes = 10MB }
+        }
     }
 
     It 'checks origins, protocol versions and answers CORS preflight requests' {

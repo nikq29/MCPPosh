@@ -25,3 +25,17 @@ Describe 'Get-McpDocumentContent' {
         }
     }
 }
+
+Describe 'Get-McpDocumentContent (invalid ids)' {
+    It 'never reads files outside the knowledge base' {
+        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+            param($TestHome)
+            $outside = Join-Path $TestHome 'outside-content'
+            New-Item -ItemType Directory -Path $outside -Force | Out-Null
+            Set-Content -Path (Join-Path $outside 'secret.md') -Value 'TOP SECRET'
+            $kbPath = (Resolve-McpKnowledgeBase -KnowledgeBase Kb).Path
+            Get-McpDocumentContent -KbPath $kbPath -Id (Join-Path $outside 'secret') | Should -BeNullOrEmpty
+            Get-McpDocumentContent -KbPath $kbPath -Id '../../../outside-content/secret' | Should -BeNullOrEmpty
+        }
+    }
+}

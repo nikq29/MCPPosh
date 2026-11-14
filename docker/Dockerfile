@@ -26,13 +26,25 @@ FROM pwsh-${TARGETARCH} AS pwsh
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-bookworm-slim
 
+ARG TARGETARCH
+# SHA-256 of the PowerShell release archives (hashes.sha256 of the GitHub release). Update them
+# together with PWSH_VERSION; the build fails when the downloaded archive does not match.
+ARG PWSH_SHA256_AMD64=6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e157561
+ARG PWSH_SHA256_ARM64=c0159b03e85f44ae1e7697818a011558da6c813d0aae848bf5ac13bf435d8624
+
 # PSGallery (default) or Local (nupkg files in docker/packages, e.g. from ./build.ps1 -Tasks pack).
 ARG MCPPOSH_SOURCE=PSGallery
 # Empty = latest stable version.
 ARG MCPPOSH_VERSION=
 
 COPY --from=pwsh /powershell.tar.gz /tmp/powershell.tar.gz
-RUN mkdir -p /opt/microsoft/powershell/7 \
+RUN case "${TARGETARCH:-amd64}" in \
+        amd64) expected="${PWSH_SHA256_AMD64}" ;; \
+        arm64) expected="${PWSH_SHA256_ARM64}" ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && echo "${expected}  /tmp/powershell.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/microsoft/powershell/7 \
     && tar -xzf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 \
     && chmod +x /opt/microsoft/powershell/7/pwsh \
     && ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \

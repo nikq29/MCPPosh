@@ -36,3 +36,12 @@ Describe 'Invoke-McpMessage' {
         $search.result.content[0].text | Should -Match '"2025-06-18"'
     }
 }
+
+Describe 'Invoke-McpMessage (batch limit)' {
+    It 'rejects batches with more than 100 messages' {
+        $batch = '[' + ((1..101 | ForEach-Object { '{"jsonrpc":"2.0","id":' + $_ + ',"method":"ping"}' }) -join ',') + ']'
+        $response = Invoke-McpTestMessage -KnowledgeBase Proto -Message $batch
+        $response.error.code | Should -Be -32600
+        $response.error.message | Should -Match 'more than 100'
+    }
+}

@@ -42,6 +42,9 @@ function Invoke-McpMessage {
         if ($message.Count -eq 0) {
             return ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32600 -Message 'Invalid Request: empty batch')
         }
+        if ($message.Count -gt $script:McpMaxBatchSize) {
+            return ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32600 -Message "Invalid Request: a batch must not contain more than $($script:McpMaxBatchSize) messages")
+        }
         $responses = [System.Collections.Generic.List[object]]::new()
         foreach ($item in $message) {
             $response = Invoke-McpRequest -Context $Context -Message $item

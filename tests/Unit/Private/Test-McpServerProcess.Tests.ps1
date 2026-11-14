@@ -20,3 +20,11 @@ Describe 'Test-McpServerProcess' {
         }
     }
 }
+
+Describe 'Test-McpServerProcess (unverifiable identity)' {
+    It 'does not confirm a process whose recorded start time cannot be read' {
+        InModuleScope MCPPosh {
+            Test-McpServerProcess -ProcessId $PID -ProcessStartTime 'not a date' | Should -BeFalse
+        }
+    }
+}
