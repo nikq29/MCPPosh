@@ -58,7 +58,7 @@ Document record:
 | `id` | document id, for example `installation-guide-3f9a1c` |
 | `title` | title |
 | `format` | converter that produced the content (`Markdown`, `Html`, `Docx`, `Pdf`, `Csv`, `Json`, `Yaml`, `Xml`, `Code`, `Text` or a custom converter) |
-| `sourceType` | `File`, `Url`, `Inline` or `Agent` |
+| `sourceType` | `File`, `Url`, `Inline`, `Agent` or `Imported` (file and URL documents from an archive imported without `-TrustSource`) |
 | `source` | full file path or URL, empty for inline documents and agent notes |
 | `tags` | tags |
 | `hash` | SHA-256 of the normalized content |

@@ -109,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -SourceType
-Only documents from these sources: File, Url, Inline or Agent (notes added by the AI agent).
+Only documents from these sources: File, Url, Inline, Agent (notes added by the AI agent) or Imported (file and URL documents from an archive imported without -TrustSource).
 
 ```yaml
 Type: String[]
@@ -162,7 +162,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String. You can pipe objects with an Id property.
 ## OUTPUTS
 
-### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 ## NOTES
 
 ## RELATED LINKS

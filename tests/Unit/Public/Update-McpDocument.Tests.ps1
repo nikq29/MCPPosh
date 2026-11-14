@@ -51,6 +51,29 @@ Describe 'Update-McpDocument' {
         Get-McpDocument -KnowledgeBase Docs -Id $doc.Id -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 
+    It 'only reads the source of documents whose source type is exactly File or Url (<Label>)' -ForEach @(
+        @{ Label = "'file'"; SourceType = 'file' }
+        @{ Label = "@('Inline', 'File')"; SourceType = @('Inline', 'File') }
+        @{ Label = "'Imported'"; SourceType = 'Imported' }
+    ) {
+        # A manifest written by someone else (shared folder, hand-edited file) must not make Update-McpDocument read
+        # files through a misspelled or non-string source type.
+        $secret = Join-Path $script:TestHome 'secret.txt'
+        Set-Content -Path $secret -Value 'CANARY-SECRET'
+        $doc = Add-McpDocument -KnowledgeBase Docs -Title "Odd $Label" -Content 'Original text.'
+        InModuleScope MCPPosh -Parameters @{ Id = $doc.Id; SourceType = $SourceType; Source = $secret } {
+            param($Id, $SourceType, $Source)
+            $kb = Resolve-McpKnowledgeBase -KnowledgeBase Docs
+            $manifest = Read-McpManifest -KbPath $kb.Path
+            $record = @($manifest['documents']) | Where-Object { $_['id'] -eq $Id }
+            $record['sourceType'] = $SourceType
+            $record['source'] = $Source
+            Save-McpManifest -KbPath $kb.Path -Manifest $manifest
+        }
+        Update-McpDocument -KnowledgeBase Docs -Id $doc.Id -Force | Should -BeNullOrEmpty
+        (Get-McpDocument -KnowledgeBase Docs -Id $doc.Id -IncludeContent).Content | Should -Not -Match 'CANARY-SECRET'
+    }
+
     It 'writes an error for unknown ids' {
         Update-McpDocument -KnowledgeBase Docs -Id missing -ErrorAction SilentlyContinue -ErrorVariable err
         $err | Should -Not -BeNullOrEmpty

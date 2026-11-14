@@ -5,7 +5,8 @@ function Update-McpDocument {
 
     .DESCRIPTION
         For file documents the source file hash is compared; URL documents are downloaded again.
-        Inline documents and agent notes have no source and are skipped. Use -Force to re-import
+        Inline documents and agent notes have no source and are skipped, as are documents that
+        Import-McpKnowledgeBase imported with the source type Imported. Use -Force to re-import
         even unchanged sources (e.g. after installing PDF support or registering a converter).
 
     .PARAMETER Id
@@ -42,7 +43,7 @@ function Update-McpDocument {
         MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
 
     .LINK
         https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Update-McpDocument.md
@@ -82,7 +83,8 @@ function Update-McpDocument {
 
         foreach ($record in $targets) {
             $label = "$($record.title) ($($record.id))"
-            switch ($record.sourceType) {
+            # A single, exactly spelled type: an array would run several branches, and only File and Url read a source.
+            switch -CaseSensitive ([string]$record.sourceType) {
                 'File' {
                     $source = [string]$record.source
                     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
@@ -124,6 +126,9 @@ function Update-McpDocument {
                     catch {
                         Write-Error -Message "Failed to update '$label': $($_.Exception.Message)" -Category ConnectionError -TargetObject $record.id
                     }
+                }
+                'Imported' {
+                    Write-Verbose "skipped (imported from an archive; add the source again with Add-McpDocument to update it): $label"
                 }
                 default {
                     Write-Verbose "skipped (no source): $label"
