@@ -74,12 +74,13 @@ Browsers send an `Origin` header. The server
 ## GET /health
 
 ```json
-{"status":"ok","server":"MCPPosh","version":"0.1.0"}
+{"status":"ok","server":"MCPPosh"}
 ```
 
-With a valid API key (or when the server has no keys) the response also contains `knowledgeBase`, `description`,
-`documents`, `chunks`, `revision`, `allowWrite`, `authRequired`, `uptimeSeconds` and `requests`. Use `/health` for
-container probes; it never requires a key.
+With a valid API key (or when the server has no keys) the response also contains `version`, `knowledgeBase`,
+`description`, `documents`, `chunks`, `revision`, `allowWrite`, `authRequired`, `uptimeSeconds` and `requests`. Use
+`/health` for container probes; it never requires a key. The root page `/` likewise names the knowledge base only for
+authorized callers.
 
 ## Status codes
 

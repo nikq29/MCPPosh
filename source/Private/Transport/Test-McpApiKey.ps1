@@ -43,11 +43,13 @@ function Test-McpApiKey {
     }
     if (-not $presented) { return $false }
 
-    $presentedBytes = [System.Text.Encoding]::UTF8.GetBytes($presented)
+    # Compare SHA-256 hashes: FixedTimeEquals returns early when the lengths differ, which would reveal the key
+    # length; hashes always have the same length. Every key is checked, so the time does not show which one matched.
+    $presentedHash = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($presented))
     $valid = $false
     foreach ($key in $ApiKeys) {
-        $keyBytes = [System.Text.Encoding]::UTF8.GetBytes($key)
-        if ([System.Security.Cryptography.CryptographicOperations]::FixedTimeEquals($presentedBytes, $keyBytes)) {
+        $keyHash = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($key))
+        if ([System.Security.Cryptography.CryptographicOperations]::FixedTimeEquals($presentedHash, $keyHash)) {
             $valid = $true
         }
     }
