@@ -1,0 +1,328 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.49.2.45890",
+      "templateHash": "5279490799267104163"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "defaultValue": "psmcpkb",
+      "minLength": 3,
+      "maxLength": 20,
+      "metadata": {
+        "description": "Base name for all resources (lowercase letters, digits and hyphens)."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region."
+      }
+    },
+    "image": {
+      "type": "string",
+      "defaultValue": "ghcr.io/nikq29/psmcpkb:latest",
+      "metadata": {
+        "description": "Container image, e.g. ghcr.io/nikq29/psmcpkb:0.1.1 (a fixed version) or <registry>.azurecr.io/psmcpkb:0.1.0."
+      }
+    },
+    "apiKey": {
+      "type": "securestring",
+      "minLength": 16,
+      "metadata": {
+        "description": "API key clients must send as \"Authorization: Bearer <key>\". Several keys can be separated by commas."
+      }
+    },
+    "knowledgeBase": {
+      "type": "string",
+      "defaultValue": "Default",
+      "metadata": {
+        "description": "Name of the knowledge base on the share (see Publish-McpKnowledgeBase -RemoteName)."
+      }
+    },
+    "knowledgeBaseDescription": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Description of the knowledge base, sent to AI agents as server instructions (used when the knowledge base is created)."
+      }
+    },
+    "allowWrite": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enable the add_note tool so AI agents can store new knowledge. Keep maxReplicas at 1 when enabled."
+      }
+    },
+    "allowedOrigins": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Comma-separated browser origins allowed via CORS (optional)."
+      }
+    },
+    "registryServer": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Container registry server for private images, e.g. myregistry.azurecr.io. Leave empty for public images."
+      }
+    },
+    "registryUsername": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Registry user name (e.g. the ACR admin user)."
+      }
+    },
+    "registryPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Registry password."
+      }
+    },
+    "minReplicas": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 0,
+      "maxValue": 10,
+      "metadata": {
+        "description": "Minimum replicas. 0 allows scale to zero (cold starts of a few seconds)."
+      }
+    },
+    "maxReplicas": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 10,
+      "metadata": {
+        "description": "Maximum replicas."
+      }
+    },
+    "shareQuotaGiB": {
+      "type": "int",
+      "defaultValue": 5,
+      "minValue": 1,
+      "metadata": {
+        "description": "Quota of the file share in GiB."
+      }
+    }
+  },
+  "variables": {
+    "suffix": "[uniqueString(resourceGroup().id, parameters('name'))]",
+    "storageAccountName": "[take(format('{0}{1}', replace(toLower(parameters('name')), '-', ''), variables('suffix')), 24)]",
+    "shareName": "psmcpkb",
+    "useRegistry": "[not(empty(parameters('registryServer')))]",
+    "registrySecrets": "[if(variables('useRegistry'), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[format('{0}-logs', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices",
+      "apiVersion": "2023-01-01",
+      "name": "[format('{0}/{1}', variables('storageAccountName'), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2023-01-01",
+      "name": "[format('{0}/{1}/{2}', variables('storageAccountName'), 'default', variables('shareName'))]",
+      "properties": {
+        "shareQuota": "[parameters('shareQuotaGiB')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', variables('storageAccountName'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}-env', parameters('name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name'))), '2022-10-01').customerId]",
+            "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name'))), '2022-10-01').primarySharedKey]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-logs', parameters('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments/storages",
+      "apiVersion": "2024-03-01",
+      "name": "[format('{0}/{1}', format('{0}-env', parameters('name')), 'psmcpkb-data')]",
+      "properties": {
+        "azureFile": {
+          "accountName": "[variables('storageAccountName')]",
+          "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2023-01-01').keys[0].value]",
+          "shareName": "[variables('shareName')]",
+          "accessMode": "ReadWrite"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('name')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', variables('storageAccountName'), 'default', variables('shareName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('name')))]",
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "ingress": {
+            "external": true,
+            "targetPort": 8080,
+            "transport": "http",
+            "allowInsecure": false
+          },
+          "secrets": "[concat(createArray(createObject('name', 'api-key', 'value', parameters('apiKey'))), variables('registrySecrets'))]",
+          "registries": "[if(variables('useRegistry'), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]"
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "psmcpkb",
+              "image": "[parameters('image')]",
+              "resources": {
+                "cpu": "[json('0.5')]",
+                "memory": "1Gi"
+              },
+              "env": [
+                {
+                  "name": "PSMCPKB_API_KEY",
+                  "secretRef": "api-key"
+                },
+                {
+                  "name": "PSMCPKB_KNOWLEDGEBASE",
+                  "value": "[parameters('knowledgeBase')]"
+                },
+                {
+                  "name": "PSMCPKB_DESCRIPTION",
+                  "value": "[parameters('knowledgeBaseDescription')]"
+                },
+                {
+                  "name": "PSMCPKB_ALLOW_WRITE",
+                  "value": "[string(parameters('allowWrite'))]"
+                },
+                {
+                  "name": "PSMCPKB_ALLOWED_ORIGINS",
+                  "value": "[parameters('allowedOrigins')]"
+                }
+              ],
+              "volumeMounts": [
+                {
+                  "volumeName": "data",
+                  "mountPath": "/data"
+                }
+              ],
+              "probes": [
+                {
+                  "type": "Startup",
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8080
+                  },
+                  "initialDelaySeconds": 2,
+                  "periodSeconds": 3,
+                  "failureThreshold": 20
+                },
+                {
+                  "type": "Liveness",
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8080
+                  },
+                  "periodSeconds": 30
+                }
+              ]
+            }
+          ],
+          "scale": {
+            "minReplicas": "[parameters('minReplicas')]",
+            "maxReplicas": "[parameters('maxReplicas')]"
+          },
+          "volumes": [
+            {
+              "name": "data",
+              "storageType": "AzureFile",
+              "storageName": "psmcpkb-data",
+              "mountOptions": "uid=1654,gid=1654,dir_mode=0770,file_mode=0660"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', parameters('name')))]",
+        "[resourceId('Microsoft.App/managedEnvironments/storages', format('{0}-env', parameters('name')), 'psmcpkb-data')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "mcpEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "MCP endpoint for AI clients."
+      },
+      "value": "[format('https://{0}/mcp', reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2024-03-01').configuration.ingress.fqdn)]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account that holds the knowledge base share (for Publish-McpKnowledgeBase)."
+      },
+      "value": "[variables('storageAccountName')]"
+    },
+    "shareName": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Files share mounted at /data."
+      },
+      "value": "[variables('shareName')]"
+    }
+  }
+}

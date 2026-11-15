@@ -224,6 +224,9 @@ copy `output/PSMcpKnowledgeBase.*.nupkg` to `docker/packages` and build with `--
 
 [`deploy/azure`](deploy/azure/README.md) contains a Bicep template and `deploy.ps1` that deploy a Container App
 with HTTPS and an API key; the knowledge base lives on Azure Files (guide: [docs/hosting-azure.md](docs/hosting-azure.md)).
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fnikq29%2FPSMcpKnowledgeBase%2Fmain%2Fdeploy%2Fazure%2Fazuredeploy.json)
+
 You keep maintaining the knowledge locally and publish it with PowerShell:
 
 ```powershell
