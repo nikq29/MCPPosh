@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and background servers, and publishing to a local stand-in for Azure Files that a server then serves.
 - QA test `tests/QA/integration.tests.ps1` that fails when a cmdlet, parameter set or parameter has no integration
   test, or when an integration test uses `Mock`.
+- "Deploy to Azure" button for the Bicep template (`deploy/azure/azuredeploy.json`, checked against `main.bicep`
+  in CI); the template parameter `image` defaults to `ghcr.io/nikq29/psmcpkb:latest`.
 
 ### Fixed
 

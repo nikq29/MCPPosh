@@ -4,8 +4,10 @@
 // base storage), a Container Apps environment with the share mounted at /data, and the
 // PSMcpKnowledgeBase container app with HTTPS ingress and an API key.
 //
-// Deploy with deploy.ps1 or:
-//   az deployment group create -g <rg> -f main.bicep -p image=<image> apiKey=<key>
+// Deploy with deploy.ps1, the "Deploy to Azure" button (azuredeploy.json) or:
+//   az deployment group create -g <rg> -f main.bicep -p apiKey=<key>
+// After changing this file, regenerate azuredeploy.json with the Bicep version pinned in
+// .github/workflows/build.yml: bicep build main.bicep --outfile azuredeploy.json
 
 targetScope = 'resourceGroup'
 
@@ -17,8 +19,8 @@ param name string = 'psmcpkb'
 @description('Azure region.')
 param location string = resourceGroup().location
 
-@description('Container image, e.g. ghcr.io/<owner>/psmcpkb:latest or <registry>.azurecr.io/psmcpkb:0.1.0.')
-param image string
+@description('Container image, e.g. ghcr.io/nikq29/psmcpkb:0.1.1 (a fixed version) or <registry>.azurecr.io/psmcpkb:0.1.0.')
+param image string = 'ghcr.io/nikq29/psmcpkb:latest'
 
 @description('API key clients must send as "Authorization: Bearer <key>". Several keys can be separated by commas.')
 @secure()

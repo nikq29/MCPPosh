@@ -98,8 +98,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Build the Bicep template
-        run: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
+      # The "Deploy to Azure" button loads azuredeploy.json, so it must match main.bicep. The Bicep version is
+      # pinned because the generated JSON records it; regenerate locally with the same version.
+      - name: Check that azuredeploy.json matches the Bicep template
+        run: |
+          az bicep install --version v0.49.2
+          az bicep build --file deploy/azure/main.bicep --stdout > "$RUNNER_TEMP/azuredeploy.json"
+          diff -u deploy/azure/azuredeploy.json "$RUNNER_TEMP/azuredeploy.json" || {
+            echo "::error file=deploy/azure/azuredeploy.json::Out of date. Run with Bicep v0.49.2: bicep build deploy/azure/main.bicep --outfile deploy/azure/azuredeploy.json"
+            exit 1
+          }
 
       - name: Lint the Markdown documentation
         run: npx --yes markdownlint-cli2@0.17.2
