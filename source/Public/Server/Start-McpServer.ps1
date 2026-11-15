@@ -26,12 +26,26 @@ function Start-McpServer {
 
     .PARAMETER ListenAddress
         Address to listen on. 'localhost' (default) only accepts local connections. Use '*' to
-        listen on all interfaces (requires -ApiKey or -AllowAnonymous; on Windows also admin
+        listen on all interfaces (requires -ApiKey, -OAuthIssuer or -AllowAnonymous; on Windows also admin
         rights or a URL ACL: netsh http add urlacl url=http://+:<port>/ user=<user>).
 
     .PARAMETER ApiKey
         One or more API keys. Clients must send 'Authorization: Bearer <key>' or 'X-API-Key: <key>'.
         Defaults to the comma-separated keys in $env:PSMCPKB_API_KEY.
+
+    .PARAMETER OAuthIssuer
+        Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0
+        (https; http only for localhost). The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
+        and publishes /.well-known/oauth-protected-resource so MCP clients can sign in. API keys keep working.
+        Defaults to $env:PSMCPKB_OAUTH_ISSUER.
+
+    .PARAMETER OAuthAudience
+        Accepted audiences (aud claim) of the access tokens, e.g. the client ID (Microsoft Entra ID v2 tokens) or the
+        API identifier configured at the identity provider. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
+
+    .PARAMETER OAuthScope
+        Scope the access tokens must contain (scp or scope claim), e.g. api://<client-id>/access_as_user. It is also
+        advertised to MCP clients. Defaults to $env:PSMCPKB_OAUTH_SCOPE.
 
     .PARAMETER AllowedOrigin
         Browser origins allowed to call the server (CORS), e.g. https://my-app.example.com.
@@ -40,7 +54,7 @@ function Start-McpServer {
         Adds the add_note tool so the AI agent can store new knowledge.
 
     .PARAMETER AllowAnonymous
-        Allows listening on a non-loopback address without an API key (e.g. behind a gateway
+        Allows listening on a non-loopback address without an API key or OAuth (e.g. behind a gateway
         that authenticates requests).
 
     .PARAMETER Foreground
@@ -66,6 +80,11 @@ function Start-McpServer {
         Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -ApiKey $key -Foreground
 
         Runs an HTTP server reachable from the network in the current console, for example in a container. Clients must send the API key.
+
+    .EXAMPLE
+        Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "api://$clientId/access_as_user" -Foreground
+
+        Runs an HTTP server that accepts Microsoft Entra ID access tokens; MCP clients sign in with OAuth.
 
     .EXAMPLE
         Start-McpServer -KnowledgeBase Contoso -Port 5051 -ApiKey $key -AllowWrite
@@ -109,6 +128,12 @@ function Start-McpServer {
 
         [string[]] $ApiKey,
 
+        [string] $OAuthIssuer,
+
+        [string[]] $OAuthAudience,
+
+        [string] $OAuthScope,
+
         [string[]] $AllowedOrigin,
 
         [switch] $AllowWrite,
@@ -135,15 +160,32 @@ function Start-McpServer {
 
     $keys = [string[]]@(@(if ($ApiKey) { $ApiKey } elseif ($env:PSMCPKB_API_KEY) { $env:PSMCPKB_API_KEY -split ',' }) |
             ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if (-not $OAuthIssuer) { $OAuthIssuer = $env:PSMCPKB_OAUTH_ISSUER }
+    if (-not $OAuthAudience -and $env:PSMCPKB_OAUTH_AUDIENCE) { $OAuthAudience = $env:PSMCPKB_OAUTH_AUDIENCE -split ',' }
+    if (-not $OAuthScope) { $OAuthScope = $env:PSMCPKB_OAUTH_SCOPE }
+    $oauth = $null
+    if ($OAuthIssuer) {
+        # The signing keys are downloaded from the issuer, so plain http (keys can be swapped on the way) only for localhost.
+        if (-not [uri]::IsWellFormedUriString($OAuthIssuer, [System.UriKind]::Absolute) -or
+            -not ($OAuthIssuer -match '^https://' -or ($OAuthIssuer -match '^http://' -and ([uri]$OAuthIssuer).IsLoopback))) {
+            throw "-OAuthIssuer must be an https URL such as https://login.microsoftonline.com/<tenant>/v2.0 (http only for localhost), not '$OAuthIssuer'."
+        }
+        $audiences = [string[]]@($OAuthAudience | Where-Object { $_ } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        if ($audiences.Count -eq 0) {
+            throw '-OAuthIssuer requires -OAuthAudience (or $env:PSMCPKB_OAUTH_AUDIENCE): the client ID or application ID URI the tokens are issued for.'
+        }
+        $oauth = @{ Issuer = $OAuthIssuer; Audience = $audiences; Scope = $OAuthScope }
+    }
+
     $isLoopback = Test-McpLoopbackAddress -Address $ListenAddress
-    if (-not $isLoopback -and $keys.Count -eq 0 -and -not $AllowAnonymous) {
-        throw "Listening on '$ListenAddress' exposes the server to the network. Specify -ApiKey (or `$env:PSMCPKB_API_KEY), or -AllowAnonymous if a gateway authenticates requests."
+    if (-not $isLoopback -and $keys.Count -eq 0 -and -not $oauth -and -not $AllowAnonymous) {
+        throw "Listening on '$ListenAddress' exposes the server to the network. Specify -ApiKey (or `$env:PSMCPKB_API_KEY), -OAuthIssuer, or -AllowAnonymous if a gateway authenticates requests."
     }
 
     if ($Foreground) {
         $logPath = Join-Path -Path $kb.Path -ChildPath "logs/server-$Port.log"
         $context = New-McpServerContext -KnowledgeBase $kb -Transport Http -AllowWrite:$AllowWrite -LogPath $logPath -EchoLog:(-not $BackgroundChild)
-        Start-McpHttpServer -Context $context -Port $Port -ListenAddress $ListenAddress -ApiKeys $keys -AllowedOrigins $AllowedOrigin -AllowAnonymous:$AllowAnonymous
+        Start-McpHttpServer -Context $context -Port $Port -ListenAddress $ListenAddress -ApiKeys $keys -AllowedOrigins $AllowedOrigin -AllowAnonymous:$AllowAnonymous -OAuth $oauth
         return
     }
 
@@ -162,13 +204,19 @@ function Start-McpServer {
     $stdoutLog = Join-Path -Path $logDirectory -ChildPath "server-$Port.stdout.log"
     $stderrLog = Join-Path -Path $logDirectory -ChildPath "server-$Port.stderr.log"
 
-    $quote = { param($Value) "'" + ([string]$Value).Replace("'", "''") + "'" }
+    # PowerShell also ends single-quoted strings at the curly quotes U+2018-U+201B (macOS types U+2019 in folder
+    # names); this escapes all of them.
+    $quote = { param($Value) "'" + [System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent([string]$Value) + "'" }
     $command = [System.Text.StringBuilder]::new()
     $null = $command.Append("`$ErrorActionPreference = 'Stop'; `$ProgressPreference = 'SilentlyContinue'; ")
     $null = $command.Append("Import-Module -Name $(& $quote $script:ModuleManifestPath) -Force; ")
     $null = $command.Append("Start-McpServer -KnowledgeBase $(& $quote $kb.Path) -Transport Http -Port $Port -ListenAddress $(& $quote $ListenAddress) -Foreground -BackgroundChild")
     if ($AllowWrite) { $null = $command.Append(' -AllowWrite') }
     if ($AllowAnonymous) { $null = $command.Append(' -AllowAnonymous') }
+    if ($oauth) {
+        $null = $command.Append(" -OAuthIssuer $(& $quote $oauth.Issuer) -OAuthAudience " + (($oauth.Audience | ForEach-Object { & $quote $_ }) -join ','))
+        if ($oauth.Scope) { $null = $command.Append(" -OAuthScope $(& $quote $oauth.Scope)") }
+    }
     if ($AllowedOrigin) { $null = $command.Append(' -AllowedOrigin ' + (($AllowedOrigin | ForEach-Object { & $quote $_ }) -join ',')) }
     $encoded = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command.ToString()))
 

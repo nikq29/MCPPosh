@@ -35,6 +35,7 @@ function ConvertTo-McpShellArgument {
 
     if ($Value -match '^[\w./:=@-]+$') { return $Value }
     # Single quotes in both shells: no variable, subexpression or escape character is expanded inside them.
-    if ($Shell -eq 'PowerShell') { return "'" + $Value.Replace("'", "''") + "'" }
+    # PowerShell also ends single-quoted strings at the curly quotes U+2018-U+201B; this escapes all of them.
+    if ($Shell -eq 'PowerShell') { return "'" + [System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent($Value) + "'" }
     "'" + $Value.Replace("'", "'\''") + "'"
 }

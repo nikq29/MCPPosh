@@ -37,6 +37,14 @@ Describe 'Start-McpHttpServer' {
             $stateFile = InModuleScope PSMcpKnowledgeBase -Parameters @{ Port = $port } { param($Port) Get-McpServerStateFile -KnowledgeBaseName Proto -Port $Port }
             Test-Path $stateFile | Should -BeTrue
             (Get-Content -Raw (Join-Path $env:PSMCPKB_HOME 'http.log')) | Should -Match 'listening on'
+
+            # Successful health probes are not logged (they would fill the log); other requests are.
+            try { $null = Invoke-WebRequest -Uri "http://localhost:$port/nope" -TimeoutSec 2 } catch { $null = $_ }
+            $logDeadline = (Get-Date).AddSeconds(10)
+            $log = ''
+            while ($log -notmatch '/nope -> 404' -and (Get-Date) -lt $logDeadline) { Start-Sleep -Milliseconds 100; $log = Get-Content -Raw (Join-Path $env:PSMCPKB_HOME 'http.log') }
+            $log | Should -Match '/nope -> 404'
+            $log | Should -Not -Match '/health -> '
         }
         finally {
             $job | Stop-Job

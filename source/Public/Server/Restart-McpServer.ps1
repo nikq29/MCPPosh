@@ -6,6 +6,7 @@ function Restart-McpServer {
     .DESCRIPTION
         API keys are never stored. If the server required an API key, pass -ApiKey again or set
         $env:PSMCPKB_API_KEY.
+        OAuth settings (issuer, audiences, scope) are not secret; they are stored and reused.
 
     .PARAMETER KnowledgeBase
         Restart the local HTTP servers of this knowledge base (name, wildcard or directory path).
@@ -72,7 +73,9 @@ function Restart-McpServer {
 
         foreach ($state in $servers) {
             $keys = if ($ApiKey) { $ApiKey } elseif ($env:PSMCPKB_API_KEY) { $env:PSMCPKB_API_KEY -split ',' } else { @() }
-            if ($state.authRequired -and @($keys).Count -eq 0) {
+            # apiKeyRequired is missing in state files of older versions; there authRequired meant an API key.
+            $needsKey = if ($null -ne $state.apiKeyRequired) { $state.apiKeyRequired } else { $state.authRequired }
+            if ($needsKey -and @($keys).Count -eq 0) {
                 Write-Error -Message "The server on port $($state.port) requires an API key. Pass -ApiKey or set `$env:PSMCPKB_API_KEY." -Category InvalidArgument
                 continue
             }
@@ -95,6 +98,11 @@ function Restart-McpServer {
             if (@($keys).Count -gt 0) { $startParams['ApiKey'] = [string[]]$keys }
             if ($state.allowWrite) { $startParams['AllowWrite'] = $true }
             if ($state.allowAnonymous) { $startParams['AllowAnonymous'] = $true }
+            if ($state.oauthIssuer) {
+                $startParams['OAuthIssuer'] = [string]$state.oauthIssuer
+                $startParams['OAuthAudience'] = [string[]]@($state.oauthAudience)
+                if ($state.oauthScope) { $startParams['OAuthScope'] = [string]$state.oauthScope }
+            }
             if (@($state.allowedOrigins).Count -gt 0) { $startParams['AllowedOrigin'] = [string[]]@($state.allowedOrigins) }
             Start-McpServer @startParams
         }

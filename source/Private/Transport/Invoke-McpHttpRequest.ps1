@@ -4,7 +4,7 @@ function Invoke-McpHttpRequest {
         Handles one HTTP request and returns the status code that was sent.
 
     .DESCRIPTION
-        Handles one request of the HTTP transport: / (information, knowledge base name only when authorized), /health (status, version and details only when authorized) and /mcp (origin check, API key check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), body timeout of 30 seconds (the connection is aborted and 408 is returned), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
+        Handles one request of the HTTP transport: / (information, knowledge base name only when authorized), /health (status, version and details only when authorized), /.well-known/oauth-protected-resource[/mcp] (OAuth protected resource metadata, only when OAuth is configured) and /mcp (origin check, API key or OAuth token check, protocol version check, Content-Type application/json (415 otherwise), body limit of 10 MB counted while reading (413), body timeout of 30 seconds (the connection is aborted and 408 is returned), JSON-RPC over POST, 202 for notifications, 405 for GET and DELETE). Returns the HTTP status code that was sent.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -13,7 +13,7 @@ function Invoke-McpHttpRequest {
         The HttpListenerContext of the request to handle.
 
     .PARAMETER Settings
-        Hashtable with the configured ApiKeys, AllowedOrigins and IsLoopback flag.
+        Hashtable with the configured ApiKeys, AllowedOrigins, IsLoopback flag and OAuth (Issuer, Audience, Scope; $null when OAuth is off).
 
     .EXAMPLE
         $status = Invoke-McpHttpRequest -Context $context -HttpContext $listener.GetContext() -Settings $settings
@@ -49,7 +49,25 @@ function Invoke-McpHttpRequest {
         $corsHeaders['Access-Control-Expose-Headers'] = 'Mcp-Session-Id'
     }
 
-    $authorized = $Settings.ApiKeys.Count -eq 0 -or (Test-McpApiKey -AuthorizationHeader $request.Headers['Authorization'] -ApiKeyHeader $request.Headers['X-API-Key'] -ApiKeys $Settings.ApiKeys)
+    $authRequired = $Settings.ApiKeys.Count -gt 0 -or [bool]$Settings.OAuth
+    $authorized = -not $authRequired -or
+        ($Settings.ApiKeys.Count -gt 0 -and (Test-McpApiKey -AuthorizationHeader $request.Headers['Authorization'] -ApiKeyHeader $request.Headers['X-API-Key'] -ApiKeys $Settings.ApiKeys))
+    if (-not $authorized -and $Settings.OAuth) {
+        try {
+            $authorized = Test-McpOAuthToken -AuthorizationHeader $request.Headers['Authorization'] -OAuth $Settings.OAuth
+        }
+        catch {
+            Write-McpLog -Context $Context -Level WARN -Message "Could not check the OAuth token: $($_.Exception.Message)"
+        }
+    }
+
+    # Public base URL for the OAuth metadata. Behind a reverse proxy (Azure Container Apps ingress) the forwarded
+    # headers carry the client-facing scheme and host; they are validated because they end up in response headers.
+    $scheme = ([string]$request.Headers['X-Forwarded-Proto'] -split ',')[0].Trim().ToLowerInvariant()
+    if ($scheme -notin 'http', 'https') { $scheme = $request.Url.Scheme }
+    $authority = ([string]$request.Headers['X-Forwarded-Host'] -split ',')[0].Trim()
+    if ($authority -notmatch '^[A-Za-z0-9.\-]+(:\d{1,5})?$') { $authority = $request.Url.Authority }
+    $publicBaseUrl = "${scheme}://$authority"
 
     switch ($path) {
         '/' {
@@ -80,11 +98,31 @@ function Invoke-McpHttpRequest {
                 $health['chunks'] = $index.Chunks.Count
                 $health['revision'] = $index.Revision
                 $health['allowWrite'] = $Context.AllowWrite
-                $health['authRequired'] = $Settings.ApiKeys.Count -gt 0
+                $health['authRequired'] = $authRequired
                 $health['uptimeSeconds'] = [long]([datetime]::UtcNow - $Context.StartedAt).TotalSeconds
                 $health['requests'] = $Context.RequestCount
             }
             Send-McpHttpResponse -Response $response -StatusCode 200 -Body (ConvertTo-McpJson -Compress -InputObject $health)
+            return 200
+        }
+
+        { $_ -in '/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp' } {
+            if (-not $Settings.OAuth) {
+                Send-McpHttpResponse -Response $response -StatusCode 404 -Body '{"error":"Not found"}'
+                return 404
+            }
+            if ($method -notin 'GET', 'HEAD') {
+                Send-McpHttpResponse -Response $response -StatusCode 405 -Headers @{ Allow = 'GET' }
+                return 405
+            }
+            # Protected resource metadata (RFC 9728): the MCP endpoint and the authorization server that issues its tokens.
+            $metadata = [ordered]@{
+                resource                 = "$publicBaseUrl/mcp"
+                authorization_servers    = @($Settings.OAuth.Issuer)
+                bearer_methods_supported = @('header')
+            }
+            if ($Settings.OAuth.Scope) { $metadata['scopes_supported'] = @($Settings.OAuth.Scope) }
+            Send-McpHttpResponse -Response $response -StatusCode 200 -Headers $corsHeaders -Body (ConvertTo-McpJson -Compress -InputObject $metadata)
             return 200
         }
 
@@ -99,8 +137,15 @@ function Invoke-McpHttpRequest {
                 return 204
             }
             if (-not $authorized) {
-                Send-McpHttpResponse -Response $response -StatusCode 401 -Headers ($corsHeaders + @{ 'WWW-Authenticate' = 'Bearer realm="PSMcpKnowledgeBase"' }) `
-                    -Body (ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32001 -Message 'Unauthorized: missing or invalid API key'))
+                # resource_metadata tells MCP clients where to find the authorization server (RFC 9728).
+                $challenge = 'Bearer realm="PSMcpKnowledgeBase"'
+                if ($Settings.OAuth) {
+                    $challenge += ", resource_metadata=`"$publicBaseUrl/.well-known/oauth-protected-resource/mcp`""
+                    if ($Settings.OAuth.Scope) { $challenge += ", scope=`"$($Settings.OAuth.Scope)`"" }
+                }
+                $message = if ($Settings.OAuth) { 'Unauthorized: missing or invalid API key or access token' } else { 'Unauthorized: missing or invalid API key' }
+                Send-McpHttpResponse -Response $response -StatusCode 401 -Headers ($corsHeaders + @{ 'WWW-Authenticate' = $challenge }) `
+                    -Body (ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32001 -Message $message))
                 return 401
             }
             if ($method -ne 'POST') {

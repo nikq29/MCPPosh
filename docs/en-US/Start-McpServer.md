@@ -15,9 +15,9 @@ Starts an MCP server that provides a knowledge base to AI agents.
 
 ```
 Start-McpServer [[-KnowledgeBase] <String>] [-Transport <String>] [-Port <Int32>] [-ListenAddress <String>]
- [-ApiKey <String[]>] [-AllowedOrigin <String[]>] [-AllowWrite] [-AllowAnonymous] [-Foreground]
- [-StartTimeoutSeconds <Int32>] [-BackgroundChild] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+ [-ApiKey <String[]>] [-OAuthIssuer <String>] [-OAuthAudience <String[]>] [-OAuthScope <String>]
+ [-AllowedOrigin <String[]>] [-AllowWrite] [-AllowAnonymous] [-Foreground] [-StartTimeoutSeconds <Int32>]
+ [-BackgroundChild] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -60,6 +60,13 @@ Runs an HTTP server reachable from the network in the current console, for examp
 Clients must send the API key.
 
 ### EXAMPLE 4
+```
+Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "api://$clientId/access_as_user" -Foreground
+```
+
+Runs an HTTP server that accepts Microsoft Entra ID access tokens; MCP clients sign in with OAuth.
+
+### EXAMPLE 5
 ```
 Start-McpServer -KnowledgeBase Contoso -Port 5051 -ApiKey $key -AllowWrite
 ```
@@ -117,7 +124,7 @@ Accept wildcard characters: False
 Address to listen on.
 'localhost' (default) only accepts local connections.
 Use '*' to
-listen on all interfaces (requires -ApiKey or -AllowAnonymous; on Windows also admin
+listen on all interfaces (requires -ApiKey, -OAuthIssuer or -AllowAnonymous; on Windows also admin
 rights or a URL ACL: netsh http add urlacl url=http://+:\<port\>/ user=\<user\>).
 
 ```yaml
@@ -139,6 +146,56 @@ Defaults to the comma-separated keys in $env:PSMCPKB_API_KEY.
 
 ```yaml
 Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OAuthIssuer
+Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0
+(https; http only for localhost). The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
+and publishes /.well-known/oauth-protected-resource so MCP clients can sign in. API keys keep working.
+Defaults to $env:PSMCPKB_OAUTH_ISSUER.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OAuthAudience
+Accepted audiences (aud claim) of the access tokens, e.g. the client ID (Microsoft Entra ID v2 tokens) or the
+API identifier configured at the identity provider. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OAuthScope
+Scope the access tokens must contain (scp or scope claim), e.g. api://<client-id>/access_as_user. It is also
+advertised to MCP clients. Defaults to $env:PSMCPKB_OAUTH_SCOPE.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -181,7 +238,7 @@ Accept wildcard characters: False
 ```
 
 ### -AllowAnonymous
-Allows listening on a non-loopback address without an API key (e.g.
+Allows listening on a non-loopback address without an API key or OAuth (e.g.
 behind a gateway
 that authenticates requests).
 

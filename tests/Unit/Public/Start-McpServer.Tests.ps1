@@ -63,6 +63,45 @@ Describe 'Start-McpServer' {
         }
     }
 
+    It 'accepts an OAuth issuer instead of an API key and reads the OAuth settings from the environment' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-McpHttpServer { }
+            $previous = $env:PSMCPKB_API_KEY, $env:PSMCPKB_OAUTH_ISSUER, $env:PSMCPKB_OAUTH_AUDIENCE, $env:PSMCPKB_OAUTH_SCOPE
+            $env:PSMCPKB_API_KEY = $null
+            try {
+                Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -OAuthIssuer 'https://login.example.com/t/v2.0' -OAuthAudience 'client-id' -Foreground
+                Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter {
+                    $OAuth.Issuer -eq 'https://login.example.com/t/v2.0' -and ($OAuth.Audience -join ',') -eq 'client-id' -and -not $OAuth.Scope -and $ApiKeys.Count -eq 0
+                }
+
+                $env:PSMCPKB_OAUTH_ISSUER = 'https://idp.example.com'
+                $env:PSMCPKB_OAUTH_AUDIENCE = 'a, api://a'
+                $env:PSMCPKB_OAUTH_SCOPE = 'api://a/access_as_user'
+                Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -Foreground
+                Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter {
+                    $OAuth.Issuer -eq 'https://idp.example.com' -and ($OAuth.Audience -join ',') -eq 'a,api://a' -and $OAuth.Scope -eq 'api://a/access_as_user'
+                }
+            }
+            finally {
+                $env:PSMCPKB_API_KEY, $env:PSMCPKB_OAUTH_ISSUER, $env:PSMCPKB_OAUTH_AUDIENCE, $env:PSMCPKB_OAUTH_SCOPE = $previous
+            }
+        }
+    }
+
+    It 'rejects an OAuth issuer without audience or with an invalid URL' {
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'https://idp.example.com' -Foreground } | Should -Throw '*OAuthAudience*'
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*https URL*'
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'http://idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*https URL*'
+    }
+
+    It 'accepts a plain http issuer on localhost' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-McpHttpServer { }
+            Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'http://localhost:8180/realms/kb' -OAuthAudience 'a' -Foreground
+            Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter { $OAuth.Issuer -eq 'http://localhost:8180/realms/kb' }
+        }
+    }
+
     It 'refuses to start a background server on a port that is in use' {
         InModuleScope PSMcpKnowledgeBase {
             Mock Get-McpServerState { [pscustomobject]@{ port = 5124; Status = 'Running'; knowledgeBase = 'Other'; pid = 1 } }
@@ -88,6 +127,22 @@ Describe 'Start-McpServer' {
                 [System.Diagnostics.Process]::Start((Get-McpPwshPath), '-NoProfile -Command exit 1')
             }
             { Start-McpServer -KnowledgeBase Srv -Port (Get-McpFreePort) -StartTimeoutSeconds 5 } | Should -Throw '*boom: listener failed*'
+        }
+    }
+
+    It 'quotes the background command so values with curly quotes (macOS folder names) survive' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-Process { [System.Diagnostics.Process]::Start((Get-McpPwshPath), '-NoProfile -Command exit 1') }
+            $origin = "https://kb.example.com/Bob$([char]0x2019)s$([char]0x2018); Get-Process"
+            { Start-McpServer -KnowledgeBase Srv -Port (Get-McpFreePort) -AllowedOrigin $origin -StartTimeoutSeconds 5 } | Should -Throw
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $encoded = $ArgumentList[[array]::IndexOf([object[]]$ArgumentList, '-EncodedCommand') + 1]
+                $command = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($encoded))
+                $tokens = $null
+                $errors = $null
+                $ast = [System.Management.Automation.Language.Parser]::ParseInput($command, [ref]$tokens, [ref]$errors)
+                $errors.Count -eq 0 -and $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $node.Value -eq $origin }, $true).Count -eq 1
+            }
         }
     }
 }

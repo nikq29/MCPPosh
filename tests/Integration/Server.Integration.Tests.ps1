@@ -216,6 +216,30 @@ Describe 'Server options' {
         }
     }
 
+    It 'advertises the OAuth issuer with -OAuthIssuer, -OAuthAudience and -OAuthScope and keeps it on restart' {
+        $port = Get-McpTestFreePort
+        $issuer = 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000001/v2.0'
+        try {
+            $server = Start-McpServer -KnowledgeBase Web -Port $port -ApiKey $script:WebKey -OAuthIssuer $issuer -OAuthAudience 'client-id', 'api://client-id' -OAuthScope 'api://client-id/access_as_user' -StartTimeoutSeconds 60
+            $server.AuthRequired | Should -BeTrue
+            $base = "http://localhost:$port"
+
+            $unauthorized = Invoke-WebRequest -Uri "$base/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -Headers @{ Authorization = 'Bearer not.a.token' } -SkipHttpErrorCheck
+            $unauthorized.StatusCode | Should -Be 401
+            $unauthorized.Headers['WWW-Authenticate'] | Should -Match ([regex]::Escape("resource_metadata=`"$base/.well-known/oauth-protected-resource/mcp`""))
+            (Invoke-WebRequest -Uri "$base/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -Headers @{ Authorization = "Bearer $($script:WebKey)" } -SkipHttpErrorCheck).StatusCode | Should -Be 200
+
+            Restart-McpServer -Port $port -ApiKey $script:WebKey -Confirm:$false | Out-Null
+            $metadata = Invoke-RestMethod -Uri "$base/.well-known/oauth-protected-resource/mcp"
+            $metadata.resource | Should -Be "$base/mcp"
+            $metadata.authorization_servers | Should -Be $issuer
+            $metadata.scopes_supported | Should -Be 'api://client-id/access_as_user'
+        }
+        finally {
+            Stop-McpServer -Port $port -Confirm:$false -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'stops the servers of a knowledge base and then all servers' {
         $srvPort = Get-McpTestFreePort
         Start-McpServer -KnowledgeBase Srv -Port $srvPort -ApiKey $script:WebKey | Out-Null
