@@ -6,9 +6,12 @@
       PSMCPKB_KNOWLEDGEBASE    Knowledge base name (default: Default)
       PSMCPKB_DESCRIPTION      Description used when the knowledge base is created
       PSMCPKB_PORT             Port (default: 8080)
-      PSMCPKB_API_KEY          API key(s), comma-separated. Required unless PSMCPKB_ALLOW_ANONYMOUS=true
+      PSMCPKB_API_KEY          API key(s), comma-separated. Required unless OAuth or PSMCPKB_ALLOW_ANONYMOUS=true
+      PSMCPKB_OAUTH_ISSUER     OAuth issuer URL; clients can then sign in with OAuth (read by Start-McpServer)
+      PSMCPKB_OAUTH_AUDIENCE   Accepted token audiences, comma-separated (required with an issuer)
+      PSMCPKB_OAUTH_SCOPE      Scope the tokens must contain (optional)
       PSMCPKB_ALLOW_WRITE      true = enable the add_note tool
-      PSMCPKB_ALLOW_ANONYMOUS  true = no API key (only behind an authenticating gateway)
+      PSMCPKB_ALLOW_ANONYMOUS  true = no API key or OAuth (only behind an authenticating gateway)
       PSMCPKB_ALLOWED_ORIGINS  Comma-separated browser origins for CORS
       PSMCPKB_IMPORT_PATH      Folder with documents to import on start (default: /seed if not empty)
       PSMCPKB_HOME             Data directory (default: /data, mount Azure Files here)

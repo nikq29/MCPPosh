@@ -11,6 +11,7 @@ JSON and keep no session state.
 | `GET`, `DELETE` | `/mcp` | `405 Method Not Allowed` (no server-initiated event stream, no sessions) |
 | `OPTIONS` | `/mcp` | CORS preflight, `204 No Content` |
 | `GET`, `HEAD` | `/health` | health status; details only for authorized callers |
+| `GET`, `HEAD` | `/.well-known/oauth-protected-resource`, `/.well-known/oauth-protected-resource/mcp` | OAuth protected resource metadata (only with OAuth) |
 | `GET`, `HEAD` | `/` | short plain-text description of the server |
 
 Other paths return `404 Not Found`.
@@ -33,7 +34,36 @@ Requests without a valid key get `401 Unauthorized` with `WWW-Authenticate: Bear
 error with code -32001. Keys are compared in constant time. Several keys can be configured at the same time, for
 example to rotate keys without downtime.
 
-Servers that listen on a non-loopback address require API keys unless they were started with `-AllowAnonymous`.
+Servers that listen on a non-loopback address require API keys or OAuth unless they were started with
+`-AllowAnonymous`.
+
+### OAuth
+
+With `-OAuthIssuer` and `-OAuthAudience` (or `PSMCPKB_OAUTH_ISSUER` and `PSMCPKB_OAUTH_AUDIENCE`) the server also
+accepts OAuth access tokens of an OpenID Connect identity provider such as Microsoft Entra ID, Auth0 or Keycloak, as
+described in the MCP authorization specification. The server only checks tokens; the AI client signs the user in.
+
+- `Authorization: Bearer <token>` is first compared with the API keys, then checked as a JSON Web Token: RS256
+  signature with the issuer's keys (from `<issuer>/.well-known/openid-configuration`), exact issuer, one of the
+  audiences, expiry and not-before (five minutes clock skew) and, with `-OAuthScope`, the scope in the `scp` or `scope`
+  claim. The short scope name (`access_as_user` for `api://<app>/access_as_user`) is accepted too, because Entra ID
+  writes it that way.
+- `401` responses add `resource_metadata="<base>/.well-known/oauth-protected-resource/mcp"` (and `scope="..."`) to
+  `WWW-Authenticate`. Clients read the metadata there: `resource` (`<base>/mcp`), `authorization_servers` (the
+  issuer), `scopes_supported` and `bearer_methods_supported`.
+- Behind a reverse proxy, `<base>` is taken from `X-Forwarded-Proto` and `X-Forwarded-Host` (host names only).
+- The signing keys are cached; unknown key ids load them again at most once per minute.
+
+```powershell
+$tenant = '<tenant id>'; $client = '<client id>'
+Start-McpServer -KnowledgeBase Contoso -ListenAddress '*' -Port 8080 -Foreground `
+    -OAuthIssuer "https://login.microsoftonline.com/$tenant/v2.0" -OAuthAudience $client, "api://$client" `
+    -OAuthScope "api://$client/access_as_user"
+```
+
+Microsoft Entra ID does not support dynamic client registration, so clients need the client ID of an app
+registration, for example `claude mcp add --transport http --client-id <client id> --callback-port <port> ...`
+(see [Azure hosting](hosting-azure.md#sign-in-with-microsoft-entra-id)).
 
 ## POST /mcp
 
@@ -90,7 +120,7 @@ authorized callers.
 | 202 | notification accepted |
 | 204 | CORS preflight |
 | 400 | unsupported `MCP-Protocol-Version` |
-| 401 | missing or invalid API key |
+| 401 | missing or invalid API key or access token |
 | 403 | origin not allowed |
 | 404 | unknown path |
 | 405 | wrong method for the path |

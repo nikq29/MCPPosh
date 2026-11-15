@@ -33,12 +33,15 @@ module version as tag (for example `0.1.0`) and `latest` for stable versions, fo
 
 | Variable | Meaning | Default |
 | --- | --- | --- |
-| `PSMCPKB_API_KEY` | API key(s), comma-separated | required |
+| `PSMCPKB_API_KEY` | API key(s), comma-separated | required unless OAuth or anonymous |
+| `PSMCPKB_OAUTH_ISSUER` | OAuth issuer URL; clients can then sign in (see [HTTP API](http-api.md#oauth)) | empty |
+| `PSMCPKB_OAUTH_AUDIENCE` | comma-separated accepted token audiences | required with an issuer |
+| `PSMCPKB_OAUTH_SCOPE` | scope the tokens must contain | empty |
 | `PSMCPKB_KNOWLEDGEBASE` | knowledge base to serve | `Default` |
 | `PSMCPKB_DESCRIPTION` | description used when the knowledge base is created | empty |
 | `PSMCPKB_PORT` | port inside the container | `8080` |
 | `PSMCPKB_ALLOW_WRITE` | `true` enables the `add_note` tool | `false` |
-| `PSMCPKB_ALLOW_ANONYMOUS` | `true` runs without API key (only behind an authenticating gateway) | `false` |
+| `PSMCPKB_ALLOW_ANONYMOUS` | `true` runs without API key or OAuth (only behind an authenticating gateway) | `false` |
 | `PSMCPKB_ALLOWED_ORIGINS` | comma-separated browser origins for CORS | empty |
 | `PSMCPKB_IMPORT_PATH` | folder whose documents are imported at start | `/seed` |
 | `PSMCPKB_HOME` | data directory | `/data` |

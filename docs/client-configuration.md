@@ -116,6 +116,19 @@ A base URL such as `https://psmcpkb.example.com` is completed to `https://psmcpk
 | Cursor | `${env:PSMCPKB_API_KEY}` | environment variable |
 | Generic | `${PSMCPKB_API_KEY}` | depends on the client |
 
+### OAuth sign-in
+
+Servers started with `-OAuthIssuer` let users sign in instead of using an API key. Add the server without a key; the
+client opens the browser for the sign-in when it connects. Clients that support dynamic client registration do this
+on their own. With Microsoft Entra ID, pass the client ID of the app registration:
+
+```bash
+claude mcp add --transport http --client-id <client id> --callback-port 8765 psmcpkb-contoso https://psmcpkb.example.com/mcp
+```
+
+The callback port must match a redirect URI of the app registration (see
+[Azure hosting](hosting-azure.md#sign-in-with-microsoft-entra-id)).
+
 ### Claude Desktop over HTTP
 
 Claude Desktop does not read remote servers from its configuration file. Either add the server as a custom connector

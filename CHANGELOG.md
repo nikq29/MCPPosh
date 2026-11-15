@@ -33,6 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and background servers, and publishing to a local stand-in for Azure Files that a server then serves.
 - QA test `tests/QA/integration.tests.ps1` that fails when a cmdlet, parameter set or parameter has no integration
   test, or when an integration test uses `Mock`.
+- OAuth sign-in for HTTP servers: `Start-McpServer -OAuthIssuer -OAuthAudience -OAuthScope` (or
+  `PSMCPKB_OAUTH_ISSUER`, `PSMCPKB_OAUTH_AUDIENCE`, `PSMCPKB_OAUTH_SCOPE`) accepts JWT access tokens of an OpenID
+  Connect identity provider such as Microsoft Entra ID next to API keys and publishes
+  `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
+- Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
+  `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
+  portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has
+  `-OAuthClientId`, `-OAuthScope`, `-AllowAnonymous` and `-AllowedOrigin`.
 - "Deploy to Azure" button for the Bicep template (`deploy/azure/azuredeploy.json`, checked against `main.bicep`
   in CI); the template parameter `image` defaults to `ghcr.io/nikq29/psmcpkb:latest`.
 

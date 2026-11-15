@@ -63,6 +63,36 @@ Describe 'Start-McpServer' {
         }
     }
 
+    It 'accepts an OAuth issuer instead of an API key and reads the OAuth settings from the environment' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-McpHttpServer { }
+            $previous = $env:PSMCPKB_API_KEY, $env:PSMCPKB_OAUTH_ISSUER, $env:PSMCPKB_OAUTH_AUDIENCE, $env:PSMCPKB_OAUTH_SCOPE
+            $env:PSMCPKB_API_KEY = $null
+            try {
+                Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -OAuthIssuer 'https://login.example.com/t/v2.0' -OAuthAudience 'client-id' -Foreground
+                Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter {
+                    $OAuth.Issuer -eq 'https://login.example.com/t/v2.0' -and ($OAuth.Audience -join ',') -eq 'client-id' -and -not $OAuth.Scope -and $ApiKeys.Count -eq 0
+                }
+
+                $env:PSMCPKB_OAUTH_ISSUER = 'https://idp.example.com'
+                $env:PSMCPKB_OAUTH_AUDIENCE = 'a, api://a'
+                $env:PSMCPKB_OAUTH_SCOPE = 'api://a/access_as_user'
+                Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -Foreground
+                Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter {
+                    $OAuth.Issuer -eq 'https://idp.example.com' -and ($OAuth.Audience -join ',') -eq 'a,api://a' -and $OAuth.Scope -eq 'api://a/access_as_user'
+                }
+            }
+            finally {
+                $env:PSMCPKB_API_KEY, $env:PSMCPKB_OAUTH_ISSUER, $env:PSMCPKB_OAUTH_AUDIENCE, $env:PSMCPKB_OAUTH_SCOPE = $previous
+            }
+        }
+    }
+
+    It 'rejects an OAuth issuer without audience or with an invalid URL' {
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'https://idp.example.com' -Foreground } | Should -Throw '*OAuthAudience*'
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*http(s) URL*'
+    }
+
     It 'refuses to start a background server on a port that is in use' {
         InModuleScope PSMcpKnowledgeBase {
             Mock Get-McpServerState { [pscustomobject]@{ port = 5124; Status = 'Running'; knowledgeBase = 'Other'; pid = 1 } }

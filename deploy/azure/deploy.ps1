@@ -8,6 +8,10 @@
 .EXAMPLE
     ./deploy.ps1 -ResourceGroupName rg-psmcpkb -Image ghcr.io/nikq29/psmcpkb:latest -KnowledgeBase Contoso -Publish
 .EXAMPLE
+    ./deploy.ps1 -ResourceGroupName rg-psmcpkb -Image ghcr.io/nikq29/psmcpkb:latest -OAuthClientId 00000000-0000-0000-0000-000000000000
+
+    Clients can sign in with Microsoft Entra ID (app registration in the current tenant) or use the generated API key.
+.EXAMPLE
     ./deploy.ps1 -ResourceGroupName rg-psmcpkb -Image myacr.azurecr.io/psmcpkb:0.1.0 -RegistryServer myacr.azurecr.io -RegistryUsername myacr -RegistryPassword (Read-Host -AsSecureString)
 #>
 [CmdletBinding(SupportsShouldProcess)]
@@ -36,6 +40,17 @@ param(
 
     [switch] $AllowWrite,
 
+    # No API key is generated; only behind a gateway that authenticates every request.
+    [switch] $AllowAnonymous,
+
+    # Client ID of a Microsoft Entra app registration in the current tenant; enables OAuth sign-in.
+    [ValidatePattern('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')]
+    [string] $OAuthClientId,
+
+    [string] $OAuthScope = 'access_as_user',
+
+    [string[]] $AllowedOrigin,
+
     [ValidateRange(0, 10)]
     [int] $MinReplicas = 1,
 
@@ -56,7 +71,7 @@ if (-not (Get-AzContext)) {
     Connect-AzAccount | Out-Null
 }
 
-if (-not $ApiKey) {
+if (-not $ApiKey -and -not $AllowAnonymous) {
     $bytes = [byte[]]::new(32)
     [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
     $ApiKey = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
@@ -74,11 +89,17 @@ $parameters = @{
     name                     = $Name
     location                 = $Location
     image                    = $Image
-    apiKey                   = $ApiKey
+    apiKey                   = [string]$ApiKey
     knowledgeBase            = $KnowledgeBase
     knowledgeBaseDescription = $description
     allowWrite               = [bool]$AllowWrite
+    allowAnonymous           = [bool]$AllowAnonymous
+    allowedOrigins           = $AllowedOrigin -join ','
     minReplicas              = $MinReplicas
+}
+if ($OAuthClientId) {
+    $parameters['oauthClientId'] = $OAuthClientId
+    $parameters['oauthScope'] = $OAuthScope
 }
 if ($RegistryServer) {
     $parameters['registryServer'] = $RegistryServer
@@ -105,7 +126,7 @@ if ($Publish) {
 
 [pscustomobject]@{
     McpEndpoint        = $endpoint
-    ApiKey             = if ($generatedKey) { $ApiKey } else { '(as provided)' }
+    ApiKey             = if ($generatedKey) { $ApiKey } elseif ($ApiKey) { '(as provided)' } else { '(none)' }
     StorageAccountName = $storageAccount
     ShareName          = $share
     ResourceGroupName  = $ResourceGroupName

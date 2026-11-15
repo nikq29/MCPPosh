@@ -24,6 +24,9 @@ function Start-McpHttpServer {
     .PARAMETER AllowAnonymous
         Records that the server was started without API key on a non-loopback address on purpose.
 
+    .PARAMETER OAuth
+        Hashtable with Issuer, Audience and optionally Scope to accept OAuth access tokens (JWT) in addition to the API keys.
+
     .EXAMPLE
         Start-McpHttpServer -Context $context -Port 5050 -ListenAddress localhost -ApiKeys 'secret-key'
 
@@ -46,7 +49,9 @@ function Start-McpHttpServer {
         [AllowEmptyCollection()]
         [string[]] $AllowedOrigins = @(),
 
-        [switch] $AllowAnonymous
+        [switch] $AllowAnonymous,
+
+        [hashtable] $OAuth
     )
 
     $ApiKeys = [string[]]@($ApiKeys | Where-Object { $_ })
@@ -77,7 +82,11 @@ function Start-McpHttpServer {
             listenAddress    = $ListenAddress
             url              = "http://${displayHost}:$Port/mcp"
             allowWrite       = [bool]$Context.AllowWrite
-            authRequired     = ($ApiKeys.Count -gt 0)
+            authRequired     = ($ApiKeys.Count -gt 0 -or [bool]$OAuth)
+            apiKeyRequired   = ($ApiKeys.Count -gt 0)
+            oauthIssuer      = $(if ($OAuth) { $OAuth.Issuer })
+            oauthAudience    = $(if ($OAuth) { [string[]]$OAuth.Audience })
+            oauthScope       = $(if ($OAuth) { $OAuth.Scope })
             allowAnonymous   = [bool]$AllowAnonymous
             allowedOrigins   = $AllowedOrigins
             logFile          = $Context.LogPath
@@ -86,12 +95,15 @@ function Start-McpHttpServer {
         })
 
     $null = Update-McpServerIndex -Context $Context -Force
-    Write-McpLog -Context $Context -Message ("HTTP server for knowledge base '{0}' listening on http://{1}:{2}/mcp (pid {3}, PSMcpKnowledgeBase {4}, auth: {5}, write access: {6})" -f $kb.Name, $prefixHost, $Port, $PID, $script:ModuleVersion, $(if ($ApiKeys.Count) { 'API key' } else { 'none' }), $Context.AllowWrite)
+    $authText = @(if ($ApiKeys.Count) { 'API key' }; if ($OAuth) { "OAuth ($($OAuth.Issuer))" }) -join ', '
+    if (-not $authText) { $authText = 'none' }
+    Write-McpLog -Context $Context -Message ("HTTP server for knowledge base '{0}' listening on http://{1}:{2}/mcp (pid {3}, PSMcpKnowledgeBase {4}, auth: {5}, write access: {6})" -f $kb.Name, $prefixHost, $Port, $PID, $script:ModuleVersion, $authText, $Context.AllowWrite)
 
     $settings = @{
         ApiKeys        = $ApiKeys
         AllowedOrigins = $AllowedOrigins
         IsLoopback     = $isLoopback
+        OAuth          = $OAuth
     }
 
     try {

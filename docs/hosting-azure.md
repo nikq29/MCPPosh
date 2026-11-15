@@ -35,10 +35,12 @@ az acr build -r myacr -t psmcpkb:0.1.0 -f docker/Dockerfile --build-arg PSMCPKB_
 
 ## 2. Deploy
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fnikq29%2FPSMcpKnowledgeBase%2Fmain%2Fdeploy%2Fazure%2Fazuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fnikq29%2FPSMcpKnowledgeBase%2Fmain%2Fdeploy%2Fazure%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fnikq29%2FPSMcpKnowledgeBase%2Fmain%2Fdeploy%2Fazure%2FcreateUiDefinition.json)
 
-The button opens the template in the Azure portal: choose a subscription, a resource group and a region, enter an
-API key of at least 16 characters, and adjust the other [template parameters](#template-parameters) if needed. The
+The button opens the template in the Azure portal: choose a subscription, a resource group and a region. On the
+*Authentication* tab, pick one of the app registrations you own (or enter a client ID) to let users
+[sign in with Microsoft Entra ID](#sign-in-with-microsoft-entra-id), and/or enter an API key of at least 16
+characters. Adjust the other [template parameters](#template-parameters) on the *Options* tab if needed. The
 image defaults to `ghcr.io/nikq29/psmcpkb:latest`; enter a fixed version such as `ghcr.io/nikq29/psmcpkb:0.1.1`
 for production. The `mcpEndpoint` output of the deployment is the URL for the AI clients. To publish knowledge
 afterwards, continue with [step 3](#3-publish-and-manage-knowledge).
@@ -64,6 +66,9 @@ Connect-AzAccount
 | `-KnowledgeBase` | knowledge base to serve; its local description is used | `Default` |
 | `-RegistryServer`, `-RegistryUsername`, `-RegistryPassword` | credentials for a private registry | none |
 | `-AllowWrite` | enables the `add_note` tool | off |
+| `-OAuthClientId`, `-OAuthScope` | [Entra ID sign-in](#sign-in-with-microsoft-entra-id) with this app registration and scope | off, `access_as_user` |
+| `-AllowAnonymous` | no API key is generated; only behind an authenticating gateway | off |
+| `-AllowedOrigin` | browser origins allowed via CORS | none |
 | `-MinReplicas` | minimum number of replicas (0 allows scale to zero) | `1` |
 | `-Publish` | publishes the local knowledge base after the deployment | off |
 
@@ -84,7 +89,10 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 | `name` | base name of all resources | `psmcpkb` |
 | `location` | Azure region | resource group location |
 | `image` | container image | `ghcr.io/nikq29/psmcpkb:latest` |
-| `apiKey` | API key(s), comma-separated, at least 16 characters (secure) | required |
+| `apiKey` | API key(s), comma-separated, at least 16 characters (secure); empty only with `oauthClientId` or `allowAnonymous` | empty |
+| `oauthClientId` | client ID of an Entra app registration in the tenant; enables [OAuth sign-in](#sign-in-with-microsoft-entra-id) | empty |
+| `oauthScope` | scope the app registration exposes | `access_as_user` |
+| `allowAnonymous` | no API key or token required; only behind an authenticating gateway | `false` |
 | `knowledgeBase` | knowledge base name on the share | `Default` |
 | `knowledgeBaseDescription` | description used when the knowledge base is created | empty |
 | `allowWrite` | enables `add_note`; keep `maxReplicas` at 1 | `false` |
@@ -95,6 +103,26 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 | `shareQuotaGiB` | quota of the file share | `5` |
 
 Outputs: `mcpEndpoint` (`https://<app>/mcp`), `storageAccountName` and `shareName`.
+
+The issuer is the tenant you deploy to (`https://login.microsoftonline.com/<tenant id>/v2.0`); tokens must be issued
+for `<client id>` or `api://<client id>` and contain `api://<client id>/<oauthScope>`.
+
+### Sign in with Microsoft Entra ID
+
+One app registration serves as both the API and the client that signs users in:
+
+1. *Microsoft Entra ID › App registrations › New registration*: single tenant, no redirect URI yet. Note the
+   *Application (client) ID*. You are its owner, so the Deploy to Azure form lists it.
+2. *Expose an API*: set the Application ID URI to `api://<client id>` and add the scope `access_as_user` (who can
+   consent: admins and users).
+3. *Manifest*: set `requestedAccessTokenVersion` (older manifest format: `accessTokenAcceptedVersion`) to `2`. With
+   v1 tokens the issuer does not match and every token is rejected.
+4. *Authentication › Add a platform › Mobile and desktop applications*: add the redirect URI of each client, for
+   Claude Code `http://localhost:<port>/callback` with the port you pass as `--callback-port`.
+5. Deploy with `oauthClientId` (or `deploy.ps1 -OAuthClientId`) and add the server to the client, for example
+   `claude mcp add --transport http --client-id <client id> --callback-port <port> psmcpkb <mcpEndpoint>`.
+
+API keys keep working next to OAuth, for scripts and `Test-McpServer`.
 
 ## 3. Publish and manage knowledge
 
@@ -121,11 +149,11 @@ See [Client configuration](client-configuration.md#http).
 
 ## Security and operations
 
-- The Container App is only reachable over HTTPS; every call to `/mcp` requires the API key. `/health` reports only
-  the status without a key and is used by the probes.
+- The Container App is only reachable over HTTPS; every call to `/mcp` requires the API key or an Entra ID access
+  token. `/health` reports only the status without credentials and is used by the probes.
 - Rotate keys without downtime: set the secret to `old-key,new-key`, update the clients, then remove the old key.
-- For Microsoft Entra ID, put Container Apps authentication ("Easy Auth") or Azure API Management in front of the
-  app and set `PSMCPKB_ALLOW_ANONYMOUS=true` only when the gateway authenticates every request.
+- Instead of the built-in Entra ID sign-in you can put Container Apps authentication ("Easy Auth") or Azure API
+  Management in front of the app and set `allowAnonymous` only when the gateway authenticates every request.
 - The server is stateless. Without write access you can increase `maxReplicas`; with `allowWrite` keep one replica.
 - `minReplicas = 0` saves costs but causes a cold start of a few seconds on the first request.
 - Logs: Log Analytics table `ContainerAppConsoleLogs_CL` or

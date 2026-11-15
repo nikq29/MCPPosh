@@ -23,7 +23,7 @@ Describe 'Invoke-McpHttpRequest' {
         $script:Base = "http://localhost:$($script:Port)"
 
         function Invoke-TestHttp {
-            param([string] $Path, [string] $Method = 'GET', [string] $Body, [hashtable] $Headers = @{}, [string[]] $ApiKeys = @('k1'), [string[]] $AllowedOrigins = @(), [string] $ContentType = 'application/json', [switch] $Chunked)
+            param([string] $Path, [string] $Method = 'GET', [string] $Body, [hashtable] $Headers = @{}, [string[]] $ApiKeys = @('k1'), [string[]] $AllowedOrigins = @(), [string] $ContentType = 'application/json', [switch] $Chunked, [hashtable] $OAuth)
             $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::new($Method), "$($script:Base)$Path")
             foreach ($h in $Headers.GetEnumerator()) { $null = $request.Headers.TryAddWithoutValidation($h.Key, [string]$h.Value) }
             if ($Body) { $request.Content = [System.Net.Http.StringContent]::new($Body, [System.Text.Encoding]::UTF8, $ContentType) }
@@ -31,7 +31,7 @@ Describe 'Invoke-McpHttpRequest' {
             $client = [System.Net.Http.HttpClient]::new()
             $pending = $client.SendAsync($request)
             $httpContext = $script:Listener.GetContext()
-            $settings = @{ ApiKeys = $ApiKeys; AllowedOrigins = $AllowedOrigins; IsLoopback = $true }
+            $settings = @{ ApiKeys = $ApiKeys; AllowedOrigins = $AllowedOrigins; IsLoopback = $true; OAuth = $OAuth }
             $status = InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
                 param($Context, $HttpContext, $Settings)
                 Invoke-McpHttpRequest -Context $Context -HttpContext $HttpContext -Settings $Settings
@@ -159,5 +159,56 @@ Describe 'Invoke-McpHttpRequest' {
         $preflight = Invoke-TestHttp -Path '/mcp' -Method OPTIONS -Headers @{ Origin = 'https://app.example.com' } -AllowedOrigins 'https://app.example.com'
         $preflight.Code | Should -Be 204
         $preflight.Headers.GetValues('Access-Control-Allow-Origin') | Should -Be 'https://app.example.com'
+    }
+
+    Context 'with OAuth' {
+        BeforeAll {
+            $script:OAuth = @{ Issuer = 'https://login.example.com/tenant/v2.0'; Audience = @('client-id'); Scope = 'api://client-id/access_as_user' }
+            $script:Ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
+        }
+
+        It 'serves the protected resource metadata only when OAuth is configured' {
+            foreach ($path in '/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp') {
+                $metadata = (Invoke-TestHttp -Path $path -OAuth $script:OAuth).Body | ConvertFrom-Json
+                $metadata.resource | Should -Be "$($script:Base)/mcp"
+                $metadata.authorization_servers | Should -Be 'https://login.example.com/tenant/v2.0'
+                $metadata.scopes_supported | Should -Be 'api://client-id/access_as_user'
+                (Invoke-TestHttp -Path $path).Code | Should -Be 404
+            }
+            (Invoke-TestHttp -Path '/.well-known/oauth-protected-resource' -Method POST -OAuth $script:OAuth).Code | Should -Be 405
+        }
+
+        It 'uses validated forwarded headers for the public URL' {
+            $forwarded = (Invoke-TestHttp -Path '/.well-known/oauth-protected-resource/mcp' -OAuth $script:OAuth -Headers @{ 'X-Forwarded-Proto' = 'https'; 'X-Forwarded-Host' = 'kb.example.com' }).Body | ConvertFrom-Json
+            $forwarded.resource | Should -Be 'https://kb.example.com/mcp'
+            $spoofed = (Invoke-TestHttp -Path '/.well-known/oauth-protected-resource/mcp' -OAuth $script:OAuth -Headers @{ 'X-Forwarded-Proto' = 'javascript'; 'X-Forwarded-Host' = 'evil.example.com", x="y' }).Body | ConvertFrom-Json
+            $spoofed.resource | Should -Be "$($script:Base)/mcp"
+        }
+
+        It 'points unauthorized clients to the metadata and requires a token even without API keys' {
+            $unauthorized = Invoke-TestHttp -Path '/mcp' -Method POST -Body $script:Ping -ApiKeys @() -OAuth $script:OAuth
+            $unauthorized.Code | Should -Be 401
+            $challenge = $unauthorized.Headers.WwwAuthenticate.ToString()
+            $challenge | Should -Match ([regex]::Escape("resource_metadata=`"$($script:Base)/.well-known/oauth-protected-resource/mcp`""))
+            $challenge | Should -Match 'scope="api://client-id/access_as_user"'
+            ((Invoke-TestHttp -Path '/health' -ApiKeys @() -OAuth $script:OAuth).Body | ConvertFrom-Json).PSObject.Properties.Name | Should -Not -Contain 'documents'
+        }
+
+        It 'accepts valid tokens and API keys side by side' {
+            Mock Test-McpOAuthToken -ModuleName PSMcpKnowledgeBase { $AuthorizationHeader -eq 'Bearer good.jwt.token' }
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $script:Ping -OAuth $script:OAuth -Headers @{ Authorization = 'Bearer good.jwt.token' }).Code | Should -Be 200
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $script:Ping -OAuth $script:OAuth -Headers @{ Authorization = 'Bearer bad.jwt.token' }).Code | Should -Be 401
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $script:Ping -OAuth $script:OAuth -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 200
+            Should -Invoke Test-McpOAuthToken -ModuleName PSMcpKnowledgeBase -Times 2 -Exactly -ParameterFilter { $AuthorizationHeader -like '*.jwt.token' }
+            $health = (Invoke-TestHttp -Path '/health' -OAuth $script:OAuth -Headers @{ Authorization = 'Bearer good.jwt.token' }).Body | ConvertFrom-Json
+            $health.authRequired | Should -BeTrue
+        }
+
+        It 'treats a failing key download as unauthorized and logs it' {
+            Mock Test-McpOAuthToken -ModuleName PSMcpKnowledgeBase { throw 'identity provider down' }
+            Mock Write-McpLog -ModuleName PSMcpKnowledgeBase { }
+            (Invoke-TestHttp -Path '/mcp' -Method POST -Body $script:Ping -OAuth $script:OAuth -Headers @{ Authorization = 'Bearer a.b.c' }).Code | Should -Be 401
+            Should -Invoke Write-McpLog -ModuleName PSMcpKnowledgeBase -ParameterFilter { $Level -eq 'WARN' -and $Message -like '*identity provider down*' }
+        }
     }
 }

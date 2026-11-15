@@ -110,6 +110,15 @@ jobs:
             exit 1
           }
 
+      # The portal form passes only the parameters listed in its outputs; a missing one silently keeps its default.
+      - name: Check that createUiDefinition.json passes every template parameter
+        run: |
+          diff -u <(jq -r '.parameters | keys[]' deploy/azure/azuredeploy.json) \
+            <(jq -r '.parameters.outputs | keys[]' deploy/azure/createUiDefinition.json) || {
+            echo "::error file=deploy/azure/createUiDefinition.json::The outputs must match the parameters of main.bicep."
+            exit 1
+          }
+
       - name: Lint the Markdown documentation
         run: npx --yes markdownlint-cli2@0.17.2
 
