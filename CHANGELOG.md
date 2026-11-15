@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-15
+
 ### Changed
 
 - Releases need only the tag again: the build moves the `Unreleased` entries into the version section, and the
