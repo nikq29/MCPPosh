@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- OAuth sign-in for HTTP servers: `Start-McpServer -OAuthIssuer -OAuthAudience -OAuthScope` (or
+  `PSMCPKB_OAUTH_ISSUER`, `PSMCPKB_OAUTH_AUDIENCE`, `PSMCPKB_OAUTH_SCOPE`) accepts JWT access tokens of an OpenID
+  Connect identity provider such as Microsoft Entra ID next to API keys and publishes
+  `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
+  The issuer must use https (http only for localhost), tokens need a scope or app roles (ID tokens are rejected), and
+  the signing keys are refreshed daily. Like API key servers, OAuth servers accept browser clients from any origin.
+- Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
+  `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
+  portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has
+  `-OAuthClientId`, `-OAuthScope`, `-AllowAnonymous` and `-AllowedOrigin`.
+
+### Changed
+
+- Releases move the `Unreleased` entries of `CHANGELOG.md` into a version section before the tag is created; the
+  release workflow stops when the section is missing and uses it for the GitHub release and the module manifest.
+  The sections of 0.1.0, 0.1.1 and 0.2.0 were added afterwards.
+
+### Fixed
+
+- `Publish-McpKnowledgeBase` checks the share for documents that do not exist locally again right before the
+  manifest is uploaded, so a note that an agent saves during a long upload is kept too.
+- Background HTTP servers start when the knowledge base path, origins or OAuth settings contain curly apostrophes
+  (U+2019, which macOS types in folder names), and the commands of `Get-McpClientConfig` stay valid for such paths
+  on Windows. PowerShell treats these characters as single quotes, so the quoted values ended early.
+- Successful `/health` requests (Azure probes every 30 seconds) are no longer written to the server log, which is
+  never rotated.
+
+## [0.2.0] - 2026-11-15
+
+### Added
+
+- "Deploy to Azure" button for the Bicep template (`deploy/azure/azuredeploy.json`, checked against `main.bicep`
+  in CI); the template parameter `image` defaults to `ghcr.io/nikq29/psmcpkb:latest`.
+
+### Fixed
+
+- `Publish-McpKnowledgeBase` stops when the share holds documents that do not exist locally and were not published
+  from this computer, for example notes that agents saved with `add_note`. Before, it uploaded the local manifest
+  and removed those notes from the server (and deleted their files with `-Prune`). `-Force` replaces them.
+
+### Security
+
+- `search_documentation` rejects queries longer than 1000 characters. Every unknown word is compared with the whole
+  vocabulary, so one huge query could block the server for everyone for a long time.
+- `add_note` accepts at most 20 tags of at most 50 characters. Tags are stored in the manifest and were not counted
+  by the limits on agent notes.
+
+## [0.1.1] - 2026-11-15
+
+### Fixed
+
+- The arm64 Docker image contained the x64 PowerShell and failed to start with "pwsh: not found".
+
+## [0.1.0] - 2026-11-15
+
+### Added
+
 - Knowledge base management: `New-`, `Get-`, `Set-`, `Remove-McpKnowledgeBase`.
 - Backup and transfer of knowledge bases as ZIP archives: `Export-McpKnowledgeBase`, `Import-McpKnowledgeBase`.
 - Incremental publishing of a knowledge base to Azure Files: `Publish-McpKnowledgeBase`.
@@ -33,33 +90,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and background servers, and publishing to a local stand-in for Azure Files that a server then serves.
 - QA test `tests/QA/integration.tests.ps1` that fails when a cmdlet, parameter set or parameter has no integration
   test, or when an integration test uses `Mock`.
-- OAuth sign-in for HTTP servers: `Start-McpServer -OAuthIssuer -OAuthAudience -OAuthScope` (or
-  `PSMCPKB_OAUTH_ISSUER`, `PSMCPKB_OAUTH_AUDIENCE`, `PSMCPKB_OAUTH_SCOPE`) accepts JWT access tokens of an OpenID
-  Connect identity provider such as Microsoft Entra ID next to API keys and publishes
-  `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
-  The issuer must use https (http only for localhost), tokens need a scope or app roles (ID tokens are rejected), and
-  the signing keys are refreshed daily. Like API key servers, OAuth servers accept browser clients from any origin.
-- Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
-  `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
-  portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has
-  `-OAuthClientId`, `-OAuthScope`, `-AllowAnonymous` and `-AllowedOrigin`.
-- "Deploy to Azure" button for the Bicep template (`deploy/azure/azuredeploy.json`, checked against `main.bicep`
-  in CI); the template parameter `image` defaults to `ghcr.io/nikq29/psmcpkb:latest`.
 
 ### Fixed
 
 - Markdown tables, search chunks and the text of the MCP tool results use LF line endings on every platform;
   on Windows they contained CRLF. Documents with CRLF line endings are chunked without carriage returns.
 - The `Publish-McpKnowledgeBase` unit tests no longer fail when the Az.Storage module is installed.
-- `Publish-McpKnowledgeBase` stops when the share holds documents that do not exist locally and were not published
-  from this computer, for example notes that agents saved with `add_note`. Before, it uploaded the local manifest
-  and removed those notes from the server (and deleted their files with `-Prune`). `-Force` replaces them.
-  The check runs again right before the manifest is uploaded, so a note saved during a long upload is kept too.
-- Background HTTP servers start when the knowledge base path, origins or OAuth settings contain curly apostrophes
-  (U+2019, which macOS types in folder names), and the commands of `Get-McpClientConfig` stay valid for such paths
-  on Windows. PowerShell treats these characters as single quotes, so the quoted values ended early.
-- Successful `/health` requests (Azure probes every 30 seconds) are no longer written to the server log, which is
-  never rotated.
 
 ### Security
 
@@ -79,10 +115,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   batches are limited to 100 messages.
 - A request body that does not arrive completely within 30 seconds is answered with `408` and the connection is
   closed. Before, one client that stopped sending in the middle of a request blocked the server for everyone.
-- `search_documentation` rejects queries longer than 1000 characters. Every unknown word is compared with the whole
-  vocabulary, so one huge query could block the server for everyone for a long time.
-- `add_note` accepts at most 20 tags of at most 50 characters. Tags are stored in the manifest and were not counted
-  by the limits on agent notes.
 - `add_note` is limited to 1000 agent notes and 10 million characters of agent notes per knowledge base and to
   30 notes per minute per server, so an agent cannot fill the disk or keep the server busy rebuilding the index.
 - API keys are compared as SHA-256 hashes in constant time; before, the response time revealed the key length.

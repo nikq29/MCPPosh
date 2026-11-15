@@ -136,8 +136,10 @@ PSWritePDF and `pdftotext` it is skipped.
 ## Changelog
 
 Every change needs an entry in the `Unreleased` section of [CHANGELOG.md](../CHANGELOG.md) following
-[Keep a Changelog](https://keepachangelog.com/en/1.0.0/). The QA tests check the format; the build turns the entry
-into the release notes of the module.
+[Keep a Changelog](https://keepachangelog.com/en/1.0.0/). The QA tests check the format. Before a release the entries
+are moved into a version section (see below); the build task `Create_changelog_release_output` in
+[`.build/Changelog.build.ps1`](../.build/Changelog.build.ps1) turns the section of the built version, or the
+`Unreleased` entries for preview builds, into the release notes of the module.
 
 ## Versioning and releases
 
@@ -157,11 +159,21 @@ The workflow [`.github/workflows/build.yml`](../.github/workflows/build.yml) run
 
 To release a version:
 
-1. Make sure `CHANGELOG.md` describes the changes under `Unreleased`.
-2. Create the repository secret `GALLERY_API_TOKEN` with a PowerShell Gallery API key (once).
-3. Tag the commit on `main` and push the tag:
+1. Create the repository secret `GALLERY_API_TOKEN` with a PowerShell Gallery API key (once).
+2. Move the `Unreleased` entries of `CHANGELOG.md` into a section for the new version and merge that change into
+   `main` (ChangelogManagement is installed by `./build.ps1 -ResolveDependency`):
+
+   ```powershell
+   Import-Module ChangelogManagement
+   Update-Changelog -ReleaseVersion 0.3.0 -LinkMode None   # adds "## [0.3.0] - <today>", keeps an empty Unreleased
+   ```
+
+3. Tag that commit on `main` and push the tag:
 
    ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag v0.3.0
+   git push origin v0.3.0
    ```
+
+   The `publish` job stops when `CHANGELOG.md` has no `## [0.3.0]` section, and uses that section as the notes of
+   the GitHub release and of the module manifest.
