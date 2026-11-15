@@ -64,7 +64,8 @@ stdin and stdout. They do not open network ports.
 
 `add_note` is only offered when the server runs with `-AllowWrite`. Agent notes are stored with the source type
 `Agent` and the tag `agent-note`, can only add or update notes (never change or delete other documents) and are
-limited to 200000 characters. Review them regularly with `Get-McpDocument -SourceType Agent`.
+limited to 200000 characters and 20 tags of at most 50 characters. Review them regularly with
+`Get-McpDocument -SourceType Agent`.
 
 To keep an agent from filling the disk or keeping the server busy, a knowledge base holds at most 1000 agent notes
 with at most 10 million characters in total, and a server accepts at most 30 notes per minute. Updating a note with

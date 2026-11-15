@@ -4,7 +4,7 @@ function Invoke-McpAddNoteTool {
         Runs the MCP tool add_note.
 
     .DESCRIPTION
-        Stores a Markdown note from the AI agent as a document of source type Agent with the tag agent-note. A note with the same title is updated. Only available when the server runs with -AllowWrite. Limits keep agents from filling the knowledge base: at most 1000 agent notes and 10 million characters of agent notes per knowledge base, and at most 30 notes per minute per server. Documents added by people do not count.
+        Stores a Markdown note from the AI agent as a document of source type Agent with the tag agent-note. A note with the same title is updated. Only available when the server runs with -AllowWrite. A note has at most 20 tags of at most 50 characters. Limits keep agents from filling the knowledge base: at most 1000 agent notes and 10 million characters of agent notes per knowledge base, and at most 30 notes per minute per server. Documents added by people do not count.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -31,6 +31,8 @@ function Invoke-McpAddNoteTool {
     $tags = Get-McpArgument -Arguments $Arguments -Name 'tags' -Type StringArray -Default @()
     if ($title.Length -gt 200) { throw [System.ArgumentException]::new('The title must not exceed 200 characters.') }
     if ($content.Length -gt 200000) { throw [System.ArgumentException]::new('The content must not exceed 200000 characters.') }
+    # Tags are stored in the manifest and are not counted by the size limits below.
+    if ($tags.Count -gt 20 -or @($tags | Where-Object { $_.Length -gt 50 }).Count -gt 0) { throw [System.ArgumentException]::new('A note may have at most 20 tags of at most 50 characters each.') }
 
     # Limits against agents (or clients) that fill the disk or keep the server busy rebuilding the index.
     # The messages are written for the model: they are returned as tool errors.

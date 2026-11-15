@@ -55,6 +55,21 @@ Describe 'Publish-McpKnowledgeBase' {
         }
     }
 
+    It 'stops when the share holds documents that were neither published from here nor exist locally' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Assert-McpAzStorageModule { }
+            Mock New-AzStorageContext { [pscustomobject]@{ StorageAccountName = 'acct' } }
+            Mock Get-AzStorageFile { $null }
+            Mock New-AzStorageDirectory { }
+            Mock Set-AzStorageFileContent { }
+            Mock Get-AzStorageFileContent { Set-Content -LiteralPath $Destination -Value '{"documents":[{"id":"finding-abc123","title":"Agent finding","sourceType":"Agent"}]}' }
+
+            { Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb -RemoteName Notes } | Should -Throw "*'Agent finding' (finding-abc123)*"
+            Should -Invoke Set-AzStorageFileContent -Times 0
+            (Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb -RemoteName Notes -Force).Uploaded | Should -BeGreaterThan 0
+        }
+    }
+
     It 'reads the storage account key from the resource group' {
         InModuleScope PSMcpKnowledgeBase {
             Mock Assert-McpAzStorageModule { }
