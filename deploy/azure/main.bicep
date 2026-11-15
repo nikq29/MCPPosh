@@ -88,7 +88,8 @@ var apiKeyEnv = useApiKey ? [
     secretRef: 'api-key'
   }
 ] : []
-// Tokens of the tenant this template is deployed to; v2 tokens carry the client ID, v1 tokens the api:// URI.
+// v2 tokens of the tenant this template is deployed to; they carry the client ID as audience. v1 tokens have another
+// issuer and are rejected (the app registration must request v2 tokens, see docs/hosting-azure.md).
 var oauthEnv = empty(oauthClientId) ? [] : [
   {
     name: 'PSMCPKB_OAUTH_ISSUER'
@@ -96,7 +97,7 @@ var oauthEnv = empty(oauthClientId) ? [] : [
   }
   {
     name: 'PSMCPKB_OAUTH_AUDIENCE'
-    value: '${oauthClientId},api://${oauthClientId}'
+    value: oauthClientId
   }
   {
     name: 'PSMCPKB_OAUTH_SCOPE'

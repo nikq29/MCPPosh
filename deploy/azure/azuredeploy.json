@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.49.2.45890",
-      "templateHash": "13072642043236506387"
+      "templateHash": "7487305905822205308"
     }
   },
   "parameters": {
@@ -144,7 +144,7 @@
     "useApiKey": "[not(empty(parameters('apiKey')))]",
     "apiKeySecrets": "[if(variables('useApiKey'), createArray(createObject('name', 'api-key', 'value', parameters('apiKey'))), createArray())]",
     "apiKeyEnv": "[if(variables('useApiKey'), createArray(createObject('name', 'PSMCPKB_API_KEY', 'secretRef', 'api-key')), createArray())]",
-    "oauthEnv": "[if(empty(parameters('oauthClientId')), createArray(), createArray(createObject('name', 'PSMCPKB_OAUTH_ISSUER', 'value', format('{0}{1}/v2.0', environment().authentication.loginEndpoint, tenant().tenantId)), createObject('name', 'PSMCPKB_OAUTH_AUDIENCE', 'value', format('{0},api://{1}', parameters('oauthClientId'), parameters('oauthClientId'))), createObject('name', 'PSMCPKB_OAUTH_SCOPE', 'value', format('api://{0}/{1}', parameters('oauthClientId'), parameters('oauthScope')))))]",
+    "oauthEnv": "[if(empty(parameters('oauthClientId')), createArray(), createArray(createObject('name', 'PSMCPKB_OAUTH_ISSUER', 'value', format('{0}{1}/v2.0', environment().authentication.loginEndpoint, tenant().tenantId)), createObject('name', 'PSMCPKB_OAUTH_AUDIENCE', 'value', parameters('oauthClientId')), createObject('name', 'PSMCPKB_OAUTH_SCOPE', 'value', format('api://{0}/{1}', parameters('oauthClientId'), parameters('oauthScope')))))]",
     "registrySecrets": "[if(variables('useRegistry'), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
   },
   "resources": [

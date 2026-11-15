@@ -40,9 +40,12 @@ stdin and stdout. They do not open network ports.
 
 - **OAuth tokens**: with `-OAuthIssuer` the server accepts JSON Web Tokens signed with RS256 by the issuer's
   published keys; `none` and HMAC algorithms are rejected, so the public key cannot be used to forge tokens. Issuer,
-  audience, expiry, not-before and the configured scope are checked. Signing keys are downloaded over the issuer's
-  OpenID configuration, cached, and downloaded again at most once per minute, so made-up key ids cannot make the
-  server flood the identity provider. Tokens are never logged or stored. The forwarded headers used for the
+  audience, expiry, not-before and the configured scope are checked; without `-OAuthScope` a token still needs a
+  `scp`, `scope` or `roles` claim, so ID tokens (sign-in proof, same audience) are rejected. The issuer must use
+  https (http only for localhost), because the signing keys are downloaded from it. Signing keys are downloaded over
+  the issuer's OpenID configuration, cached, refreshed daily (so keys the issuer withdraws stop working) and
+  downloaded again at most once per minute, so made-up key ids cannot make the server flood the identity provider.
+  Tokens are never logged or stored. The forwarded headers used for the
   metadata URL are restricted to `http`/`https` and host names, so they cannot inject response headers.
 - **Key rotation**: configure several keys (`-ApiKey old, new` or `PSMCPKB_API_KEY=old,new`), switch the clients,
   then remove the old key.

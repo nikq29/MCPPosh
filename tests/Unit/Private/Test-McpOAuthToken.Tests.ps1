@@ -25,7 +25,7 @@ Describe 'Test-McpOAuthToken' {
         function New-TestToken {
             param([hashtable] $Claims = @{}, [hashtable] $Header = @{}, $Key = $script:Rsa)
             $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-            $body = @{ iss = $script:Issuer; aud = 'client-id'; exp = $now + 3600; nbf = $now - 10 }
+            $body = @{ iss = $script:Issuer; aud = 'client-id'; exp = $now + 3600; nbf = $now - 10; roles = @('Reader') }
             foreach ($entry in $Claims.GetEnumerator()) { $body[$entry.Key] = $entry.Value }
             $head = @{ alg = 'RS256'; typ = 'JWT'; kid = 'key1' }
             foreach ($entry in $Header.GetEnumerator()) { $head[$entry.Key] = $entry.Value }
@@ -89,6 +89,11 @@ Describe 'Test-McpOAuthToken' {
             Test-McpOAuthToken -AuthorizationHeader 'Basic a.b.c' -OAuth $OAuth | Should -BeFalse
             Test-McpOAuthToken -AuthorizationHeader 'Bearer bm90LWpzb24.e30.c2ln' -OAuth $OAuth | Should -BeFalse
         }
+    }
+
+    It 'rejects ID tokens (no scp, scope or roles) when no scope is configured' {
+        Test-Token (New-TestToken -Claims @{ roles = $null }) | Should -BeFalse
+        Test-Token (New-TestToken -Claims @{ roles = $null; scp = 'access_as_user' }) | Should -BeTrue
     }
 
     It 'requires the configured scope in scp or scope, also as the short name Entra ID uses' {

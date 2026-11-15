@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `PSMCPKB_OAUTH_ISSUER`, `PSMCPKB_OAUTH_AUDIENCE`, `PSMCPKB_OAUTH_SCOPE`) accepts JWT access tokens of an OpenID
   Connect identity provider such as Microsoft Entra ID next to API keys and publishes
   `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
+  The issuer must use https (http only for localhost), tokens need a scope or app roles (ID tokens are rejected), and
+  the signing keys are refreshed daily.
 - Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
   `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
   portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has

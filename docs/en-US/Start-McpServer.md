@@ -61,7 +61,7 @@ Clients must send the API key.
 
 ### EXAMPLE 4
 ```
-Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId, "api://$clientId" -OAuthScope "api://$clientId/access_as_user" -Foreground
+Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "api://$clientId/access_as_user" -Foreground
 ```
 
 Runs an HTTP server that accepts Microsoft Entra ID access tokens; MCP clients sign in with OAuth.
@@ -157,8 +157,8 @@ Accept wildcard characters: False
 ```
 
 ### -OAuthIssuer
-Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0.
-The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
+Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0
+(https; http only for localhost). The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
 and publishes /.well-known/oauth-protected-resource so MCP clients can sign in. API keys keep working.
 Defaults to $env:PSMCPKB_OAUTH_ISSUER.
 
@@ -175,8 +175,8 @@ Accept wildcard characters: False
 ```
 
 ### -OAuthAudience
-Accepted audiences (aud claim) of the access tokens, e.g. the client ID or the application ID URI
-api://<client-id>. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
+Accepted audiences (aud claim) of the access tokens, e.g. the client ID (Microsoft Entra ID v2 tokens) or the
+API identifier configured at the identity provider. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
 
 ```yaml
 Type: String[]

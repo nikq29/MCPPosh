@@ -34,14 +34,14 @@ function Start-McpServer {
         Defaults to the comma-separated keys in $env:PSMCPKB_API_KEY.
 
     .PARAMETER OAuthIssuer
-        Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0.
-        The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
+        Issuer URL of an OpenID Connect identity provider, e.g. https://login.microsoftonline.com/<tenant>/v2.0
+        (https; http only for localhost). The server then also accepts OAuth access tokens (JWT, RS256) from this issuer as 'Authorization: Bearer <token>'
         and publishes /.well-known/oauth-protected-resource so MCP clients can sign in. API keys keep working.
         Defaults to $env:PSMCPKB_OAUTH_ISSUER.
 
     .PARAMETER OAuthAudience
-        Accepted audiences (aud claim) of the access tokens, e.g. the client ID or the application ID URI
-        api://<client-id>. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
+        Accepted audiences (aud claim) of the access tokens, e.g. the client ID (Microsoft Entra ID v2 tokens) or the
+        API identifier configured at the identity provider. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
 
     .PARAMETER OAuthScope
         Scope the access tokens must contain (scp or scope claim), e.g. api://<client-id>/access_as_user. It is also
@@ -82,7 +82,7 @@ function Start-McpServer {
         Runs an HTTP server reachable from the network in the current console, for example in a container. Clients must send the API key.
 
     .EXAMPLE
-        Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId, "api://$clientId" -OAuthScope "api://$clientId/access_as_user" -Foreground
+        Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "api://$clientId/access_as_user" -Foreground
 
         Runs an HTTP server that accepts Microsoft Entra ID access tokens; MCP clients sign in with OAuth.
 
@@ -165,8 +165,10 @@ function Start-McpServer {
     if (-not $OAuthScope) { $OAuthScope = $env:PSMCPKB_OAUTH_SCOPE }
     $oauth = $null
     if ($OAuthIssuer) {
-        if ($OAuthIssuer -notmatch '^https?://' -or -not [uri]::IsWellFormedUriString($OAuthIssuer, [System.UriKind]::Absolute)) {
-            throw "-OAuthIssuer must be an http(s) URL such as https://login.microsoftonline.com/<tenant>/v2.0, not '$OAuthIssuer'."
+        # The signing keys are downloaded from the issuer, so plain http (keys can be swapped on the way) only for localhost.
+        if (-not [uri]::IsWellFormedUriString($OAuthIssuer, [System.UriKind]::Absolute) -or
+            -not ($OAuthIssuer -match '^https://' -or ($OAuthIssuer -match '^http://' -and ([uri]$OAuthIssuer).IsLoopback))) {
+            throw "-OAuthIssuer must be an https URL such as https://login.microsoftonline.com/<tenant>/v2.0 (http only for localhost), not '$OAuthIssuer'."
         }
         $audiences = [string[]]@($OAuthAudience | Where-Object { $_ } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         if ($audiences.Count -eq 0) {

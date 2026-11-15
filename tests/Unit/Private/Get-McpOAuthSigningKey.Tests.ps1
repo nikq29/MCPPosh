@@ -46,6 +46,21 @@ Describe 'Get-McpOAuthSigningKey' {
         }
     }
 
+    It 'downloads the key set again after a day even when the key id is known, so withdrawn keys stop working' {
+        InModuleScope PSMcpKnowledgeBase {
+            $issuer = 'https://idp.example.com'
+            $null = Get-McpOAuthSigningKey -Issuer $issuer -KeyId 'key1'
+            $script:McpOAuthKeyCache[$issuer].FetchedAt = [datetime]::UtcNow.AddHours(-23)
+            $null = Get-McpOAuthSigningKey -Issuer $issuer -KeyId 'key1'
+            Should -Invoke Invoke-RestMethod -Times 1 -Exactly -ParameterFilter { $Uri -eq 'https://idp.example.com/keys' }
+
+            $script:McpOAuthKeyCache[$issuer].FetchedAt = [datetime]::UtcNow.AddHours(-25)
+            Mock Invoke-RestMethod -ParameterFilter { $Uri -eq 'https://idp.example.com/keys' } { [pscustomobject]@{ keys = @() } }
+            Get-McpOAuthSigningKey -Issuer $issuer -KeyId 'key1' | Should -BeNullOrEmpty
+            Should -Invoke Invoke-RestMethod -Times 2 -Exactly -ParameterFilter { $Uri -eq 'https://idp.example.com/keys' }
+        }
+    }
+
     It 'throws download errors and does not retry within a minute' {
         InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-RestMethod { throw 'identity provider down' }

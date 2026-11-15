@@ -47,17 +47,19 @@ described in the MCP authorization specification. The server only checks tokens;
   signature with the issuer's keys (from `<issuer>/.well-known/openid-configuration`), exact issuer, one of the
   audiences, expiry and not-before (five minutes clock skew) and, with `-OAuthScope`, the scope in the `scp` or `scope`
   claim. The short scope name (`access_as_user` for `api://<app>/access_as_user`) is accepted too, because Entra ID
-  writes it that way.
+  writes it that way. Without `-OAuthScope` the token needs a `scp`, `scope` or `roles` claim, so ID tokens are
+  rejected.
+- The issuer must be an `https` URL; plain `http` is accepted only for `localhost` (for example a local Keycloak).
 - `401` responses add `resource_metadata="<base>/.well-known/oauth-protected-resource/mcp"` (and `scope="..."`) to
   `WWW-Authenticate`. Clients read the metadata there: `resource` (`<base>/mcp`), `authorization_servers` (the
   issuer), `scopes_supported` and `bearer_methods_supported`.
 - Behind a reverse proxy, `<base>` is taken from `X-Forwarded-Proto` and `X-Forwarded-Host` (host names only).
-- The signing keys are cached; unknown key ids load them again at most once per minute.
+- The signing keys are cached and refreshed daily; unknown key ids load them again at most once per minute.
 
 ```powershell
 $tenant = '<tenant id>'; $client = '<client id>'
 Start-McpServer -KnowledgeBase Contoso -ListenAddress '*' -Port 8080 -Foreground `
-    -OAuthIssuer "https://login.microsoftonline.com/$tenant/v2.0" -OAuthAudience $client, "api://$client" `
+    -OAuthIssuer "https://login.microsoftonline.com/$tenant/v2.0" -OAuthAudience $client `
     -OAuthScope "api://$client/access_as_user"
 ```
 

@@ -90,7 +90,16 @@ Describe 'Start-McpServer' {
 
     It 'rejects an OAuth issuer without audience or with an invalid URL' {
         { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'https://idp.example.com' -Foreground } | Should -Throw '*OAuthAudience*'
-        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*http(s) URL*'
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*https URL*'
+        { Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'http://idp.example.com' -OAuthAudience 'a' -Foreground } | Should -Throw '*https URL*'
+    }
+
+    It 'accepts a plain http issuer on localhost' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-McpHttpServer { }
+            Start-McpServer -KnowledgeBase Srv -OAuthIssuer 'http://localhost:8180/realms/kb' -OAuthAudience 'a' -Foreground
+            Should -Invoke Start-McpHttpServer -Times 1 -Exactly -ParameterFilter { $OAuth.Issuer -eq 'http://localhost:8180/realms/kb' }
+        }
     }
 
     It 'refuses to start a background server on a port that is in use' {

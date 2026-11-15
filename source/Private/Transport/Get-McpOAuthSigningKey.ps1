@@ -6,7 +6,7 @@ function Get-McpOAuthSigningKey {
     .DESCRIPTION
         Reads the OpenID configuration of the issuer ({issuer}/.well-known/openid-configuration), downloads the key set
         from its jwks_uri and caches it per issuer. When the requested key id is not in the cache (the issuer rotated
-        its keys), the key set is downloaded again, but at most once per minute, so tokens with made-up key ids cannot
+        its keys) or the key set is older than a day, the key set is downloaded again, but at most once per minute, so tokens with made-up key ids cannot
         make the server flood the identity provider. Download errors are thrown to the caller.
 
     .PARAMETER Issuer
@@ -40,7 +40,8 @@ function Get-McpOAuthSigningKey {
     $cached = $script:McpOAuthKeyCache[$Issuer]
     if ($cached) {
         $key = & $find $cached.Keys $KeyId
-        if ($key -or [datetime]::UtcNow -lt $cached.FetchedAt.AddMinutes(1)) { return $key }
+        # Known keys are refreshed daily, so a key the issuer withdrew (e.g. after a leak) stops working without a restart.
+        if (($key -and [datetime]::UtcNow -lt $cached.FetchedAt.AddHours(24)) -or [datetime]::UtcNow -lt $cached.FetchedAt.AddMinutes(1)) { return $key }
     }
 
     # Record the attempt before downloading: a failing identity provider is then also asked at most once per minute.

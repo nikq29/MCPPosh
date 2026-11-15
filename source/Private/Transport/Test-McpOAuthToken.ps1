@@ -6,7 +6,8 @@ function Test-McpOAuthToken {
     .DESCRIPTION
         Checks the Bearer token of the Authorization header as a JSON Web Token: the signature (RS256) with the issuer's
         signing key (Get-McpOAuthSigningKey), the issuer (exact match), the audience, the expiry and not-before times
-        (five minutes clock skew allowed) and, when configured, the required scope in the scp or scope claim. Malformed
+        (five minutes clock skew allowed) and the required scope in the scp or scope claim; without a configured scope
+        the token must still carry a scp, scope or roles claim, so ID tokens are rejected. Malformed
         tokens return $false; errors while downloading the signing keys are thrown to the caller.
 
     .PARAMETER AuthorizationHeader
@@ -83,5 +84,7 @@ function Test-McpOAuthToken {
         $shortName = ($OAuth.Scope -split '/')[-1]
         if ($granted -cnotcontains $OAuth.Scope -and $granted -cnotcontains $shortName) { return $false }
     }
+    # ID tokens carry the client ID as audience too, but no scope or app roles; they prove a sign-in, not API access.
+    elseif (-not ($claims['scp'] -or $claims['scope'] -or $claims['roles'])) { return $false }
     $true
 }
