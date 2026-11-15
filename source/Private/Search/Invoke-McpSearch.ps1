@@ -24,7 +24,7 @@ function Invoke-McpSearch {
     .EXAMPLE
         Invoke-McpSearch -Index (Get-McpSearchIndex -KbPath $kb.Path) -Query 'vpn connection drops' -Top 3
 
-        Returns the three best matching sections as MCPPosh.SearchResult objects.
+        Returns the three best matching sections as PSMcpKnowledgeBase.SearchResult objects.
     #>
     [CmdletBinding()]
     param(
@@ -127,7 +127,7 @@ function Invoke-McpSearch {
         $perDocument[$chunk.docId] = $count + 1
         $doc = $Index.Documents[$chunk.docId]
         [pscustomobject]@{
-            PSTypeName = 'MCPPosh.SearchResult'
+            PSTypeName = 'PSMcpKnowledgeBase.SearchResult'
             Score      = [Math]::Round($item.Score, 3)
             DocumentId = $chunk.docId
             Title      = [string]$doc.title

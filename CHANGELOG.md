@@ -1,4 +1,4 @@
-# Changelog for MCPPosh
+# Changelog for PSMcpKnowledgeBase
 
 The format is based on and uses the types of changes according to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cmdlet reference in `docs/en-US`, generated from the comment-based help by the new Sampler build
   workflow `docs` (PlatyPS); `Get-Help <cmdlet> -Online` opens the reference page.
 - Documentation quality tests (`tests/QA/docs.tests.ps1`) and Markdown linting in the CI workflow.
-- `Publish-McpKnowledgeBase` returns `MCPPosh.PublishResult` objects.
+- `Publish-McpKnowledgeBase` returns `PSMcpKnowledgeBase.PublishResult` objects.
 - End-to-end integration tests for every cmdlet, parameter set and parameter in `tests/Integration`: all built-in
   formats, URL import from a local web server, generated client configurations started as real processes, foreground
   and background servers, and publishing to a local stand-in for Azure Files that a server then serves.

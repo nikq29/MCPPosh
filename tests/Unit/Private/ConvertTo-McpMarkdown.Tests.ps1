@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'ConvertTo-McpMarkdown' {
     It 'selects the converter by extension and returns a normalized result' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'page.md'
             Set-Content -Path $path -Value "# Page`n`nText"
@@ -25,7 +25,7 @@ Describe 'ConvertTo-McpMarkdown' {
     }
 
     It 'uses the file name as title and supports -Format' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'export.dat'
             Set-Content -Path $path -Value 'plain'
@@ -36,7 +36,7 @@ Describe 'ConvertTo-McpMarkdown' {
     }
 
     It 'accepts string and object results from converters' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'item.objx'
             Set-Content -Path $path -Value 'x'
@@ -53,7 +53,7 @@ Describe 'ConvertTo-McpMarkdown' {
     }
 
     It 'throws for binary files without converter' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $binary = Join-Path $Files 'blob.bin'
             [System.IO.File]::WriteAllBytes($binary, [byte[]](0, 1, 2, 0))

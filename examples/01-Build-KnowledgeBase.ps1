@@ -1,7 +1,7 @@
 <#
     Example 1: Create a knowledge base and fill it with knowledge in different formats.
 #>
-Import-Module MCPPosh   # Install-PSResource MCPPosh, or ./build.ps1 -Tasks build and import from output/module
+Import-Module PSMcpKnowledgeBase   # Install-PSResource PSMcpKnowledgeBase, or ./build.ps1 -Tasks build and import from output/module
 
 # The description is sent to the AI agent as instructions. Describe what the documentation covers.
 New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation of Contoso: runbooks, architecture, FAQ and policies.'

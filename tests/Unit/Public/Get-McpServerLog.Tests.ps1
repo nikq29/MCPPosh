@@ -1,9 +1,9 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv | Out-Null
-    $logs = Join-Path $env:MCPPOSH_HOME 'knowledgebases/Srv/logs'
+    $logs = Join-Path $env:PSMCPKB_HOME 'knowledgebases/Srv/logs'
     Set-Content -Path (Join-Path $logs 'server-stdio.log') -Value 'stdio line 1', 'stdio line 2'
     Set-Content -Path (Join-Path $logs 'server-5050.log') -Value 'http line 1', 'http line 2', 'http line 3'
     Set-Content -Path (Join-Path $logs 'server-5050.stderr.log') -Value 'stderr'

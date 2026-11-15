@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'New-McpServerContext' {
     It 'creates a context with default log paths' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Ctx -CreateIfMissing
             $stdio = New-McpServerContext -KnowledgeBase $kb
             $stdio.Transport | Should -Be 'Stdio'

@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpKnowledgeBase.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Remove-McpKnowledgeBase.md
 schema: 2.0.0
 ---
 
@@ -101,7 +101,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpKnowledgeBase.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpKnowledgeBase.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Remove-McpKnowledgeBase.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Remove-McpKnowledgeBase.md)
 
 [Get-McpKnowledgeBase]()
 

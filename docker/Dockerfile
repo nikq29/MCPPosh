@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 #
-# MCPPosh MCP server (Streamable HTTP) for central hosting, e.g. Azure Container Apps.
-# The MCPPosh module is installed from the PowerShell Gallery.
+# PSMcpKnowledgeBase MCP server (Streamable HTTP) for central hosting, e.g. Azure Container Apps.
+# The PSMcpKnowledgeBase module is installed from the PowerShell Gallery.
 #
 # Build (from the repository root):
-#   docker build -f docker/Dockerfile -t mcpposh .                                     # latest version from the Gallery
-#   docker build -f docker/Dockerfile --build-arg MCPPOSH_VERSION=0.1.0 -t mcpposh .   # specific version
-#   docker build -f docker/Dockerfile --build-arg MCPPOSH_SOURCE=Local -t mcpposh .    # package from docker/packages
+#   docker build -f docker/Dockerfile -t psmcpkb .                                     # latest version from the Gallery
+#   docker build -f docker/Dockerfile --build-arg PSMCPKB_VERSION=0.1.0 -t psmcpkb .   # specific version
+#   docker build -f docker/Dockerfile --build-arg PSMCPKB_SOURCE=Local -t psmcpkb .    # package from docker/packages
 # Run:
-#   docker run -p 8080:8080 -e MCPPOSH_API_KEY=change-me -v mcpposh-data:/data mcpposh
+#   docker run -p 8080:8080 -e PSMCPKB_API_KEY=change-me -v psmcpkb-data:/data psmcpkb
 
 ARG PWSH_VERSION=7.4.6
 ARG TARGETARCH=amd64
@@ -33,9 +33,9 @@ ARG PWSH_SHA256_AMD64=6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e
 ARG PWSH_SHA256_ARM64=c0159b03e85f44ae1e7697818a011558da6c813d0aae848bf5ac13bf435d8624
 
 # PSGallery (default) or Local (nupkg files in docker/packages, e.g. from ./build.ps1 -Tasks pack).
-ARG MCPPOSH_SOURCE=PSGallery
+ARG PSMCPKB_SOURCE=PSGallery
 # Empty = latest stable version.
-ARG MCPPOSH_VERSION=
+ARG PSMCPKB_VERSION=
 
 COPY --from=pwsh /powershell.tar.gz /tmp/powershell.tar.gz
 RUN case "${TARGETARCH:-amd64}" in \
@@ -53,14 +53,14 @@ RUN case "${TARGETARCH:-amd64}" in \
 ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
     POWERSHELL_UPDATECHECK=Off \
     DOTNET_CLI_TELEMETRY_OPTOUT=1 \
-    MCPPOSH_HOME=/data \
-    MCPPOSH_KNOWLEDGEBASE=Default \
-    MCPPOSH_PORT=8080
+    PSMCPKB_HOME=/data \
+    PSMCPKB_KNOWLEDGEBASE=Default \
+    PSMCPKB_PORT=8080
 
-COPY docker/Install-MCPPosh.ps1 /tmp/install/Install-MCPPosh.ps1
+COPY docker/Install-PSMcpKnowledgeBase.ps1 /tmp/install/Install-PSMcpKnowledgeBase.ps1
 COPY docker/packages/ /tmp/install/packages/
-RUN pwsh -NoLogo -NoProfile -NonInteractive -File /tmp/install/Install-MCPPosh.ps1 \
-        -Source "${MCPPOSH_SOURCE}" -Version "${MCPPOSH_VERSION}" -PackagePath /tmp/install/packages \
+RUN pwsh -NoLogo -NoProfile -NonInteractive -File /tmp/install/Install-PSMcpKnowledgeBase.ps1 \
+        -Source "${PSMCPKB_SOURCE}" -Version "${PSMCPKB_VERSION}" -PackagePath /tmp/install/packages \
     && rm -rf /tmp/install
 
 COPY docker/entrypoint.ps1 /app/entrypoint.ps1

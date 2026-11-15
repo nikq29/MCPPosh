@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Lock-McpKnowledgeBase' {
     It 'returns an exclusive lock that blocks a second lock until it is released' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $first = Lock-McpKnowledgeBase -KbPath $Home
             try {

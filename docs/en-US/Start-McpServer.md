@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Start-McpServer.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Start-McpServer.md
 schema: 2.0.0
 ---
 
@@ -135,7 +135,7 @@ Accept wildcard characters: False
 ### -ApiKey
 One or more API keys.
 Clients must send 'Authorization: Bearer \<key\>' or 'X-API-Key: \<key\>'.
-Defaults to the comma-separated keys in $env:MCPPOSH_API_KEY.
+Defaults to the comma-separated keys in $env:PSMCPKB_API_KEY.
 
 ```yaml
 Type: String[]
@@ -281,12 +281,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### None. You cannot pipe objects to this cmdlet.
 ## OUTPUTS
 
-### None for -Transport Stdio and for -Foreground (the server runs until it is stopped). MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. for background HTTP servers.
+### None for -Transport Stdio and for -Foreground (the server runs until it is stopped). PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. for background HTTP servers.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Start-McpServer.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Start-McpServer.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Start-McpServer.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Start-McpServer.md)
 
 [Stop-McpServer]()
 

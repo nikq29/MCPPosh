@@ -1,11 +1,11 @@
 function Restart-McpServer {
     <#
     .SYNOPSIS
-        Restarts local MCPPosh HTTP servers with their previous settings.
+        Restarts local PSMcpKnowledgeBase HTTP servers with their previous settings.
 
     .DESCRIPTION
         API keys are never stored. If the server required an API key, pass -ApiKey again or set
-        $env:MCPPOSH_API_KEY.
+        $env:PSMCPKB_API_KEY.
 
     .PARAMETER KnowledgeBase
         Restart the local HTTP servers of this knowledge base (name, wildcard or directory path).
@@ -27,13 +27,13 @@ function Restart-McpServer {
         Restarts the server on port 8080. API keys are never stored, so servers with authentication need the key again.
 
     .INPUTS
-        MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+        PSMcpKnowledgeBase.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
 
     .OUTPUTS
-        MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version.
+        PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Restart-McpServer.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Restart-McpServer.md
 
     .LINK
         Start-McpServer
@@ -45,7 +45,7 @@ function Restart-McpServer {
         Get-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.Server')]
+    [OutputType('PSMcpKnowledgeBase.Server')]
     param(
         [Parameter(Position = 0, ValueFromPipelineByPropertyName)]
         [string] $KnowledgeBase,
@@ -71,9 +71,9 @@ function Restart-McpServer {
         }
 
         foreach ($state in $servers) {
-            $keys = if ($ApiKey) { $ApiKey } elseif ($env:MCPPOSH_API_KEY) { $env:MCPPOSH_API_KEY -split ',' } else { @() }
+            $keys = if ($ApiKey) { $ApiKey } elseif ($env:PSMCPKB_API_KEY) { $env:PSMCPKB_API_KEY -split ',' } else { @() }
             if ($state.authRequired -and @($keys).Count -eq 0) {
-                Write-Error -Message "The server on port $($state.port) requires an API key. Pass -ApiKey or set `$env:MCPPOSH_API_KEY." -Category InvalidArgument
+                Write-Error -Message "The server on port $($state.port) requires an API key. Pass -ApiKey or set `$env:PSMCPKB_API_KEY." -Category InvalidArgument
                 continue
             }
             if (-not $PSCmdlet.ShouldProcess("knowledge base '$($state.knowledgeBase)' on port $($state.port)", 'Restart MCP server')) { continue }

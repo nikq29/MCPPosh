@@ -1,7 +1,7 @@
 <#
     Example 2: Provide the knowledge base to an AI agent and manage the server.
 #>
-Import-Module MCPPosh
+Import-Module PSMcpKnowledgeBase
 
 # --- Option A: stdio (the agent starts the server itself) ---------------------------------
 

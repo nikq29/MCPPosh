@@ -25,10 +25,10 @@ function Set-McpKnowledgeBase {
         System.String. You can pipe objects with a Name property, for example from Get-McpKnowledgeBase.
 
     .OUTPUTS
-        None by default. With -PassThru: MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+        None by default. With -PassThru: PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Set-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Set-McpKnowledgeBase.md
 
     .LINK
         Get-McpKnowledgeBase
@@ -37,7 +37,7 @@ function Set-McpKnowledgeBase {
         New-McpKnowledgeBase
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.KnowledgeBase')]
+    [OutputType('PSMcpKnowledgeBase.KnowledgeBase')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [string] $Name,

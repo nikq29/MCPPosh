@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         env:
           ModuleVersion: ${{ steps.version.outputs.version }}
-        run: ./build.ps1 -ResolveDependency -Tasks pack
+        run: ./build.ps1 -ResolveDependency -Tasks pack -UseModuleFast
 
       - name: Upload build output
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -136,20 +136,20 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
-          build-args: MCPPOSH_SOURCE=Local
+          build-args: PSMCPKB_SOURCE=Local
           load: true
-          tags: mcpposh:ci
+          tags: psmcpkb:ci
 
       - name: Smoke test the container
         shell: pwsh
         run: |
-          docker run -d --name mcpposh -p 8080:8080 -e MCPPOSH_API_KEY=ci-key mcpposh:ci | Out-Null
+          docker run -d --name psmcpkb -p 8080:8080 -e PSMCPKB_API_KEY=ci-key psmcpkb:ci | Out-Null
           $deadline = (Get-Date).AddSeconds(60)
           do {
               Start-Sleep -Seconds 2
               try { $health = Invoke-RestMethod -Uri http://localhost:8080/health -Headers @{ Authorization = 'Bearer ci-key' } } catch { $health = $null }
           } until ($health -or (Get-Date) -gt $deadline)
-          docker logs mcpposh
+          docker logs psmcpkb
           if (-not $health) { throw 'The container did not become healthy.' }
           $body = '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
           $tools = Invoke-RestMethod -Uri http://localhost:8080/mcp -Method Post -Body $body -ContentType 'application/json' -Headers @{ Authorization = 'Bearer ci-key' }
@@ -209,20 +209,20 @@ jobs:
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
-          images: ghcr.io/${{ github.repository_owner }}/mcpposh
+          images: ghcr.io/${{ github.repository_owner }}/psmcpkb
           tags: |
             type=raw,value=${{ needs.build.outputs.version }}
             type=raw,value=latest,enable=${{ !contains(needs.build.outputs.version, '-') }}
 
-      - name: Build and push the image with MCPPosh from the Gallery
+      - name: Build and push the image with PSMcpKnowledgeBase from the Gallery
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: .
           file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            MCPPOSH_SOURCE=PSGallery
-            MCPPOSH_VERSION=${{ needs.build.outputs.version }}
+            PSMCPKB_SOURCE=PSGallery
+            PSMCPKB_VERSION=${{ needs.build.outputs.version }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

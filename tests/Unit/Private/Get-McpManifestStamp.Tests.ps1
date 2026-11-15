@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
     New-McpKnowledgeBase -Name Kb | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Get-McpManifestStamp' {
     It 'changes when the manifest changes' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $before = Get-McpManifestStamp -KbPath $kb.Path
             $before | Should -Match '^\d+-\d+$'
@@ -27,6 +27,6 @@ Describe 'Get-McpManifestStamp' {
     }
 
     It 'returns 0 when there is no manifest' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } { param($Files) Get-McpManifestStamp -KbPath $Files | Should -Be '0' }
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } { param($Files) Get-McpManifestStamp -KbPath $Files | Should -Be '0' }
     }
 }

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Alpha -Description 'First' | Out-Null
     New-McpKnowledgeBase -Name Beta | Out-Null
     Add-McpDocument -KnowledgeBase Alpha -Title 'Doc' -Content 'Text' -Tags one | Out-Null
@@ -31,7 +31,7 @@ Describe 'Get-McpKnowledgeBase' {
     }
 
     It 'resolves a knowledge base by path' {
-        $path = Join-Path $env:MCPPOSH_HOME 'knowledgebases/Beta'
+        $path = Join-Path $env:PSMCPKB_HOME 'knowledgebases/Beta'
         (Get-McpKnowledgeBase -Name $path).Name | Should -Be 'Beta'
     }
 

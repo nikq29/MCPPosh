@@ -65,14 +65,14 @@ function ConvertFrom-McpHtml {
             $code = [regex]::Replace($code, '<[^>]+>', '')
             $code = [System.Net.WebUtility]::HtmlDecode($code).Trim("`r", "`n")
             $preBlocks.Add("$language`n$code")
-            "<p>@@MCPPOSHPRE$($preBlocks.Count - 1)@@</p>"
+            "<p>@@PSMCPKBPRE$($preBlocks.Count - 1)@@</p>"
         })
 
     $tables = [System.Collections.Generic.List[string]]::new()
     $body = [regex]::Replace($body, '(?is)<table\b[^>]*>.*?</table>', {
             param($m)
             $tables.Add((ConvertFrom-McpHtmlTable -TableHtml $m.Value))
-            "<p>@@MCPPOSHTABLE$($tables.Count - 1)@@</p>"
+            "<p>@@PSMCPKBTABLE$($tables.Count - 1)@@</p>"
         })
 
     $body = [regex]::Replace($body, '\s+', ' ')
@@ -111,8 +111,8 @@ function ConvertFrom-McpHtml {
     $markdown = [regex]::Replace($markdown, '\n{3,}', "`n`n")
     $markdown = [regex]::Replace($markdown, '(?m)^(- .*)\n\n(?=- )', "`$1`n")
 
-    $markdown = [regex]::Replace($markdown, '@@MCPPOSHTABLE(\d+)@@', { param($m) $tables[[int]$m.Groups[1].Value].Trim() })
-    $markdown = [regex]::Replace($markdown, '@@MCPPOSHPRE(\d+)@@', {
+    $markdown = [regex]::Replace($markdown, '@@PSMCPKBTABLE(\d+)@@', { param($m) $tables[[int]$m.Groups[1].Value].Trim() })
+    $markdown = [regex]::Replace($markdown, '@@PSMCPKBPRE(\d+)@@', {
             param($m)
             $block = $preBlocks[[int]$m.Groups[1].Value]
             $newline = $block.IndexOf("`n")

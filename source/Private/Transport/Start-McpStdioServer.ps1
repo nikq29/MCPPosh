@@ -34,7 +34,7 @@ function Start-McpStdioServer {
     $writer.AutoFlush = $true
     $writer.NewLine = "`n"
 
-    Write-McpLog -Context $Context -Message ("stdio server started for knowledge base '{0}' (pid {1}, MCPPosh {2}, write access: {3})" -f $Context.KnowledgeBase.Name, $PID, $script:ModuleVersion, $Context.AllowWrite)
+    Write-McpLog -Context $Context -Message ("stdio server started for knowledge base '{0}' (pid {1}, PSMcpKnowledgeBase {2}, write access: {3})" -f $Context.KnowledgeBase.Name, $PID, $script:ModuleVersion, $Context.AllowWrite)
     try {
         $null = Update-McpServerIndex -Context $Context -Force
         while ($true) {

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
     $script:Doc = Add-McpDocument -KnowledgeBase Kb -Title 'Install Guide' -Content "# Install`n`nInstall the **package** with winget." -Tags setup
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Remove-McpDocumentRecord' {
     It 'removes the record and the files of a document' {
-        InModuleScope MCPPosh -Parameters @{ Id = $script:Doc.Id } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Id = $script:Doc.Id } {
             param($Id)
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             Remove-McpDocumentRecord -KnowledgeBase $kb -Id $Id
@@ -23,7 +23,7 @@ Describe 'Remove-McpDocumentRecord' {
     }
 
     It 'throws for unknown documents' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             { Remove-McpDocumentRecord -KnowledgeBase (Resolve-McpKnowledgeBase -KnowledgeBase Kb) -Id 'missing' } | Should -Throw '*was not found*'
         }
     }
@@ -31,7 +31,7 @@ Describe 'Remove-McpDocumentRecord' {
 
 Describe 'Remove-McpDocumentRecord (invalid ids)' {
     It 'removes records with invalid ids from the manifest without deleting files' {
-        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ TestHome = $script:TestHome } {
             param($TestHome)
             $outside = Join-Path $TestHome 'outside-remove'
             New-Item -ItemType Directory -Path $outside -Force | Out-Null

@@ -1,7 +1,7 @@
 # Server management
 
-MCPPosh servers are started, inspected and stopped with PowerShell. stdio servers are started by AI clients and end
-when the client closes the connection; this page is mostly about HTTP servers.
+PSMcpKnowledgeBase servers are started, inspected and stopped with PowerShell. stdio servers are started by AI clients
+and end when the client closes the connection; this page is mostly about HTTP servers.
 
 ## Start a server
 
@@ -28,7 +28,7 @@ Start-McpServer -KnowledgeBase Contoso -Transport Stdio
 | `-Transport` | `Http` | `Http` or `Stdio` |
 | `-Port` | `5050` | TCP port of the HTTP server |
 | `-ListenAddress` | `localhost` | `localhost` (local only), `*` (all interfaces) or a host name |
-| `-ApiKey` | `$env:MCPPOSH_API_KEY` | one or more accepted API keys |
+| `-ApiKey` | `$env:PSMCPKB_API_KEY` | one or more accepted API keys |
 | `-AllowedOrigin` | none | browser origins allowed through CORS |
 | `-AllowWrite` | off | offers the `add_note` tool |
 | `-AllowAnonymous` | off | allows a non-loopback address without API key (only behind an authenticating gateway) |
@@ -42,15 +42,15 @@ Without `-Foreground`, `Start-McpServer` starts a hidden PowerShell process that
 
 - On Windows the process window is hidden; on Linux it is detached from the terminal with `setsid`, so closing the
   terminal does not stop the server.
-- API keys are handed over in the `MCPPOSH_API_KEY` environment variable of the child process, never on the command
+- API keys are handed over in the `PSMCPKB_API_KEY` environment variable of the child process, never on the command
   line.
 - `Start-McpServer` waits until the server writes its state file and answers `/health`, then returns a
-  `MCPPosh.Server` object. If the server does not start, the last lines of its error output are shown.
-- The start is refused when another MCPPosh server is registered for the port or the port is already in use.
+  `PSMcpKnowledgeBase.Server` object. If the server does not start, the last lines of its error output are shown.
+- The start is refused when another PSMcpKnowledgeBase server is registered for the port or the port is already in use.
 
 Background servers do not survive a reboot. For permanent hosting use a container ([Docker](hosting-docker.md),
 [Azure](hosting-azure.md)), a scheduled task at startup or a systemd unit that runs
-`pwsh -NoProfile -Command "Import-Module MCPPosh; Start-McpServer -KnowledgeBase Contoso -Foreground"`.
+`pwsh -NoProfile -Command "Import-Module PSMcpKnowledgeBase; Start-McpServer -KnowledgeBase Contoso -Foreground"`.
 
 ## Show servers
 
@@ -67,7 +67,7 @@ The output contains `KnowledgeBase`, `Transport`, `Status`, `Url`, `Port`, `List
 Remote servers, for example in Azure, are queried through their health endpoint:
 
 ```powershell
-Get-McpServer -Uri https://mcpposh.example.com/mcp -ApiKey $key | Format-List
+Get-McpServer -Uri https://psmcpkb.example.com/mcp -ApiKey $key | Format-List
 ```
 
 The status is `Running`, `Unauthorized` (wrong key), `Unreachable` or `HTTP <code>`; with a valid key the result also
@@ -89,7 +89,7 @@ Restart-McpServer -Port 5051 -ApiKey $key
 - The process id and its start time are checked before a process is stopped, so a reused process id never stops an
   unrelated process.
 - `Restart-McpServer` restarts with the stored port, listen address and options. API keys are never stored: pass
-  `-ApiKey` again or set `$env:MCPPOSH_API_KEY` for servers with authentication.
+  `-ApiKey` again or set `$env:PSMCPKB_API_KEY` for servers with authentication.
 - Both cmdlets support `-WhatIf` and `-Confirm`.
 
 ## Test a server
@@ -107,8 +107,8 @@ The result contains `Target`, `Transport`, `Success`, `ProtocolVersion`, `Server
 of being thrown, so the cmdlet is suitable for monitoring scripts:
 
 ```powershell
-$result = Test-McpServer -Uri https://mcpposh.example.com -ApiKey $key
-if (-not $result.Success) { Write-Warning "MCPPosh is unhealthy: $($result.Error)" }
+$result = Test-McpServer -Uri https://psmcpkb.example.com -ApiKey $key
+if (-not $result.Success) { Write-Warning "PSMcpKnowledgeBase is unhealthy: $($result.Error)" }
 ```
 
 ## Logs

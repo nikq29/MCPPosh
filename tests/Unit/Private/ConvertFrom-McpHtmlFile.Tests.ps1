@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
     $script:Html = @(
@@ -27,7 +27,7 @@ AfterAll {
 
 Describe 'ConvertFrom-McpHtmlFile' {
     It 'converts a local HTML file' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files; Html = $script:Html } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files; Html = $script:Html } {
             param($Files, $Html)
             $path = Join-Path $Files 'vpn.html'
             Set-Content -Path $path -Value $Html

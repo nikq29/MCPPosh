@@ -1,25 +1,25 @@
 function Get-McpHomePath {
     <#
     .SYNOPSIS
-        Returns the MCPPosh data directory ($env:MCPPOSH_HOME or ~/.mcpposh) and creates it if needed.
+        Returns the PSMcpKnowledgeBase data directory ($env:PSMCPKB_HOME or ~/.psmcpkb) and creates it if needed.
 
     .DESCRIPTION
-        Returns the full path of the MCPPosh data directory. It is $env:MCPPOSH_HOME when set, otherwise .mcpposh in the user profile. The directory is created when it does not exist.
+        Returns the full path of the PSMcpKnowledgeBase data directory. It is $env:PSMCPKB_HOME when set, otherwise .psmcpkb in the user profile. The directory is created when it does not exist.
 
     .EXAMPLE
         Get-McpHomePath
 
-        Returns for example /home/user/.mcpposh or C:\Users\user\.mcpposh.
+        Returns for example /home/user/.psmcpkb or C:\Users\user\.psmcpkb.
     #>
     [CmdletBinding()]
     [OutputType([string])]
     param()
 
-    $path = if ($env:MCPPOSH_HOME) {
-        $env:MCPPOSH_HOME
+    $path = if ($env:PSMCPKB_HOME) {
+        $env:PSMCPKB_HOME
     }
     else {
-        Join-Path -Path ([System.Environment]::GetFolderPath('UserProfile')) -ChildPath '.mcpposh'
+        Join-Path -Path ([System.Environment]::GetFolderPath('UserProfile')) -ChildPath '.psmcpkb'
     }
     $path = [System.IO.Path]::GetFullPath($path)
     if (-not [System.IO.Directory]::Exists($path)) {

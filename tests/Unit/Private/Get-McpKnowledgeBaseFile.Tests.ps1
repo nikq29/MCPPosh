@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
     $script:Doc = Add-McpDocument -KnowledgeBase Kb -Title 'Install Guide' -Content "# Install`n`nInstall the **package** with winget." -Tags setup
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Get-McpKnowledgeBaseFile' {
     It 'lists metadata, manifest, documents and index files with relative paths' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $files = @(Get-McpKnowledgeBaseFile -KbPath (Resolve-McpKnowledgeBase -KnowledgeBase Kb).Path)
             $files.RelativePath | Should -Contain 'knowledgebase.json'
             $files.RelativePath | Should -Contain 'manifest.json'

@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Search-McpDocument.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Search-McpDocument.md
 schema: 2.0.0
 ---
 
@@ -115,12 +115,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String. You can pipe search queries.
 ## OUTPUTS
 
-### MCPPosh.SearchResult: Score, DocumentId, Title, Heading, Tags, Source, Snippet and Text (the complete section).
+### PSMcpKnowledgeBase.SearchResult: Score, DocumentId, Title, Heading, Tags, Source, Snippet and Text (the complete section).
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Search-McpDocument.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Search-McpDocument.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Search-McpDocument.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Search-McpDocument.md)
 
 [Get-McpDocument]()
 

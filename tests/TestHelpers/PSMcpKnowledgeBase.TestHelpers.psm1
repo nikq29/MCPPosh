@@ -1,5 +1,5 @@
 <#
-    Shared helpers for the MCPPosh Pester tests.
+    Shared helpers for the PSMcpKnowledgeBase Pester tests.
 
     The tests run against the module built by Sampler (./build.ps1 -Tasks build). When the tests
     are started through ./build.ps1 -Tasks test, Sampler puts output/module first on PSModulePath;
@@ -9,21 +9,21 @@
 $script:RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 function Get-McpTestModuleManifest {
-    $available = Get-Module -Name MCPPosh -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+    $available = Get-Module -Name PSMcpKnowledgeBase -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
     if ($available) { return $available.Path }
-    $built = Get-ChildItem -Path (Join-Path $script:RepoRoot 'output/module/MCPPosh') -Filter 'MCPPosh.psd1' -Recurse -ErrorAction SilentlyContinue |
+    $built = Get-ChildItem -Path (Join-Path $script:RepoRoot 'output/module/PSMcpKnowledgeBase') -Filter 'PSMcpKnowledgeBase.psd1' -Recurse -ErrorAction SilentlyContinue |
         Select-Object -First 1
-    if (-not $built) { throw 'MCPPosh is not built. Run ./build.ps1 -ResolveDependency -Tasks build first.' }
+    if (-not $built) { throw 'PSMcpKnowledgeBase is not built. Run ./build.ps1 -ResolveDependency -Tasks build first.' }
     $built.FullName
 }
 
 function Initialize-McpTestEnvironment {
-    <# Creates an isolated MCPPOSH_HOME, imports the built module globally and returns the home path. #>
+    <# Creates an isolated PSMCPKB_HOME, imports the built module globally and returns the home path. #>
     param([string] $Name = 'test')
 
-    $homePath = Join-Path ([System.IO.Path]::GetTempPath()) ('mcpposh-test-' + [guid]::NewGuid().ToString('N').Substring(0, 12) + "-$Name")
+    $homePath = Join-Path ([System.IO.Path]::GetTempPath()) ('psmcpkb-test-' + [guid]::NewGuid().ToString('N').Substring(0, 12) + "-$Name")
     New-Item -ItemType Directory -Path $homePath -Force | Out-Null
-    $env:MCPPOSH_HOME = $homePath
+    $env:PSMCPKB_HOME = $homePath
     Import-Module -Name (Get-McpTestModuleManifest) -Force -Global -ErrorAction Stop
     $homePath
 }
@@ -34,7 +34,7 @@ function Remove-McpTestEnvironment {
     if ($Path -and (Test-Path -LiteralPath $Path)) {
         Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction SilentlyContinue
     }
-    Remove-Item -Path Env:MCPPOSH_HOME -ErrorAction SilentlyContinue
+    Remove-Item -Path Env:PSMCPKB_HOME -ErrorAction SilentlyContinue
 }
 
 function New-McpTestContext {
@@ -45,7 +45,7 @@ function New-McpTestContext {
         [ValidateSet('Stdio', 'Http')] [string] $Transport = 'Stdio'
     )
 
-    & (Get-Module -Name MCPPosh) {
+    & (Get-Module -Name PSMcpKnowledgeBase) {
         param($KnowledgeBase, $AllowWrite, $Transport)
         $kb = Resolve-McpKnowledgeBase -KnowledgeBase $KnowledgeBase -CreateIfMissing
         New-McpServerContext -KnowledgeBase $kb -Transport $Transport -AllowWrite:$AllowWrite -LogPath (Join-Path $kb.Path 'logs/test.log')
@@ -62,7 +62,7 @@ function Invoke-McpTestMessage {
 
     $json = if ($Message -is [string]) { $Message } else { $Message | ConvertTo-Json -Depth 20 -Compress }
     $context = New-McpTestContext -KnowledgeBase $KnowledgeBase -AllowWrite:$AllowWrite
-    $response = & (Get-Module -Name MCPPosh) { param($Context, $Json) Invoke-McpMessage -Context $Context -Json $Json } $context $json
+    $response = & (Get-Module -Name PSMcpKnowledgeBase) { param($Context, $Json) Invoke-McpMessage -Context $Context -Json $Json } $context $json
     if ($null -ne $response) { $response | ConvertFrom-Json -Depth 50 }
 }
 
@@ -177,14 +177,14 @@ public static class McpTestDisposer
 
 function Get-McpTestFreePort {
     <# Returns a free TCP port on the loopback interface. #>
-    & (Get-Module -Name MCPPosh) { Get-McpFreePort }
+    & (Get-Module -Name PSMcpKnowledgeBase) { Get-McpFreePort }
 }
 
 function ConvertTo-McpTestEncodedCommand {
     <#
         Turns a script block and its arguments into a value for pwsh -EncodedCommand. Integration tests write the
         commands of child processes as script block literals so the QA guard (tests/QA/integration.tests.ps1)
-        sees the MCPPosh calls in them.
+        sees the PSMcpKnowledgeBase calls in them.
     #>
     param(
         [Parameter(Mandatory)] [scriptblock] $ScriptBlock,
@@ -204,7 +204,7 @@ function Start-McpTestProcess {
         [Parameter(Mandatory)] [string] $OutputPath
     )
 
-    $pwsh = & (Get-Module -Name MCPPosh) { Get-McpPwshPath }
+    $pwsh = & (Get-Module -Name PSMcpKnowledgeBase) { Get-McpPwshPath }
     $encoded = ConvertTo-McpTestEncodedCommand -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
     Start-Process -FilePath $pwsh -ArgumentList '-NoProfile', '-NonInteractive', '-EncodedCommand', $encoded `
         -RedirectStandardOutput $OutputPath -RedirectStandardError "$OutputPath.err" -PassThru

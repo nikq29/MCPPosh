@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Import-McpKnowledgeBase.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Import-McpKnowledgeBase.md
 schema: 2.0.0
 ---
 
@@ -150,12 +150,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String. You can pipe file objects; their FullName property binds to -Path.
 ## OUTPUTS
 
-### MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+### PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Import-McpKnowledgeBase.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Import-McpKnowledgeBase.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Import-McpKnowledgeBase.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Import-McpKnowledgeBase.md)
 
 [Export-McpKnowledgeBase]()
 
