@@ -29,7 +29,7 @@ function Initialize-McpConverterRegistry {
     )
     foreach ($builtin in $builtins) {
         $script:McpConverters.Add([pscustomobject]@{
-                PSTypeName  = 'MCPPosh.Converter'
+                PSTypeName  = 'PSMcpKnowledgeBase.Converter'
                 Name        = $builtin.Name
                 Extensions  = [string[]]@($builtin.Extensions | Sort-Object)
                 ScriptBlock = $builtin.ScriptBlock

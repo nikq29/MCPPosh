@@ -8,7 +8,7 @@ BeforeDiscovery {
 }
 
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment -Name client
     New-McpKnowledgeBase -Name Client -Description 'Client configuration tests' | Out-Null
     Add-McpDocument -KnowledgeBase Client -Title 'VPN' -Content "# VPN`n`nThe VPN gateway vpn.contoso.example uses WireGuard." | Out-Null
@@ -26,17 +26,17 @@ Describe 'Stdio configurations' {
         $config = Get-McpClientConfig -KnowledgeBase Client -Client $Client
         $config.Client | Should -Be $Client
         $config.Transport | Should -Be 'Stdio'
-        $config.ServerName | Should -Be 'mcpposh-client'
+        $config.ServerName | Should -Be 'psmcpkb-client'
         $server = Get-McpTestClientEntry -Json $config.Json
-        $server.Name | Should -Be 'mcpposh-client'
+        $server.Name | Should -Be 'psmcpkb-client'
         if ($Client -in 'VSCode', 'ClaudeCode') { $server.Entry.type | Should -Be 'stdio' }
         if ($Client -eq 'VSCode') { $server.Config.Keys | Should -Contain 'servers' } else { $server.Config.Keys | Should -Contain 'mcpServers' }
-        if ($Client -eq 'ClaudeCode') { $config.Command | Should -Match '^claude mcp add .*mcpposh-client -- ' }
+        if ($Client -eq 'ClaudeCode') { $config.Command | Should -Match '^claude mcp add .*psmcpkb-client -- ' }
 
         $session = Invoke-McpTestStdioSession -FilePath $server.Entry.command -ArgumentList $server.Entry.args -Environment $server.Entry.env `
             -Message (Get-McpTestRpcMessage -ListTools -ToolCall $script:SearchCall)
         $session.Responses.Count | Should -Be 3 -Because $session.StdErr
-        $session.Responses[0].result.serverInfo.name | Should -Be 'MCPPosh'
+        $session.Responses[0].result.serverInfo.name | Should -Be 'PSMcpKnowledgeBase'
         $session.Responses[1].result.tools.name | Should -Not -Contain 'add_note'
         $session.Responses[2].result.content[0].text | Should -Match 'WireGuard'
     }
@@ -56,10 +56,10 @@ Describe 'Stdio configurations' {
 
     It 'imports the module by name with -UseModuleName' {
         $server = Get-McpTestClientEntry -Json (Get-McpClientConfig -KnowledgeBase Client -UseModuleName -AsJson)
-        $server.Entry.args[-1] | Should -Match '^Import-Module MCPPosh;'
-        # The module must be found on PSModulePath, as after Install-PSResource MCPPosh.
+        $server.Entry.args[-1] | Should -Match '^Import-Module PSMcpKnowledgeBase;'
+        # The module must be found on PSModulePath, as after Install-PSResource PSMcpKnowledgeBase.
         $moduleRoot = Get-McpTestModuleManifest | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent
-        $environment = @{ MCPPOSH_HOME = $server.Entry.env.MCPPOSH_HOME; PSModulePath = $moduleRoot + [System.IO.Path]::PathSeparator + $env:PSModulePath }
+        $environment = @{ PSMCPKB_HOME = $server.Entry.env.PSMCPKB_HOME; PSModulePath = $moduleRoot + [System.IO.Path]::PathSeparator + $env:PSModulePath }
         $session = Invoke-McpTestStdioSession -FilePath $server.Entry.command -ArgumentList $server.Entry.args -Environment $environment `
             -Message (Get-McpTestRpcMessage -ToolCall $script:SearchCall)
         $session.Responses[-1].result.content[0].text | Should -Match 'WireGuard' -Because $session.StdErr
@@ -84,8 +84,8 @@ Describe 'HTTP configurations' {
         $entry = (Get-McpTestClientEntry -Json $config.Json).Entry
         $entry.url | Should -Be "$($script:Base)/mcp"
         $response = Invoke-RestMethod -Uri $entry.url -Method Post -Body $script:Initialize -ContentType 'application/json' -Headers $entry.headers
-        $response.result.serverInfo.name | Should -Be 'MCPPosh'
-        if ($Client -eq 'ClaudeCode') { $config.Command | Should -Match "^claude mcp add --transport http mcpposh-client $([regex]::Escape($entry.url))" }
+        $response.result.serverInfo.name | Should -Be 'PSMcpKnowledgeBase'
+        if ($Client -eq 'ClaudeCode') { $config.Command | Should -Match "^claude mcp add --transport http psmcpkb-client $([regex]::Escape($entry.url))" }
     }
 
     It 'finds the running local server when -Uri is omitted' {
@@ -98,23 +98,23 @@ Describe 'HTTP configurations' {
         $json = Get-McpClientConfig -KnowledgeBase Client -Client VSCode -Transport Http -Uri $script:Base -ApiKeyPlaceholder -AsJson
         $json | Should -Not -Match $script:Key
         $server = Get-McpTestClientEntry -Json $json
-        $server.Config.inputs[0].id | Should -Be 'mcpposh-api-key'
+        $server.Config.inputs[0].id | Should -Be 'psmcpkb-api-key'
         $server.Config.inputs[0].password | Should -BeTrue
-        $server.Entry.headers.Authorization | Should -Be 'Bearer ${input:mcpposh-api-key}'
+        $server.Entry.headers.Authorization | Should -Be 'Bearer ${input:psmcpkb-api-key}'
         # VS Code replaces the input with the key the user enters.
-        $headers = @{ Authorization = $server.Entry.headers.Authorization.Replace('${input:mcpposh-api-key}', $script:Key) }
+        $headers = @{ Authorization = $server.Entry.headers.Authorization.Replace('${input:psmcpkb-api-key}', $script:Key) }
         (Invoke-RestMethod -Uri $server.Entry.url -Method Post -Body $script:Initialize -ContentType 'application/json' -Headers $headers).result.serverInfo.name |
-            Should -Be 'MCPPosh'
+            Should -Be 'PSMcpKnowledgeBase'
     }
 
     It 'configures the mcp-remote bridge for Claude Desktop' {
         $entry = (Get-McpTestClientEntry -Json (Get-McpClientConfig -KnowledgeBase Client -Client ClaudeDesktop -Transport Http -Uri $script:Base -ApiKey $script:Key -AsJson)).Entry
         $entry.command | Should -Be 'npx'
-        $entry.args | Should -Be @('-y', 'mcp-remote', "$($script:Base)/mcp", '--header', 'Authorization:${MCPPOSH_AUTH_HEADER}')
-        $entry.env.MCPPOSH_AUTH_HEADER | Should -Be "Bearer $($script:Key)"
+        $entry.args | Should -Be @('-y', 'mcp-remote', "$($script:Base)/mcp", '--header', 'Authorization:${PSMCPKB_AUTH_HEADER}')
+        $entry.env.PSMCPKB_AUTH_HEADER | Should -Be "Bearer $($script:Key)"
         # mcp-remote (Node.js) is not started; send the request it would send.
-        $headers = @{ Authorization = $entry.env.MCPPOSH_AUTH_HEADER }
+        $headers = @{ Authorization = $entry.env.PSMCPKB_AUTH_HEADER }
         (Invoke-RestMethod -Uri $entry.args[2] -Method Post -Body $script:Initialize -ContentType 'application/json' -Headers $headers).result.serverInfo.name |
-            Should -Be 'MCPPosh'
+            Should -Be 'PSMcpKnowledgeBase'
     }
 }

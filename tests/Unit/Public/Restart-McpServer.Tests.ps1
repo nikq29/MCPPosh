@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv | Out-Null
 }
 
@@ -12,7 +12,7 @@ AfterAll {
 
 Describe 'Restart-McpServer' {
     It 'stops the server and starts it again with the stored settings' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Srv
             Mock Get-McpServerState {
                 [pscustomobject]@{ knowledgeBase = 'Srv'; kbPath = $kb.Path; port = 7101; listenAddress = '*'; allowWrite = $true
@@ -29,16 +29,16 @@ Describe 'Restart-McpServer' {
     }
 
     It 'requires the API key again for servers with authentication' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Get-McpServerState { [pscustomobject]@{ knowledgeBase = 'Srv'; kbPath = 'x'; port = 7102; authRequired = $true; Status = 'Running' } }
             Mock Start-McpServer { }
-            $previous = $env:MCPPOSH_API_KEY
-            $env:MCPPOSH_API_KEY = $null
+            $previous = $env:PSMCPKB_API_KEY
+            $env:PSMCPKB_API_KEY = $null
             try {
                 Restart-McpServer -Port 7102 -ErrorAction SilentlyContinue -ErrorVariable err
             }
             finally {
-                $env:MCPPOSH_API_KEY = $previous
+                $env:PSMCPKB_API_KEY = $previous
             }
             $err | Should -Not -BeNullOrEmpty
             Should -Invoke Start-McpServer -Times 0

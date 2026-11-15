@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -10,13 +10,13 @@ AfterAll {
 }
 
 Describe 'New-McpKnowledgeBase' {
-    It 'creates a knowledge base in the MCPPosh home' {
+    It 'creates a knowledge base in the PSMcpKnowledgeBase home' {
         $kb = New-McpKnowledgeBase -Name Team -Description 'Team docs'
         $kb.Name | Should -Be 'Team'
         $kb.Description | Should -Be 'Team docs'
         $kb.Documents | Should -Be 0
-        Test-Path (Join-Path $env:MCPPOSH_HOME 'knowledgebases/Team/manifest.json') | Should -BeTrue
-        Test-Path (Join-Path $env:MCPPOSH_HOME 'knowledgebases/Team/documents') | Should -BeTrue
+        Test-Path (Join-Path $env:PSMCPKB_HOME 'knowledgebases/Team/manifest.json') | Should -BeTrue
+        Test-Path (Join-Path $env:PSMCPKB_HOME 'knowledgebases/Team/documents') | Should -BeTrue
     }
 
     It 'refuses to overwrite an existing knowledge base' {
@@ -36,6 +36,6 @@ Describe 'New-McpKnowledgeBase' {
 
     It 'supports -WhatIf' {
         New-McpKnowledgeBase -Name WhatIfKb -WhatIf
-        Test-Path (Join-Path $env:MCPPOSH_HOME 'knowledgebases/WhatIfKb') | Should -BeFalse
+        Test-Path (Join-Path $env:PSMCPKB_HOME 'knowledgebases/WhatIfKb') | Should -BeFalse
     }
 }

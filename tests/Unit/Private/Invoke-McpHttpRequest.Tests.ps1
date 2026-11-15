@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Invoke-McpHttpRequest' {
     BeforeAll {
-        $script:Port = InModuleScope MCPPosh { Get-McpFreePort }
+        $script:Port = InModuleScope PSMcpKnowledgeBase { Get-McpFreePort }
         $script:Listener = [System.Net.HttpListener]::new()
         $script:Listener.Prefixes.Add("http://localhost:$($script:Port)/")
         $script:Listener.Start()
@@ -32,7 +32,7 @@ Describe 'Invoke-McpHttpRequest' {
             $pending = $client.SendAsync($request)
             $httpContext = $script:Listener.GetContext()
             $settings = @{ ApiKeys = $ApiKeys; AllowedOrigins = $AllowedOrigins; IsLoopback = $true }
-            $status = InModuleScope MCPPosh -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
+            $status = InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
                 param($Context, $HttpContext, $Settings)
                 Invoke-McpHttpRequest -Context $Context -HttpContext $HttpContext -Settings $Settings
             }
@@ -92,19 +92,19 @@ Describe 'Invoke-McpHttpRequest' {
     It 'limits the request body also for chunked requests without Content-Length' {
         $ping = '{"jsonrpc":"2.0","id":1,"method":"ping"}'
         (Invoke-TestHttp -Path '/mcp' -Method POST -Body $ping -Chunked -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 200
-        InModuleScope MCPPosh { $script:McpMaxRequestBytes = 1KB }
+        InModuleScope PSMcpKnowledgeBase { $script:McpMaxRequestBytes = 1KB }
         try {
             $large = '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"pad":"' + ('x' * 4000) + '"}}'
             (Invoke-TestHttp -Path '/mcp' -Method POST -Body $large -Chunked -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 413
             (Invoke-TestHttp -Path '/mcp' -Method POST -Body $large -Headers @{ Authorization = 'Bearer k1' }).Code | Should -Be 413
         }
         finally {
-            InModuleScope MCPPosh { $script:McpMaxRequestBytes = 10MB }
+            InModuleScope PSMcpKnowledgeBase { $script:McpMaxRequestBytes = 10MB }
         }
     }
 
     It 'closes the connection when the request body does not arrive in time' {
-        InModuleScope MCPPosh { $script:McpRequestBodyTimeoutSeconds = 1 }
+        InModuleScope PSMcpKnowledgeBase { $script:McpRequestBodyTimeoutSeconds = 1 }
         $tcp = [System.Net.Sockets.TcpClient]::new('localhost', $script:Port)
         Register-McpTestDisposeAfter -InputObject $tcp -Seconds 15
         try {
@@ -118,7 +118,7 @@ Describe 'Invoke-McpHttpRequest' {
             $httpContext = $script:Listener.GetContext()
             $settings = @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $true }
             $watch = [System.Diagnostics.Stopwatch]::StartNew()
-            $status = InModuleScope MCPPosh -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
+            $status = InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:Context; HttpContext = $httpContext; Settings = $settings } {
                 param($Context, $HttpContext, $Settings)
                 Invoke-McpHttpRequest -Context $Context -HttpContext $HttpContext -Settings $Settings
             }
@@ -148,7 +148,7 @@ Describe 'Invoke-McpHttpRequest' {
         }
         finally {
             $tcp.Dispose()
-            InModuleScope MCPPosh { $script:McpRequestBodyTimeoutSeconds = 30 }
+            InModuleScope PSMcpKnowledgeBase { $script:McpRequestBodyTimeoutSeconds = 30 }
         }
     }
 

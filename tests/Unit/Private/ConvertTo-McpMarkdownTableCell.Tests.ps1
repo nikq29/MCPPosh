@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'ConvertTo-McpMarkdownTableCell' {
     It 'escapes pipes and removes line breaks' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             ConvertTo-McpMarkdownTableCell -Value "Service desk | 24/7`r`n Phone" | Should -Be 'Service desk \| 24/7 Phone'
             ConvertTo-McpMarkdownTableCell -Value $null | Should -Be ''
         }

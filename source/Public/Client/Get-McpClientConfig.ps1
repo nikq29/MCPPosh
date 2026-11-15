@@ -1,7 +1,7 @@
 function Get-McpClientConfig {
     <#
     .SYNOPSIS
-        Generates the configuration to connect an AI client to an MCPPosh server.
+        Generates the configuration to connect an AI client to an PSMcpKnowledgeBase server.
 
     .DESCRIPTION
         Produces the JSON snippet (and for Claude Code the 'claude mcp add' command) for:
@@ -30,17 +30,17 @@ function Get-McpClientConfig {
         API key for -Transport Http. Use -ApiKeyPlaceholder to reference an environment variable instead.
 
     .PARAMETER ApiKeyPlaceholder
-        Writes an environment variable reference such as ${env:MCPPOSH_API_KEY} instead of the key.
+        Writes an environment variable reference such as ${env:PSMCPKB_API_KEY} instead of the key.
 
     .PARAMETER ServerName
-        Name of the server entry. Defaults to 'mcpposh-<knowledge base>'.
+        Name of the server entry. Defaults to 'psmcpkb-<knowledge base>'.
 
     .PARAMETER AllowWrite
         Stdio only: lets the agent add notes (add_note tool).
 
     .PARAMETER UseModuleName
-        Stdio only: import the module by name instead of by path. This is the default when MCPPosh is
-        installed in a standard module folder (for example with Install-PSResource MCPPosh).
+        Stdio only: import the module by name instead of by path. This is the default when PSMcpKnowledgeBase is
+        installed in a standard module folder (for example with Install-PSResource PSMcpKnowledgeBase).
 
     .PARAMETER AsJson
         Return only the JSON text.
@@ -56,7 +56,7 @@ function Get-McpClientConfig {
         Returns a claude mcp add command that registers the stdio server in Claude Code.
 
     .EXAMPLE
-        Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKeyPlaceholder -AsJson
+        Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://psmcpkb.azurecontainerapps.io/mcp -ApiKeyPlaceholder -AsJson
 
         Returns a .vscode/mcp.json for a hosted HTTP server. VS Code prompts for the API key instead of storing it in the file.
 
@@ -64,10 +64,10 @@ function Get-McpClientConfig {
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        MCPPosh.ClientConfig: Client, Transport, ServerName, ConfigFile, Json, Command (Claude Code) and Notes. With -AsJson: System.String.
+        PSMcpKnowledgeBase.ClientConfig: Client, Transport, ServerName, ConfigFile, Json, Command (Claude Code) and Notes. With -AsJson: System.String.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpClientConfig.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpClientConfig.md
 
     .LINK
         Start-McpServer
@@ -76,7 +76,7 @@ function Get-McpClientConfig {
         Test-McpServer
     #>
     [CmdletBinding()]
-    [OutputType('MCPPosh.ClientConfig', [string])]
+    [OutputType('PSMcpKnowledgeBase.ClientConfig', [string])]
     param(
         [Parameter(Position = 0)]
         [string] $KnowledgeBase = 'Default',
@@ -108,7 +108,7 @@ function Get-McpClientConfig {
         $kb = Resolve-McpKnowledgeBase -KnowledgeBase $KnowledgeBase -CreateIfMissing:($KnowledgeBase -eq 'Default')
     }
     $kbName = if ($kb) { $kb.Name } else { $KnowledgeBase }
-    if (-not $ServerName) { $ServerName = 'mcpposh-' + (ConvertTo-McpSlug -Text $kbName) }
+    if (-not $ServerName) { $ServerName = 'psmcpkb-' + (ConvertTo-McpSlug -Text $kbName) }
 
     $entry = [ordered]@{}
     $command = $null
@@ -123,7 +123,7 @@ function Get-McpClientConfig {
             $(if ($IsWindows) { Join-Path -Path $env:ProgramFiles -ChildPath 'PowerShell/Modules' } else { '/usr/local/share/powershell/Modules' })
         ) | ForEach-Object { [System.IO.Path]::GetFullPath($_).TrimEnd('/', '\') + [System.IO.Path]::DirectorySeparatorChar }
         $installedFromGallery = @($standardModuleRoots | Where-Object { $script:ModuleManifestPath.StartsWith($_, [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
-        $moduleReference = if ($UseModuleName -or $installedFromGallery) { 'MCPPosh' } else { "'" + $script:ModuleManifestPath.Replace("'", "''") + "'" }
+        $moduleReference = if ($UseModuleName -or $installedFromGallery) { 'PSMcpKnowledgeBase' } else { "'" + $script:ModuleManifestPath.Replace("'", "''") + "'" }
         $kbReference = if (Test-McpLooksLikePath -Value $KnowledgeBase) { $kb.Path } else { $kb.Name }
         $serverCommand = "Import-Module $moduleReference; Start-McpServer -KnowledgeBase '$($kbReference.Replace("'", "''"))' -Transport Stdio" + $(if ($AllowWrite) { ' -AllowWrite' } else { '' })
         $pwsh = Get-McpPwshPath
@@ -132,10 +132,10 @@ function Get-McpClientConfig {
         if ($Client -in 'VSCode', 'ClaudeCode') { $entry['type'] = 'stdio' }
         $entry['command'] = $pwsh
         $entry['args'] = $arguments
-        if ($env:MCPPOSH_HOME) { $entry['env'] = [ordered]@{ MCPPOSH_HOME = $env:MCPPOSH_HOME } }
+        if ($env:PSMCPKB_HOME) { $entry['env'] = [ordered]@{ PSMCPKB_HOME = $env:PSMCPKB_HOME } }
 
         if ($Client -eq 'ClaudeCode') {
-            $envArgument = if ($env:MCPPOSH_HOME) { " -e MCPPOSH_HOME=$(ConvertTo-McpShellArgument $env:MCPPOSH_HOME)" } else { '' }
+            $envArgument = if ($env:PSMCPKB_HOME) { " -e PSMCPKB_HOME=$(ConvertTo-McpShellArgument $env:PSMCPKB_HOME)" } else { '' }
             $command = "claude mcp add$envArgument $(ConvertTo-McpShellArgument $ServerName) -- $(ConvertTo-McpShellArgument $pwsh) -NoLogo -NoProfile -NonInteractive -Command $(ConvertTo-McpShellArgument $serverCommand)"
         }
     }
@@ -152,10 +152,10 @@ function Get-McpClientConfig {
         $keyValue = $null
         if ($ApiKeyPlaceholder) {
             $keyValue = switch ($Client) {
-                'VSCode' { '${input:mcpposh-api-key}' }
-                'ClaudeCode' { '${MCPPOSH_API_KEY}' }
-                'Cursor' { '${env:MCPPOSH_API_KEY}' }
-                default { '${MCPPOSH_API_KEY}' }
+                'VSCode' { '${input:psmcpkb-api-key}' }
+                'ClaudeCode' { '${PSMCPKB_API_KEY}' }
+                'Cursor' { '${env:PSMCPKB_API_KEY}' }
+                default { '${PSMCPKB_API_KEY}' }
             }
         }
         elseif ($ApiKey) {
@@ -171,9 +171,9 @@ function Get-McpClientConfig {
                 foreach ($a in '-y', 'mcp-remote', $endpoint) { $bridgeArgs.Add($a) }
                 if ($keyValue) {
                     $bridgeArgs.Add('--header')
-                    $bridgeArgs.Add('Authorization:${MCPPOSH_AUTH_HEADER}')
+                    $bridgeArgs.Add('Authorization:${PSMCPKB_AUTH_HEADER}')
                     $headerValue = if ($ApiKeyPlaceholder) { 'Bearer <your-api-key>' } else { "Bearer $keyValue" }
-                    $entry['env'] = [ordered]@{ MCPPOSH_AUTH_HEADER = $headerValue }
+                    $entry['env'] = [ordered]@{ PSMCPKB_AUTH_HEADER = $headerValue }
                 }
                 $entry['args'] = $bridgeArgs.ToArray()
                 $notes.Add('Requires Node.js (npx). Alternatively add the server as a custom connector in Claude Desktop (Settings > Connectors).')
@@ -201,7 +201,7 @@ function Get-McpClientConfig {
         $config = [ordered]@{ servers = [ordered]@{ $ServerName = $entry } }
         if ($Transport -eq 'Http' -and $ApiKeyPlaceholder) {
             $config = [ordered]@{
-                inputs  = @([ordered]@{ type = 'promptString'; id = 'mcpposh-api-key'; description = 'MCPPosh API key'; password = $true })
+                inputs  = @([ordered]@{ type = 'promptString'; id = 'psmcpkb-api-key'; description = 'PSMcpKnowledgeBase API key'; password = $true })
                 servers = $config.servers
             }
         }
@@ -215,7 +215,7 @@ function Get-McpClientConfig {
     if ($AsJson) { return $json }
 
     [pscustomobject]@{
-        PSTypeName = 'MCPPosh.ClientConfig'
+        PSTypeName = 'PSMcpKnowledgeBase.ClientConfig'
         Client     = $Client
         Transport  = $Transport
         ServerName = $ServerName

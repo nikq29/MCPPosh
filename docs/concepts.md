@@ -1,6 +1,6 @@
 # Concepts and architecture
 
-MCPPosh has three parts: knowledge bases that store your documentation, a search engine that finds the relevant
+PSMcpKnowledgeBase has three parts: knowledge bases that store your documentation, a search engine that finds the relevant
 sections, and an MCP server that makes both available to AI agents. All of them are plain PowerShell 7 code without
 external dependencies.
 
@@ -17,7 +17,7 @@ external dependencies.
 
 ## Knowledge base
 
-A knowledge base is a folder, by default `~/.mcpposh/knowledgebases/<name>`:
+A knowledge base is a folder, by default `~/.psmcpkb/knowledgebases/<name>`:
 
 | Path | Content |
 | --- | --- |
@@ -57,7 +57,7 @@ Documents are matched so that importing the same source again updates the existi
 ## Consistency and concurrency
 
 The PowerShell session and a running server with write access may change the same knowledge base at the same time.
-MCPPosh therefore
+PSMcpKnowledgeBase therefore
 
 - holds an exclusive lock (`.lock`) while it updates the manifest,
 - writes every file atomically (temporary file, then rename), and
@@ -86,7 +86,7 @@ Both transports share the same handlers and offer the tools `search_documentatio
 
 ## Local server processes
 
-Background HTTP servers write a state file to `~/.mcpposh/servers/<knowledge base>-<port>.json` with process id,
+Background HTTP servers write a state file to `~/.psmcpkb/servers/<knowledge base>-<port>.json` with process id,
 process start time, port, URL and options. `Get-McpServer`, `Stop-McpServer` and `Restart-McpServer` use these
 files; the process start time protects against stopping an unrelated process that reused the process id.
 

@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocumentConverter.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocumentConverter.md
 schema: 2.0.0
 ---
 
@@ -78,12 +78,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### None. You cannot pipe objects to this cmdlet.
 ## OUTPUTS
 
-### MCPPosh.Converter: Name, Extensions, ScriptBlock and Builtin.
+### PSMcpKnowledgeBase.Converter: Name, Extensions, ScriptBlock and Builtin.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocumentConverter.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocumentConverter.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocumentConverter.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocumentConverter.md)
 
 [Register-McpDocumentConverter]()
 

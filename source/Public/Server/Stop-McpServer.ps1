@@ -1,10 +1,10 @@
 function Stop-McpServer {
     <#
     .SYNOPSIS
-        Stops MCPPosh HTTP servers that run on this machine.
+        Stops PSMcpKnowledgeBase HTTP servers that run on this machine.
 
     .DESCRIPTION
-        Stops MCPPosh HTTP servers that run on this machine, in the background or in another console, and removes their state files. Without parameters the only running server is stopped.
+        Stops PSMcpKnowledgeBase HTTP servers that run on this machine, in the background or in another console, and removes their state files. Without parameters the only running server is stopped.
 
     .PARAMETER KnowledgeBase
         Stop the servers of this knowledge base.
@@ -13,7 +13,7 @@ function Stop-McpServer {
         Stop the server on this port.
 
     .PARAMETER All
-        Stops all MCPPosh HTTP servers that were started on this machine.
+        Stops all PSMcpKnowledgeBase HTTP servers that were started on this machine.
 
     .EXAMPLE
         Stop-McpServer -KnowledgeBase Contoso
@@ -26,13 +26,13 @@ function Stop-McpServer {
         Stops all local servers listed by Get-McpServer.
 
     .INPUTS
-        MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+        PSMcpKnowledgeBase.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
 
     .OUTPUTS
         None.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Stop-McpServer.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Stop-McpServer.md
 
     .LINK
         Start-McpServer

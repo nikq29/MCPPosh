@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'ConvertFrom-McpMarkdownFile' {
     It 'reads front matter title and tags and removes the front matter' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'fm.md'
             Set-Content -Path $path -Value "---`ntitle: My Title`ntags:`n  - one`n  - two`n---`n# Heading`n`nText"
@@ -25,7 +25,7 @@ Describe 'ConvertFrom-McpMarkdownFile' {
     }
 
     It 'uses the first heading as title' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'heading.md'
             Set-Content -Path $path -Value "Intro`n`n# Real Title`n`nmore"

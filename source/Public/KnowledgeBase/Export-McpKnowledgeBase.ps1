@@ -33,7 +33,7 @@ function Export-McpKnowledgeBase {
         System.IO.FileInfo. The created ZIP archive.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Export-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Export-McpKnowledgeBase.md
 
     .LINK
         Import-McpKnowledgeBase

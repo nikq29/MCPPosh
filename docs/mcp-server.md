@@ -28,7 +28,7 @@ The client starts with `initialize`. The server
 
 - accepts the requested protocol version when it supports it, otherwise answers with the newest supported version,
 - announces the capabilities `tools` and `resources` (both without change notifications),
-- returns `serverInfo` (`name` = `MCPPosh`, `title` = `MCPPosh - <knowledge base>`, `version` = module version), and
+- returns `serverInfo` (`name` = `PSMcpKnowledgeBase`, `title` = `PSMcpKnowledgeBase - <knowledge base>`, `version` = module version), and
 - returns `instructions` built from the knowledge base description, for example:
 
 ```text
@@ -107,7 +107,7 @@ updating an existing note with the same title still works. See [Security](securi
 ## Write access
 
 By default agents can only read. Start the server with `-AllowWrite` (or the client configuration with
-`Get-McpClientConfig -AllowWrite`, or `MCPPOSH_ALLOW_WRITE=true` in the container) to offer `add_note`. The
+`Get-McpClientConfig -AllowWrite`, or `PSMCPKB_ALLOW_WRITE=true` in the container) to offer `add_note`. The
 instructions then ask the agent to save important findings, decisions and corrections.
 
 Review agent notes regularly:
@@ -119,13 +119,13 @@ Get-McpDocument -KnowledgeBase Contoso -Tag agent-note | Remove-McpDocument
 
 ## Resources
 
-Every document is an MCP resource with the URI `mcpposh://<knowledge base>/documents/<id>` and the MIME type
+Every document is an MCP resource with the URI `psmcpkb://<knowledge base>/documents/<id>` and the MIME type
 `text/markdown`.
 
 | Method | Result |
 | --- | --- |
 | `resources/list` | all documents with `uri`, `name` (id), `title`, `description` (summary), `mimeType` and `size`; pages of 500 entries with `nextCursor` |
-| `resources/templates/list` | the template `mcpposh://<knowledge base>/documents/{id}` |
+| `resources/templates/list` | the template `psmcpkb://<knowledge base>/documents/{id}` |
 | `resources/read` | the Markdown content of the document |
 
 ## Other methods
@@ -170,13 +170,13 @@ You can send these lines to a stdio server yourself:
 
 ```powershell
 $messages = Get-Content .\session.jsonl
-$messages | pwsh -NoProfile -Command "Import-Module MCPPosh; Start-McpServer -KnowledgeBase Contoso -Transport Stdio"
+$messages | pwsh -NoProfile -Command "Import-Module PSMcpKnowledgeBase; Start-McpServer -KnowledgeBase Contoso -Transport Stdio"
 ```
 
 `Test-McpServer` runs a similar session automatically, and the official
 [MCP Inspector](https://github.com/modelcontextprotocol/inspector) works with both transports:
 
 ```bash
-npx @modelcontextprotocol/inspector --cli pwsh -NoProfile -Command "Import-Module MCPPosh; Start-McpServer -KnowledgeBase Contoso -Transport Stdio" --method tools/list
+npx @modelcontextprotocol/inspector --cli pwsh -NoProfile -Command "Import-Module PSMcpKnowledgeBase; Start-McpServer -KnowledgeBase Contoso -Transport Stdio" --method tools/list
 npx @modelcontextprotocol/inspector --cli http://localhost:5050/mcp --transport http --header "Authorization: Bearer <key>" --method tools/list
 ```

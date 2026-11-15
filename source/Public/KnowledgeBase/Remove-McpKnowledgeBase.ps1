@@ -26,7 +26,7 @@ function Remove-McpKnowledgeBase {
         None.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Remove-McpKnowledgeBase.md
 
     .LINK
         Get-McpKnowledgeBase

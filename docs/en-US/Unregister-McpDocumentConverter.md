@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Unregister-McpDocumentConverter.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Unregister-McpDocumentConverter.md
 schema: 2.0.0
 ---
 
@@ -86,7 +86,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### MCPPosh.Converter. You can pipe converters from Get-McpDocumentConverter.
+### PSMcpKnowledgeBase.Converter. You can pipe converters from Get-McpDocumentConverter.
 ## OUTPUTS
 
 ### None.
@@ -94,7 +94,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Unregister-McpDocumentConverter.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Unregister-McpDocumentConverter.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Unregister-McpDocumentConverter.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Unregister-McpDocumentConverter.md)
 
 [Register-McpDocumentConverter]()
 

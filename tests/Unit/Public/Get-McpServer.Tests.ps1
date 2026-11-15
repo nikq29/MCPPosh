@@ -1,9 +1,9 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv | Out-Null
-    & (Get-Module MCPPosh) {
+    & (Get-Module PSMcpKnowledgeBase) {
         $kb = Resolve-McpKnowledgeBase -KnowledgeBase Srv
         $self = [System.Diagnostics.Process]::GetCurrentProcess()
         Write-McpJsonFile -Path (Get-McpServerStateFile -KnowledgeBaseName Srv -Port 7001) -InputObject ([ordered]@{
@@ -20,7 +20,7 @@ BeforeAll {
 
 AfterAll {
     $PSDefaultParameterValues.Remove('InModuleScope:ModuleName')
-    & (Get-Module MCPPosh) { Get-ChildItem (Get-McpServerStateRoot) -Filter *.json | Remove-Item -Force }
+    & (Get-Module PSMcpKnowledgeBase) { Get-ChildItem (Get-McpServerStateRoot) -Filter *.json | Remove-Item -Force }
     Remove-McpTestEnvironment -Path $script:TestHome
 }
 
@@ -47,9 +47,9 @@ Describe 'Get-McpServer' {
     }
 
     It 'queries the health endpoint of a remote server' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
-                [pscustomobject]@{ StatusCode = 200; Content = '{"status":"ok","server":"MCPPosh","version":"1.2.3","knowledgeBase":"Contoso","documents":12,"revision":7,"uptimeSeconds":90,"authRequired":true,"allowWrite":false}' }
+                [pscustomobject]@{ StatusCode = 200; Content = '{"status":"ok","server":"PSMcpKnowledgeBase","version":"1.2.3","knowledgeBase":"Contoso","documents":12,"revision":7,"uptimeSeconds":90,"authRequired":true,"allowWrite":false}' }
             } -ParameterFilter { $Uri -eq 'https://docs.example.com/health' -and $Headers.Authorization -eq 'Bearer key' }
             $remote = Get-McpServer -Uri 'https://docs.example.com/mcp' -ApiKey 'key'
             $remote.Status | Should -Be 'Running'
@@ -60,7 +60,7 @@ Describe 'Get-McpServer' {
     }
 
     It 'reports unreachable remote servers' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest { throw 'connection refused' }
             $remote = Get-McpServer -Uri 'https://down.example.com'
             $remote.Status | Should -Be 'Unreachable'

@@ -47,13 +47,13 @@ function Set-McpDocument {
         Renames a document and returns the updated document.
 
     .INPUTS
-        MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
+        PSMcpKnowledgeBase.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 
     .OUTPUTS
-        None by default. With -PassThru: MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        None by default. With -PassThru: PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Set-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Set-McpDocument.md
 
     .LINK
         Get-McpDocument
@@ -62,7 +62,7 @@ function Set-McpDocument {
         Update-McpDocument
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.Document')]
+    [OutputType('PSMcpKnowledgeBase.Document')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [string] $Id,

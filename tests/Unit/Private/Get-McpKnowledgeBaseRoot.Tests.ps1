@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Get-McpKnowledgeBaseRoot' {
     It 'returns the knowledgebases folder below the home path' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $root = Get-McpKnowledgeBaseRoot
             $root | Should -Be (Join-Path (Get-McpHomePath) 'knowledgebases')
             Test-Path $root | Should -BeTrue

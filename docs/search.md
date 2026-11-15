@@ -1,6 +1,6 @@
 # Search
 
-MCPPosh ships a local full-text search based on [BM25](https://en.wikipedia.org/wiki/Okapi_BM25). It needs no API
+PSMcpKnowledgeBase ships a local full-text search based on [BM25](https://en.wikipedia.org/wiki/Okapi_BM25). It needs no API
 keys, no embedding model and no network access. `Search-McpDocument` and the MCP tool `search_documentation` use the
 same search.
 

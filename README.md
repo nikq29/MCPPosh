@@ -1,15 +1,15 @@
-# MCPPosh
+# PSMcpKnowledgeBase
 
 **Serve your own documentation to AI agents through an MCP server, managed entirely from PowerShell.**
 
-MCPPosh is a PowerShell module that builds a knowledge base from your documents (Markdown, Word,
+PSMcpKnowledgeBase is a PowerShell module that builds a knowledge base from your documents (Markdown, Word,
 PDF, HTML and web pages, CSV, JSON/YAML/XML, source code ...) and provides it to AI agents such as
 Claude Desktop, Claude Code, GitHub Copilot in VS Code or Cursor through the
 [Model Context Protocol](https://modelcontextprotocol.io). The server runs locally or centrally,
 for example in Azure.
 
 ```powershell
-Install-PSResource -Name MCPPosh
+Install-PSResource -Name PSMcpKnowledgeBase
 New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation: runbooks, architecture, FAQ'
 Add-McpDocument -KnowledgeBase Contoso -Path .\docs -Recurse
 Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeDesktop   # configuration for the agent
@@ -27,7 +27,7 @@ The complete documentation is in [docs](docs/README.md):
 - [Docker](docs/hosting-docker.md), [Azure](docs/hosting-azure.md), [Configuration](docs/configuration.md),
   [Security](docs/security.md), [Troubleshooting](docs/troubleshooting.md)
 - [Development](docs/development.md) - Sampler build, tests, documentation and releases
-- [Cmdlet reference](docs/en-US/MCPPosh.md) - generated from the comment-based help (`Get-Help <cmdlet> -Full`)
+- [Cmdlet reference](docs/en-US/PSMcpKnowledgeBase.md) - generated from the comment-based help (`Get-Help <cmdlet> -Full`)
 
 ## Features
 
@@ -41,7 +41,7 @@ The complete documentation is in [docs](docs/README.md):
   ready-to-use client configurations.
 - **Live reload**: documents you add are available immediately, also on running servers.
 - **Optional write access**: with `-AllowWrite` the agent can store knowledge itself through `add_note`.
-- **Central hosting**: Docker image (installs MCPPosh from the PowerShell Gallery), Bicep template
+- **Central hosting**: Docker image (installs PSMcpKnowledgeBase from the PowerShell Gallery), Bicep template
   for Azure Container Apps with Azure Files and `Publish-McpKnowledgeBase` for publishing.
 
 ## Requirements
@@ -56,17 +56,17 @@ The complete documentation is in [docs](docs/README.md):
 From the PowerShell Gallery:
 
 ```powershell
-Install-PSResource -Name MCPPosh            # PowerShell 7.4+ (PSResourceGet)
-Install-Module -Name MCPPosh -Scope CurrentUser   # alternatively with PowerShellGet
+Install-PSResource -Name PSMcpKnowledgeBase            # PowerShell 7.4+ (PSResourceGet)
+Install-Module -Name PSMcpKnowledgeBase -Scope CurrentUser   # alternatively with PowerShellGet
 ```
 
 From source (the module is built with [Sampler](https://github.com/gaelcolas/Sampler)):
 
 ```powershell
-git clone https://github.com/nikq29/MCPPosh.git
-cd MCPPosh
+git clone https://github.com/nikq29/PSMcpKnowledgeBase.git
+cd PSMcpKnowledgeBase
 ./build.ps1 -ResolveDependency -Tasks build
-Import-Module ./output/module/MCPPosh
+Import-Module ./output/module/PSMcpKnowledgeBase
 ```
 
 ## Quick start
@@ -140,7 +140,7 @@ do not need the converter because documents are converted when they are added.
 
 ### PDF support
 
-PDFs are read with an additional tool. MCPPosh uses what is available:
+PDFs are read with an additional tool. PSMcpKnowledgeBase uses what is available:
 
 1. **PSWritePDF** (PowerShell module, `Convert-PDFToText`): `Install-PSResource PSWritePDF`
 2. **pdftotext** from Poppler: `winget install oschwartz10612.Poppler`, `brew install poppler` or `apt install poppler-utils`
@@ -164,15 +164,15 @@ Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -AsJson | Set-Content 
 Get-McpClientConfig -KnowledgeBase Contoso -Client Cursor            # ~/.cursor/mcp.json
 ```
 
-Example output for Claude Desktop with MCPPosh installed from the Gallery:
+Example output for Claude Desktop with PSMcpKnowledgeBase installed from the Gallery:
 
 ```json
 {
   "mcpServers": {
-    "mcpposh-contoso": {
+    "psmcpkb-contoso": {
       "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
       "args": ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
-               "Import-Module MCPPosh; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
+               "Import-Module PSMcpKnowledgeBase; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
     }
   }
 }
@@ -194,7 +194,7 @@ Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -ApiKe
   the network and `-ApiKey` is required. On Windows this also needs administrator rights or a URL
   ACL (`netsh http add urlacl url=http://+:5050/ user=DOMAIN\user`).
 - Clients send the API key as `Authorization: Bearer <key>` or `X-API-Key: <key>`. Several keys are
-  possible, for example for key rotation. Alternatively set `$env:MCPPOSH_API_KEY`.
+  possible, for example for key rotation. Alternatively set `$env:PSMCPKB_API_KEY`.
 - `-Foreground` keeps the server in the current console (for containers and troubleshooting).
 
 ### What the agent gets
@@ -206,29 +206,29 @@ Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -ApiKe
 | `list_documents` | documents with title, tags and summary (filter by tag) |
 | `add_note` | store a note, only with `-AllowWrite` |
 
-Every document is also available as MCP resource `mcpposh://<knowledge base>/documents/<id>`. The
+Every document is also available as MCP resource `psmcpkb://<knowledge base>/documents/<id>`. The
 description of the knowledge base is sent as `instructions`. Supported protocol revisions:
 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05.
 
 ## Central hosting (Docker / Azure)
 
-The Docker image installs MCPPosh from the PowerShell Gallery:
+The Docker image installs PSMcpKnowledgeBase from the PowerShell Gallery:
 
 ```bash
-docker build -f docker/Dockerfile --build-arg MCPPOSH_VERSION=0.1.0 -t mcpposh .
-docker run -p 8080:8080 -e MCPPOSH_API_KEY=<key> -e MCPPOSH_KNOWLEDGEBASE=Contoso -v mcpposh-data:/data mcpposh
+docker build -f docker/Dockerfile --build-arg PSMCPKB_VERSION=0.1.0 -t psmcpkb .
+docker run -p 8080:8080 -e PSMCPKB_API_KEY=<key> -e PSMCPKB_KNOWLEDGEBASE=Contoso -v psmcpkb-data:/data psmcpkb
 ```
 
-Released images are published as `ghcr.io/nikq29/mcpposh:<version>`. To test an unreleased build,
-copy `output/MCPPosh.*.nupkg` to `docker/packages` and build with `--build-arg MCPPOSH_SOURCE=Local`.
+Released images are published as `ghcr.io/nikq29/psmcpkb:<version>`. To test an unreleased build,
+copy `output/PSMcpKnowledgeBase.*.nupkg` to `docker/packages` and build with `--build-arg PSMCPKB_SOURCE=Local`.
 
 [`deploy/azure`](deploy/azure/README.md) contains a Bicep template and `deploy.ps1` that deploy a Container App
 with HTTPS and an API key; the knowledge base lives on Azure Files (guide: [docs/hosting-azure.md](docs/hosting-azure.md)).
 You keep maintaining the knowledge locally and publish it with PowerShell:
 
 ```powershell
-./deploy/azure/deploy.ps1 -ResourceGroupName rg-mcpposh -Image ghcr.io/nikq29/mcpposh:latest -KnowledgeBase Contoso -Publish
-Publish-McpKnowledgeBase -Name Contoso -StorageAccountName <storage> -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
+./deploy/azure/deploy.ps1 -ResourceGroupName rg-psmcpkb -Image ghcr.io/nikq29/psmcpkb:latest -KnowledgeBase Contoso -Publish
+Publish-McpKnowledgeBase -Name Contoso -StorageAccountName <storage> -ShareName psmcpkb -ResourceGroupName rg-psmcpkb -Prune
 Get-McpServer  -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key
 Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 'VPN'
 ```
@@ -244,15 +244,15 @@ Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 
 | Clients | `Get-McpClientConfig` |
 
 Help for every cmdlet: `Get-Help Add-McpDocument -Full`, `Get-Help Add-McpDocument -Online` and
-`Get-Help about_MCPPosh`. The [cmdlet reference](docs/en-US/MCPPosh.md) contains the same help as Markdown, and more
+`Get-Help about_PSMcpKnowledgeBase`. The [cmdlet reference](docs/en-US/PSMcpKnowledgeBase.md) contains the same help as Markdown, and more
 examples are in [`examples`](examples).
 
 ## Storage location and layout
 
-Data is stored below `$env:MCPPOSH_HOME`, by default `~/.mcpposh`:
+Data is stored below `$env:PSMCPKB_HOME`, by default `~/.psmcpkb`:
 
 ```text
-~/.mcpposh/
+~/.psmcpkb/
 ├── knowledgebases/<name>/
 │   ├── knowledgebase.json   # name, description
 │   ├── manifest.json        # document list, revision
@@ -279,17 +279,17 @@ The knowledge base `Default` is created automatically when it is first used.
 
 ## Development
 
-MCPPosh uses the [Sampler](https://github.com/gaelcolas/Sampler) build framework.
+PSMcpKnowledgeBase uses the [Sampler](https://github.com/gaelcolas/Sampler) build framework.
 
 ```powershell
 ./build.ps1 -ResolveDependency -Tasks noop   # download the build dependencies into output/RequiredModules
-./build.ps1 -Tasks build                     # build the module into output/module/MCPPosh/<version>
+./build.ps1 -Tasks build                     # build the module into output/module/PSMcpKnowledgeBase/<version>
 ./build.ps1 -Tasks test                      # QA, unit and integration tests with code coverage
-./build.ps1 -Tasks pack                      # create output/MCPPosh.<version>.nupkg (requires the dotnet CLI)
+./build.ps1 -Tasks pack                      # create output/PSMcpKnowledgeBase.<version>.nupkg (requires the dotnet CLI)
 ```
 
 - Sources are in `source/` with one function per file (`Public/` exported, `Private/` internal);
-  `prefix.ps1` and `suffix.ps1` are merged into the built `MCPPosh.psm1`.
+  `prefix.ps1` and `suffix.ps1` are merged into the built `PSMcpKnowledgeBase.psm1`.
 - Tests: `tests/QA` (Sampler quality checks: help, PSScriptAnalyzer and a unit test file for every
   function, changelog), `tests/Unit/Public` and `tests/Unit/Private` (one file per function) and
   `tests/Integration` (real stdio and HTTP server processes).
@@ -303,7 +303,7 @@ builds and tests every push and pull request on Windows, Linux and macOS. Pushin
 additionally
 
 1. publishes the module to the PowerShell Gallery and creates a GitHub release (Sampler task `publish`),
-2. builds the Docker image with that version from the Gallery and pushes it to `ghcr.io/<owner>/mcpposh`.
+2. builds the Docker image with that version from the Gallery and pushes it to `ghcr.io/<owner>/psmcpkb`.
 
 Publishing requires the repository secret `GALLERY_API_TOKEN` with a PowerShell Gallery API key.
 

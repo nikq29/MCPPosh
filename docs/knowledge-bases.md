@@ -13,12 +13,12 @@ New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation of Co
 - Names start with a letter or digit and contain only letters, digits, `.`, `_` and `-` (at most 64 characters).
 - The description is sent to agents as MCP server instructions and is part of the tool descriptions. Describe what
   the documentation covers and when the agent should use it.
-- The knowledge base is created below `$env:MCPPOSH_HOME/knowledgebases` (default `~/.mcpposh/knowledgebases`).
+- The knowledge base is created below `$env:PSMCPKB_HOME/knowledgebases` (default `~/.psmcpkb/knowledgebases`).
 - `-Path` creates it in another folder, for example on a network share:
 
 ```powershell
-New-McpKnowledgeBase -Name Shared -Path Z:\mcpposh\Shared
-Add-McpDocument -KnowledgeBase Z:\mcpposh\Shared -Path .\docs -Recurse
+New-McpKnowledgeBase -Name Shared -Path Z:\psmcpkb\Shared
+Add-McpDocument -KnowledgeBase Z:\psmcpkb\Shared -Path .\docs -Recurse
 ```
 
 The knowledge base `Default` is created automatically by `Add-McpDocument`, `Get-McpDocument`,
@@ -83,7 +83,7 @@ maintaining the knowledge base locally and publish it:
 ```powershell
 Install-PSResource -Name Az.Storage    # once
 Connect-AzAccount
-Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
+Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareName psmcpkb -ResourceGroupName rg-psmcpkb -Prune
 ```
 
 | Parameter | Purpose |
@@ -92,7 +92,7 @@ Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareN
 | `-StorageAccountKey` | uses a storage account key directly |
 | `-SasToken` | uses a SAS token with read, write, create, list and delete permissions |
 | `-Context` | uses an existing storage context from `New-AzStorageContext` |
-| `-RemoteName` | name of the knowledge base on the share; must match `MCPPOSH_KNOWLEDGEBASE` of the container |
+| `-RemoteName` | name of the knowledge base on the share; must match `PSMCPKB_KNOWLEDGEBASE` of the container |
 | `-Prune` | deletes documents on the share that no longer exist locally |
 | `-Force` | uploads all files instead of only the changed ones |
 
@@ -109,6 +109,6 @@ The result contains `KnowledgeBase`, `Destination`, `Uploaded`, `Skipped`, `Dele
 
 ## Working directly on a share
 
-Instead of publishing, you can mount the Azure Files share (SMB) or any network share and set `$env:MCPPOSH_HOME`
+Instead of publishing, you can mount the Azure Files share (SMB) or any network share and set `$env:PSMCPKB_HOME`
 to it. All cmdlets then work directly on the central knowledge base. Keep in mind that the share must allow file
 locking for concurrent writers.

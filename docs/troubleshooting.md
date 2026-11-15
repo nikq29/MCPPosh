@@ -13,10 +13,10 @@ Get-McpServerLog -KnowledgeBase Contoso -Tail 50
 - Run `Test-McpServer -KnowledgeBase <name>`. If it fails, fix that error first.
 - Check the client configuration: regenerate it with `Get-McpClientConfig` and compare. The `command` must be the
   full path of `pwsh` (PowerShell 7), not `powershell.exe` (Windows PowerShell 5.1).
-- If the configuration imports the module by path, the path must still exist. After installing MCPPosh from the
+- If the configuration imports the module by path, the path must still exist. After installing PSMcpKnowledgeBase from the
   Gallery, regenerate the configuration so it imports the module by name.
-- When `$env:MCPPOSH_HOME` is set in your shell but not in the client configuration, the server looks for the
-  knowledge base in `~/.mcpposh`. `Get-McpClientConfig` adds the variable to the `env` section automatically.
+- When `$env:PSMCPKB_HOME` is set in your shell but not in the client configuration, the server looks for the
+  knowledge base in `~/.psmcpkb`. `Get-McpClientConfig` adds the variable to the `env` section automatically.
 - Restart the client after changing its configuration.
 - Look at `server-stdio.log` of the knowledge base: every start writes `stdio server started` and every connection
   `initialize from <client>`.
@@ -29,14 +29,14 @@ imported. The generated client configuration already uses `-NoLogo -NoProfile -N
 
 ## "Knowledge base '…' was not found"
 
-Create it with `New-McpKnowledgeBase -Name <name>` or check `$env:MCPPOSH_HOME`. Only the knowledge base `Default`
+Create it with `New-McpKnowledgeBase -Name <name>` or check `$env:PSMCPKB_HOME`. Only the knowledge base `Default`
 is created automatically.
 
 ## Port problems
 
-- "Port 5050 is already in use": choose another port with `-Port`, or find the process with `Get-McpServer` (MCPPosh
+- "Port 5050 is already in use": choose another port with `-Port`, or find the process with `Get-McpServer` (PSMcpKnowledgeBase
   servers) or `Get-NetTCPConnection -LocalPort 5050` (Windows) / `ss -ltnp` (Linux).
-- "An MCPPosh server is already running on port …": stop it with `Stop-McpServer -Port <port>`.
+- "An PSMcpKnowledgeBase server is already running on port …": stop it with `Stop-McpServer -Port <port>`.
 - Windows, "Could not listen on http://+:…/ : Access is denied": listening on all interfaces requires administrator
   rights or a URL reservation: `netsh http add urlacl url=http://+:5050/ user=DOMAIN\user`.
 - Windows, `400 Bad Request - Invalid Hostname` for `http://127.0.0.1:…`: the Windows HTTP stack only accepts the
@@ -98,17 +98,17 @@ network shares, verify that file timestamps are updated. `Restart-McpServer` for
 ## Azure
 
 - The container restarts or never becomes healthy: check `az containerapp logs show -n <name> -g <rg>`; a missing
-  `MCPPOSH_API_KEY` stops the server with an error.
+  `PSMCPKB_API_KEY` stops the server with an error.
 - Permission errors on `/data`: the share must be mounted with `uid=1654,gid=1654` (the template does this).
 - `Publish-McpKnowledgeBase` fails with an Az error: run `Connect-AzAccount`, check that `Az.Storage` is installed
   and that your account can read the storage account keys (or use `-SasToken`).
-- New documents do not appear: `-RemoteName` (or the local name) must match `MCPPOSH_KNOWLEDGEBASE` of the container.
+- New documents do not appear: `-RemoteName` (or the local name) must match `PSMCPKB_KNOWLEDGEBASE` of the container.
 
 ## Collecting information for an issue
 
 ```powershell
 $PSVersionTable.PSVersion
-(Get-Module MCPPosh -ListAvailable).Version
+(Get-Module PSMcpKnowledgeBase -ListAvailable).Version
 Get-McpKnowledgeBase -Name Contoso | Format-List
 Test-McpServer -KnowledgeBase Contoso | Format-List
 Get-McpServerLog -KnowledgeBase Contoso -Tail 100

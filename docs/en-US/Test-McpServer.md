@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Test-McpServer.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Test-McpServer.md
 schema: 2.0.0
 ---
 
@@ -44,7 +44,7 @@ Starts the stdio server like an AI client, performs the MCP handshake, lists the
 
 ### EXAMPLE 2
 ```
-Test-McpServer -Uri https://mcpposh.azurecontainerapps.io -ApiKey $key
+Test-McpServer -Uri https://psmcpkb.azurecontainerapps.io -ApiKey $key
 ```
 
 Checks a hosted HTTP server end to end.
@@ -133,15 +133,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### MCPPosh.Server. Objects with a Uri or Url property bind to -Uri.
+### PSMcpKnowledgeBase.Server. Objects with a Uri or Url property bind to -Uri.
 ## OUTPUTS
 
-### MCPPosh.TestResult: Target, Transport, Success, ProtocolVersion, ServerName, ServerVersion, Instructions, Tools, Documents, SearchResults, TopResult, ElapsedMs and Error.
+### PSMcpKnowledgeBase.TestResult: Target, Transport, Success, ProtocolVersion, ServerName, ServerVersion, Instructions, Tools, Documents, SearchResults, TopResult, ElapsedMs and Error.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Test-McpServer.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Test-McpServer.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Test-McpServer.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Test-McpServer.md)
 
 [Start-McpServer]()
 

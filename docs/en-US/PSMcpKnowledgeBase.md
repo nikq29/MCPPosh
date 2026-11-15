@@ -1,16 +1,16 @@
 ---
-Module Name: MCPPosh
+Module Name: PSMcpKnowledgeBase
 Module Guid: a4c5aad7-b202-47f2-b38d-baca8f8a568f
-Download Help Link: https://github.com/nikq29/MCPPosh/tree/main/docs/en-US
+Download Help Link: https://github.com/nikq29/PSMcpKnowledgeBase/tree/main/docs/en-US
 Help Version: 0.0.1
 Locale: en-US
 ---
 
-# MCPPosh Module
+# PSMcpKnowledgeBase Module
 ## Description
-MCPPosh hosts a Model Context Protocol (MCP) server that serves your own documentation to AI agents and lets you manage the server and its knowledge base entirely from PowerShell. It imports Markdown, text, HTML and web pages, Word (.docx), PDF, CSV, JSON, YAML, XML and source code, ships a local BM25 search and supports the stdio and Streamable HTTP transports. See the [documentation](../README.md) for guides.
+PSMcpKnowledgeBase hosts a Model Context Protocol (MCP) server that serves your own documentation to AI agents and lets you manage the server and its knowledge base entirely from PowerShell. It imports Markdown, text, HTML and web pages, Word (.docx), PDF, CSV, JSON, YAML, XML and source code, ships a local BM25 search and supports the stdio and Streamable HTTP transports. See the [documentation](../README.md) for guides.
 
-## MCPPosh Cmdlets
+## PSMcpKnowledgeBase Cmdlets
 ### [Add-McpDocument](Add-McpDocument.md)
 Adds knowledge to a knowledge base: files, folders, web pages or inline text.
 
@@ -18,7 +18,7 @@ Adds knowledge to a knowledge base: files, folders, web pages or inline text.
 Exports a knowledge base to a ZIP archive (backup or transfer to another machine).
 
 ### [Get-McpClientConfig](Get-McpClientConfig.md)
-Generates the configuration to connect an AI client to an MCPPosh server.
+Generates the configuration to connect an AI client to an PSMcpKnowledgeBase server.
 
 ### [Get-McpDocument](Get-McpDocument.md)
 Lists the documents of a knowledge base.
@@ -30,7 +30,7 @@ Lists the available document converters (formats) and their file extensions.
 Lists knowledge bases or gets a specific one.
 
 ### [Get-McpServer](Get-McpServer.md)
-Shows MCPPosh HTTP servers: local background/foreground servers, or a remote server.
+Shows PSMcpKnowledgeBase HTTP servers: local background/foreground servers, or a remote server.
 
 ### [Get-McpServerLog](Get-McpServerLog.md)
 Shows the log of an MCP server.
@@ -42,7 +42,7 @@ Imports a knowledge base from a ZIP archive created by Export-McpKnowledgeBase.
 Creates a new knowledge base for documentation that an MCP server can serve.
 
 ### [Publish-McpKnowledgeBase](Publish-McpKnowledgeBase.md)
-Publishes a local knowledge base to an Azure Files share used by a hosted MCPPosh server.
+Publishes a local knowledge base to an Azure Files share used by a hosted PSMcpKnowledgeBase server.
 
 ### [Register-McpDocumentConverter](Register-McpDocumentConverter.md)
 Registers a custom converter so Add-McpDocument can import additional file formats.
@@ -54,7 +54,7 @@ Removes documents from a knowledge base.
 Deletes a knowledge base including all of its documents.
 
 ### [Restart-McpServer](Restart-McpServer.md)
-Restarts local MCPPosh HTTP servers with their previous settings.
+Restarts local PSMcpKnowledgeBase HTTP servers with their previous settings.
 
 ### [Search-McpDocument](Search-McpDocument.md)
 Searches a knowledge base with the same BM25 search the AI agent uses.
@@ -69,7 +69,7 @@ Changes the description of a knowledge base.
 Starts an MCP server that provides a knowledge base to AI agents.
 
 ### [Stop-McpServer](Stop-McpServer.md)
-Stops MCPPosh HTTP servers that run on this machine.
+Stops PSMcpKnowledgeBase HTTP servers that run on this machine.
 
 ### [Test-McpServer](Test-McpServer.md)
 Checks an MCP server end-to-end like an AI client would.
