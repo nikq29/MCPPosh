@@ -27,7 +27,7 @@ ADD https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/
 
 FROM pwsh-${TARGETARCH} AS pwsh
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-trixie-slim
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble
 
 # Pick up security fixes published after the base image was built.
 RUN apt-get update \

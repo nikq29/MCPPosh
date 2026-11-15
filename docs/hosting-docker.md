@@ -21,7 +21,7 @@ module version as tag (for example `0.1.0`) and `latest` for stable versions, fo
 
 ## Image contents
 
-- Base image `mcr.microsoft.com/dotnet/runtime-deps:10.0-trixie-slim`.
+- Base image `mcr.microsoft.com/dotnet/runtime-deps:10.0-noble`.
 - PowerShell from the official release archive for the target architecture (`PWSH_VERSION`, default 7.6.10).
 - PSMcpKnowledgeBase installed for all users with PSResourceGet by `docker/Install-PSMcpKnowledgeBase.ps1`.
 - Entry point `docker/entrypoint.ps1`, which creates the knowledge base if needed, imports seed documents and starts
