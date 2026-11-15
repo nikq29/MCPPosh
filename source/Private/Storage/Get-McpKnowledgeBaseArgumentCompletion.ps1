@@ -4,7 +4,7 @@ function Get-McpKnowledgeBaseArgumentCompletion {
         Completes knowledge base names for tab completion.
 
     .DESCRIPTION
-        Argument completer registered for the -KnowledgeBase and -Name parameters of the MCPPosh cmdlets. Returns completion results for all knowledge bases whose names start with the typed text.
+        Argument completer registered for the -KnowledgeBase and -Name parameters of the PSMcpKnowledgeBase cmdlets. Returns completion results for all knowledge bases whose names start with the typed text.
 
     .PARAMETER commandName
         Name of the command whose parameter is completed. Provided by PowerShell and not used.

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'New-McpToolResult' {
     It 'creates text results with structured content and error flag' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $result = New-McpToolResult -Text 'hello' -Structured ([ordered]@{ a = 1 })
             $result.content[0].type | Should -Be 'text'
             $result.content[0].text | Should -Be 'hello'

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
@@ -24,7 +24,7 @@ Describe 'Invoke-McpInitialize' {
         $result.protocolVersion | Should -Be '2025-11-25'
         $result.capabilities.tools | Should -Not -BeNullOrEmpty
         $result.capabilities.resources | Should -Not -BeNullOrEmpty
-        $result.serverInfo.name | Should -Be 'MCPPosh'
+        $result.serverInfo.name | Should -Be 'PSMcpKnowledgeBase'
         $result.instructions | Should -Match 'Protocol tests'
     }
 }

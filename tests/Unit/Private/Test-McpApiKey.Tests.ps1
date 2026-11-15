@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,14 +11,14 @@ AfterAll {
 
 Describe 'Test-McpApiKey' {
     It 'accepts valid keys from the Authorization and X-API-Key headers' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpApiKey -AuthorizationHeader 'Bearer secret' -ApiKeys 'old', 'secret' | Should -BeTrue
             Test-McpApiKey -ApiKeyHeader ' secret ' -ApiKeys 'secret' | Should -BeTrue
         }
     }
 
     It 'rejects missing and wrong keys' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpApiKey -AuthorizationHeader 'Bearer wrong' -ApiKeys 'secret' | Should -BeFalse
             Test-McpApiKey -AuthorizationHeader 'Basic secret' -ApiKeys 'secret' | Should -BeFalse
             Test-McpApiKey -ApiKeys 'secret' | Should -BeFalse
@@ -26,7 +26,7 @@ Describe 'Test-McpApiKey' {
     }
 
     It 'compares keys of different lengths and non-ASCII keys correctly' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpApiKey -AuthorizationHeader 'Bearer secre' -ApiKeys 'secret' | Should -BeFalse
             Test-McpApiKey -AuthorizationHeader 'Bearer secret-and-more' -ApiKeys 'secret' | Should -BeFalse
             Test-McpApiKey -AuthorizationHeader 'Bearer a-much-longer-second-key' -ApiKeys 'short', 'a-much-longer-second-key' | Should -BeTrue

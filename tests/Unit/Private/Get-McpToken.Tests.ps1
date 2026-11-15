@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Get-McpToken' {
     It 'lowercases, folds diacritics, removes stop words and stems' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $tokens = Get-McpToken -Text "Die Server-Konfigurationen f$([char]0x00FC)r Gr$([char]0x00F6)$([char]0x00DF)e"
             $tokens | Should -Contain 'serv'
             $tokens | Should -Contain 'konfiguration'
@@ -24,14 +24,14 @@ Describe 'Get-McpToken' {
     }
 
     It 'stems singular and plural forms to the same token' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             (Get-McpToken -Text 'servers')[0] | Should -Be (Get-McpToken -Text 'server')[0]
             (Get-McpToken -Text 'Dokumente')[0] | Should -Be (Get-McpToken -Text 'Dokumenten')[0]
         }
     }
 
     It 'returns an empty array for empty text' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             , (Get-McpToken -Text '') | Should -BeOfType [string[]]
             (Get-McpToken -Text '   ').Count | Should -Be 0
         }

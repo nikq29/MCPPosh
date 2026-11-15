@@ -1,10 +1,10 @@
 function Get-McpRemoteServerStatus {
     <#
     .SYNOPSIS
-        Returns the status of a remote MCPPosh server.
+        Returns the status of a remote PSMcpKnowledgeBase server.
 
     .DESCRIPTION
-        Calls the /health endpoint of an MCPPosh HTTP server (for example in Azure) and returns an MCPPosh.Server object with the status, knowledge base, number of documents, revision, uptime and version. Details require a valid API key.
+        Calls the /health endpoint of an PSMcpKnowledgeBase HTTP server (for example in Azure) and returns an PSMcpKnowledgeBase.Server object with the status, knowledge base, number of documents, revision, uptime and version. Details require a valid API key.
 
     .PARAMETER Uri
         Base URL or MCP endpoint of the server, for example https://docs.example.com/mcp.
@@ -48,7 +48,7 @@ function Get-McpRemoteServerStatus {
     }
 
     [pscustomobject]@{
-        PSTypeName    = 'MCPPosh.Server'
+        PSTypeName    = 'PSMcpKnowledgeBase.Server'
         KnowledgeBase = if ($health) { [string]$health['knowledgeBase'] } else { $null }
         Transport     = 'Http'
         Status        = $status

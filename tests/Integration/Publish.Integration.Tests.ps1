@@ -4,13 +4,13 @@
     that serves the published knowledge base from the share like the hosted container does.
 #>
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment -Name publish
     $script:AzureRoot = Join-Path -Path $script:TestHome -ChildPath 'azure'
     Register-McpTestAzFileShare -Root $script:AzureRoot
     # The share exists before the first publish (the Bicep template creates it).
-    New-Item -ItemType Directory -Path (Join-Path $script:AzureRoot 'mcpposhstore/mcpposh') -Force | Out-Null
-    $script:Remote = Join-Path -Path $script:AzureRoot -ChildPath 'mcpposhstore/mcpposh/knowledgebases/Docs'
+    New-Item -ItemType Directory -Path (Join-Path $script:AzureRoot 'psmcpkbstore/psmcpkb') -Force | Out-Null
+    $script:Remote = Join-Path -Path $script:AzureRoot -ChildPath 'psmcpkbstore/psmcpkb/knowledgebases/Docs'
 
     New-McpKnowledgeBase -Name Contoso -Description 'Published documentation' | Out-Null
     $script:Backup = Add-McpDocument -KnowledgeBase Contoso -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam."
@@ -39,10 +39,10 @@ AfterAll {
 
 Describe 'Publishing a knowledge base to Azure Files' {
     It 'uploads all files with a storage account key and the manifest last' {
-        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhstore -ShareName mcpposh -StorageAccountKey 'account-key' -RemoteName Docs
-        $result.PSObject.TypeNames | Should -Contain 'MCPPosh.PublishResult'
+        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -StorageAccountKey 'account-key' -RemoteName Docs
+        $result.PSObject.TypeNames | Should -Contain 'PSMcpKnowledgeBase.PublishResult'
         $result.KnowledgeBase | Should -Be 'Contoso'
-        $result.Destination | Should -Be 'https://mcpposhstore.file.core.windows.net/mcpposh/knowledgebases/Docs'
+        $result.Destination | Should -Be 'https://psmcpkbstore.file.core.windows.net/psmcpkb/knowledgebases/Docs'
         $result.Uploaded | Should -Be 6
         $result.Skipped | Should -Be 0
         $result.Deleted | Should -Be 0
@@ -53,7 +53,7 @@ Describe 'Publishing a knowledge base to Azure Files' {
     It 'uploads only changed files with a SAS token' {
         $global:McpTestAzFileShareLog.Clear()
         $added = Add-McpDocument -KnowledgeBase Contoso -Title 'VPN' -Content "# VPN`n`nThe VPN gateway uses WireGuard."
-        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhstore -ShareName mcpposh -SasToken '?sv=2024-01-01&sig=fake' -RemoteName Docs
+        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -SasToken '?sv=2024-01-01&sig=fake' -RemoteName Docs
         $result.Uploaded | Should -Be 3
         $result.Skipped | Should -Be 5
         @(Get-UploadLog) | Should -Be @("knowledgebases/Docs/documents/$($added.Id).md", "knowledgebases/Docs/index/$($added.Id).json", 'knowledgebases/Docs/manifest.json')
@@ -62,21 +62,21 @@ Describe 'Publishing a knowledge base to Azure Files' {
 
     It 'uploads all files again with -Force and reads the key from the resource group' {
         $global:McpTestAzFileShareLog.Clear()
-        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhstore -ShareName mcpposh -ResourceGroupName rg-mcpposh -RemoteName Docs -Force
+        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -ResourceGroupName rg-psmcpkb -RemoteName Docs -Force
         $result.Uploaded | Should -Be 8
         $result.Skipped | Should -Be 0
-        @($global:McpTestAzFileShareLog | Where-Object Action -EQ 'GetKey').Path | Should -Be 'rg-mcpposh/mcpposhstore'
+        @($global:McpTestAzFileShareLog | Where-Object Action -EQ 'GetKey').Path | Should -Be 'rg-psmcpkb/psmcpkbstore'
     }
 
     It 'deletes documents that were removed locally with -Prune and an existing storage context' {
         Remove-McpDocument -KnowledgeBase Contoso -Id $script:Printer.Id -Confirm:$false
-        $context = New-AzStorageContext -StorageAccountName mcpposhstore -StorageAccountKey 'account-key'
+        $context = New-AzStorageContext -StorageAccountName psmcpkbstore -StorageAccountKey 'account-key'
 
-        $kept = Publish-McpKnowledgeBase -Name Contoso -Context $context -ShareName mcpposh -RemoteName Docs
+        $kept = Publish-McpKnowledgeBase -Name Contoso -Context $context -ShareName psmcpkb -RemoteName Docs
         $kept.Deleted | Should -Be 0
         Test-Path -LiteralPath (Join-Path $script:Remote "documents/$($script:Printer.Id).md") | Should -BeTrue
 
-        $pruned = Publish-McpKnowledgeBase -Name Contoso -Context $context -ShareName mcpposh -RemoteName Docs -Prune
+        $pruned = Publish-McpKnowledgeBase -Name Contoso -Context $context -ShareName psmcpkb -RemoteName Docs -Prune
         $pruned.Deleted | Should -Be 2
         Test-Path -LiteralPath (Join-Path $script:Remote "documents/$($script:Printer.Id).md") | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $script:Remote "index/$($script:Printer.Id).json") | Should -BeFalse
@@ -84,9 +84,9 @@ Describe 'Publishing a knowledge base to Azure Files' {
     }
 
     It 'publishes under the local name when -RemoteName is omitted' {
-        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhstore -ShareName mcpposh -StorageAccountKey 'account-key'
+        $result = Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -StorageAccountKey 'account-key'
         $result.Destination | Should -Match '/knowledgebases/Contoso$'
-        Test-Path -LiteralPath (Join-Path $script:AzureRoot 'mcpposhstore/mcpposh/knowledgebases/Contoso/manifest.json') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $script:AzureRoot 'psmcpkbstore/psmcpkb/knowledgebases/Contoso/manifest.json') | Should -BeTrue
     }
 }
 
@@ -112,7 +112,7 @@ Describe 'Serving the published knowledge base' {
 
     It 'picks up a new publish while running' {
         Add-McpDocument -KnowledgeBase Contoso -Title 'Canteen' -Content 'The canteen menu hangs at the entrance.' | Out-Null
-        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhstore -ShareName mcpposh -StorageAccountKey 'account-key' -RemoteName Docs | Out-Null
+        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -StorageAccountKey 'account-key' -RemoteName Docs | Out-Null
         Wait-McpTestCondition -TimeoutSeconds 30 -Because 'the server did not reload the published knowledge base' {
             (Test-McpServer -Uri $script:Base -ApiKey $script:Key -Query 'canteen menu').TopResult -eq 'Canteen'
         } | Should -BeTrue

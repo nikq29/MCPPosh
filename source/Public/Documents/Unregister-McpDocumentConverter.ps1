@@ -15,13 +15,13 @@ function Unregister-McpDocumentConverter {
         Removes the custom converter Email from the current session.
 
     .INPUTS
-        MCPPosh.Converter. You can pipe converters from Get-McpDocumentConverter.
+        PSMcpKnowledgeBase.Converter. You can pipe converters from Get-McpDocumentConverter.
 
     .OUTPUTS
         None.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Unregister-McpDocumentConverter.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Unregister-McpDocumentConverter.md
 
     .LINK
         Register-McpDocumentConverter

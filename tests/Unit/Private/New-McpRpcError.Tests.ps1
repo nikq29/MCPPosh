@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'New-McpRpcError' {
     It 'creates an exception that carries the error code and data' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $exception = New-McpRpcError -Code -32002 -Message 'Resource not found' -Data 'uri'
             $exception | Should -BeOfType [System.InvalidOperationException]
             $exception.Message | Should -Be 'Resource not found'

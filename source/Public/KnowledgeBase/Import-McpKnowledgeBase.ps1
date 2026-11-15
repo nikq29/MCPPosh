@@ -39,10 +39,10 @@ function Import-McpKnowledgeBase {
         System.String. You can pipe file objects; their FullName property binds to -Path.
 
     .OUTPUTS
-        MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+        PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Import-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Import-McpKnowledgeBase.md
 
     .LINK
         Export-McpKnowledgeBase
@@ -51,7 +51,7 @@ function Import-McpKnowledgeBase {
         Get-McpKnowledgeBase
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
-    [OutputType('MCPPosh.KnowledgeBase')]
+    [OutputType('PSMcpKnowledgeBase.KnowledgeBase')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [Alias('FullName')]
@@ -111,7 +111,7 @@ function Import-McpKnowledgeBase {
 
             $metaPath = Join-Path -Path $staging -ChildPath 'knowledgebase.json'
             if (-not (Test-Path -LiteralPath $metaPath) -or -not (Test-Path -LiteralPath (Join-Path $staging 'manifest.json'))) {
-                throw "'$source' is not an MCPPosh knowledge base archive (knowledgebase.json or manifest.json is missing)."
+                throw "'$source' is not an PSMcpKnowledgeBase knowledge base archive (knowledgebase.json or manifest.json is missing)."
             }
             # Document ids become file names; reject manifests whose ids could address files outside the
             # knowledge base (for example '../../secret' or absolute paths).

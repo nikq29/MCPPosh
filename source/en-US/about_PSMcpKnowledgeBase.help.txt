@@ -1,16 +1,16 @@
 TOPIC
-    about_MCPPosh
+    about_PSMcpKnowledgeBase
 
 SHORT DESCRIPTION
     Serve your own documentation to AI agents through a Model Context Protocol (MCP) server that
     you manage entirely from PowerShell.
 
 LONG DESCRIPTION
-    MCPPosh builds a knowledge base from your documents and provides it to AI agents such as
+    PSMcpKnowledgeBase builds a knowledge base from your documents and provides it to AI agents such as
     Claude Desktop, Claude Code, GitHub Copilot in VS Code or Cursor.
 
     Knowledge bases
-        A knowledge base is a folder below $env:MCPPOSH_HOME (default: ~/.mcpposh) that holds the
+        A knowledge base is a folder below $env:PSMCPKB_HOME (default: ~/.psmcpkb) that holds the
         documents as normalized Markdown, a manifest and a search index. Manage it with
         New-, Get-, Set- and Remove-McpKnowledgeBase, back it up with Export-/Import-McpKnowledgeBase
         and publish it to Azure Files with Publish-McpKnowledgeBase. The description of a knowledge
@@ -31,7 +31,7 @@ LONG DESCRIPTION
 
         The agent gets the tools search_documentation, get_document and list_documents, and with
         -AllowWrite also add_note. Every document is an MCP resource
-        mcpposh://<knowledge base>/documents/<id>.
+        psmcpkb://<knowledge base>/documents/<id>.
 
     Security
         HTTP servers listen on localhost by default. Listening on other addresses requires API keys
@@ -47,17 +47,17 @@ EXAMPLES
     PS C:\> Test-McpServer -Uri http://localhost:5050/mcp -ApiKey $key -Query 'VPN'
 
 NOTE
-    MCPPosh requires PowerShell 7.2 or later on Windows, Linux or macOS.
+    PSMcpKnowledgeBase requires PowerShell 7.2 or later on Windows, Linux or macOS.
 
 TROUBLESHOOTING NOTE
     Server logs are stored in <knowledge base>/logs; use Get-McpServerLog to show them.
-    Report issues at https://github.com/nikq29/MCPPosh/issues.
+    Report issues at https://github.com/nikq29/PSMcpKnowledgeBase/issues.
 
 SEE ALSO
-    Documentation:     https://github.com/nikq29/MCPPosh/blob/main/docs/README.md
-    Cmdlet reference:  https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/MCPPosh.md
+    Documentation:     https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/README.md
+    Cmdlet reference:  https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/PSMcpKnowledgeBase.md
     Get-Help <cmdlet> -Full, for example Get-Help Add-McpDocument -Full
-    https://github.com/nikq29/MCPPosh
+    https://github.com/nikq29/PSMcpKnowledgeBase
     https://modelcontextprotocol.io
 
 KEYWORDS

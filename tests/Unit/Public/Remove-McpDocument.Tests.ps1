@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Docs | Out-Null
     $script:Doc = Add-McpDocument -KnowledgeBase Docs -Title 'Disposable' -Content 'remove me'
 }
@@ -20,8 +20,8 @@ Describe 'Remove-McpDocument' {
     It 'removes the document and its files' {
         $script:Doc | Remove-McpDocument -Confirm:$false
         Get-McpDocument -KnowledgeBase Docs -Id $script:Doc.Id -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
-        Test-Path (Join-Path $env:MCPPOSH_HOME "knowledgebases/Docs/documents/$($script:Doc.Id).md") | Should -BeFalse
-        Test-Path (Join-Path $env:MCPPOSH_HOME "knowledgebases/Docs/index/$($script:Doc.Id).json") | Should -BeFalse
+        Test-Path (Join-Path $env:PSMCPKB_HOME "knowledgebases/Docs/documents/$($script:Doc.Id).md") | Should -BeFalse
+        Test-Path (Join-Path $env:PSMCPKB_HOME "knowledgebases/Docs/index/$($script:Doc.Id).json") | Should -BeFalse
     }
 
     It 'writes an error for unknown documents' {

@@ -4,7 +4,7 @@ function Get-McpResourceTemplateList {
         Handles the MCP method resources/templates/list.
 
     .DESCRIPTION
-        Returns the resource template mcpposh://<knowledge base>/documents/{id}, which clients can use to read any document of the knowledge base by its id.
+        Returns the resource template psmcpkb://<knowledge base>/documents/{id}, which clients can use to read any document of the knowledge base by its id.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -24,7 +24,7 @@ function Get-McpResourceTemplateList {
     [ordered]@{
         resourceTemplates = @(
             [ordered]@{
-                uriTemplate = 'mcpposh://{0}/documents/{{id}}' -f $Context.KnowledgeBase.Name
+                uriTemplate = 'psmcpkb://{0}/documents/{{id}}' -f $Context.KnowledgeBase.Name
                 name        = 'document'
                 title       = "Document in '$($Context.KnowledgeBase.Name)'"
                 description = 'A document of the knowledge base as Markdown, addressed by its id.'

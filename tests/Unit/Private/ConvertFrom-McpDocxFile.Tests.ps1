@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -15,7 +15,7 @@ Describe 'ConvertFrom-McpDocxFile' {
     BeforeAll {
         $script:DocxPath = Join-Path $script:Files 'handbook.docx'
         New-McpTestDocx -Path $script:DocxPath
-        $script:Docx = InModuleScope MCPPosh -Parameters @{ Path = $script:DocxPath } { param($Path) ConvertFrom-McpDocxFile -Path $Path }
+        $script:Docx = InModuleScope PSMcpKnowledgeBase -Parameters @{ Path = $script:DocxPath } { param($Path) ConvertFrom-McpDocxFile -Path $Path }
     }
 
     It 'uses the title from the document properties' {
@@ -39,7 +39,7 @@ Describe 'ConvertFrom-McpDocxFile' {
         $zip = Join-Path $script:Files 'notword.docx'
         Compress-Archive -Path $script:DocxPath -DestinationPath (Join-Path $script:Files 'tmp.zip') -Force
         Move-Item (Join-Path $script:Files 'tmp.zip') $zip -Force
-        InModuleScope MCPPosh -Parameters @{ Path = $zip } { param($Path) { ConvertFrom-McpDocxFile -Path $Path } | Should -Throw '*not a valid Word document*' }
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Path = $zip } { param($Path) { ConvertFrom-McpDocxFile -Path $Path } | Should -Throw '*not a valid Word document*' }
     }
 
     It 'rejects Word documents whose XML contains a document type definition' {
@@ -55,6 +55,6 @@ Describe 'ConvertFrom-McpDocxFile' {
         finally {
             $archive.Dispose()
         }
-        InModuleScope MCPPosh -Parameters @{ Path = $path } { param($Path) { ConvertFrom-McpDocxFile -Path $Path } | Should -Throw '*document type definition*' }
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Path = $path } { param($Path) { ConvertFrom-McpDocxFile -Path $Path } | Should -Throw '*document type definition*' }
     }
 }

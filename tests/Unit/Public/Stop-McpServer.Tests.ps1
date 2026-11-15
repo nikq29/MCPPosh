@@ -1,11 +1,11 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv | Out-Null
     function New-TestServerState {
         param([int] $Port, [System.Diagnostics.Process] $Process, [string] $KnowledgeBase = 'Srv')
-        & (Get-Module MCPPosh) {
+        & (Get-Module PSMcpKnowledgeBase) {
             param($Port, $Process, $KnowledgeBase)
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase $KnowledgeBase
             Write-McpJsonFile -Path (Get-McpServerStateFile -KnowledgeBaseName $KnowledgeBase -Port $Port) -InputObject ([ordered]@{
@@ -16,7 +16,7 @@ BeforeAll {
         } $Port $Process $KnowledgeBase
     }
     function Start-TestSleeper {
-        $pwsh = & (Get-Module MCPPosh) { Get-McpPwshPath }
+        $pwsh = & (Get-Module PSMcpKnowledgeBase) { Get-McpPwshPath }
         Start-Process -FilePath $pwsh -ArgumentList '-NoProfile', '-Command', 'Start-Sleep -Seconds 120' -PassThru
     }
 }
@@ -55,7 +55,7 @@ Describe 'Stop-McpServer' {
         $stale.Kill(); $stale.WaitForExit()
         Stop-McpServer -All -Confirm:$false
         $process.WaitForExit(10000) | Should -BeTrue
-        @(InModuleScope MCPPosh { Get-McpServerState }).Count | Should -Be 0
+        @(InModuleScope PSMcpKnowledgeBase { Get-McpServerState }).Count | Should -Be 0
     }
 
     It 'keeps the server with -WhatIf' {

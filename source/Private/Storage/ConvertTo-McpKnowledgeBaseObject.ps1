@@ -4,7 +4,7 @@ function ConvertTo-McpKnowledgeBaseObject {
         Converts a resolved knowledge base to a summary object.
 
     .DESCRIPTION
-        Reads the manifest of a knowledge base and returns an MCPPosh.KnowledgeBase object with name, description, number of documents, total characters, tags, revision and timestamps.
+        Reads the manifest of a knowledge base and returns an PSMcpKnowledgeBase.KnowledgeBase object with name, description, number of documents, total characters, tags, revision and timestamps.
 
     .PARAMETER KnowledgeBase
         The resolved knowledge base (see Resolve-McpKnowledgeBase) to summarize.
@@ -23,7 +23,7 @@ function ConvertTo-McpKnowledgeBaseObject {
     $manifest = Read-McpManifest -KbPath $KnowledgeBase.Path
     $documents = @($manifest['documents'])
     [pscustomobject]@{
-        PSTypeName  = 'MCPPosh.KnowledgeBase'
+        PSTypeName  = 'PSMcpKnowledgeBase.KnowledgeBase'
         Name        = $KnowledgeBase.Name
         Description = $KnowledgeBase.Description
         Documents   = $documents.Count

@@ -31,7 +31,7 @@ function Start-McpServer {
 
     .PARAMETER ApiKey
         One or more API keys. Clients must send 'Authorization: Bearer <key>' or 'X-API-Key: <key>'.
-        Defaults to the comma-separated keys in $env:MCPPOSH_API_KEY.
+        Defaults to the comma-separated keys in $env:PSMCPKB_API_KEY.
 
     .PARAMETER AllowedOrigin
         Browser origins allowed to call the server (CORS), e.g. https://my-app.example.com.
@@ -76,10 +76,10 @@ function Start-McpServer {
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        None for -Transport Stdio and for -Foreground (the server runs until it is stopped). MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. for background HTTP servers.
+        None for -Transport Stdio and for -Foreground (the server runs until it is stopped). PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. for background HTTP servers.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Start-McpServer.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Start-McpServer.md
 
     .LINK
         Stop-McpServer
@@ -94,7 +94,7 @@ function Start-McpServer {
         Get-McpClientConfig
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.Server')]
+    [OutputType('PSMcpKnowledgeBase.Server')]
     param(
         [Parameter(Position = 0)]
         [string] $KnowledgeBase = 'Default',
@@ -133,11 +133,11 @@ function Start-McpServer {
         return
     }
 
-    $keys = [string[]]@(@(if ($ApiKey) { $ApiKey } elseif ($env:MCPPOSH_API_KEY) { $env:MCPPOSH_API_KEY -split ',' }) |
+    $keys = [string[]]@(@(if ($ApiKey) { $ApiKey } elseif ($env:PSMCPKB_API_KEY) { $env:PSMCPKB_API_KEY -split ',' }) |
             ForEach-Object { $_.Trim() } | Where-Object { $_ })
     $isLoopback = Test-McpLoopbackAddress -Address $ListenAddress
     if (-not $isLoopback -and $keys.Count -eq 0 -and -not $AllowAnonymous) {
-        throw "Listening on '$ListenAddress' exposes the server to the network. Specify -ApiKey (or `$env:MCPPOSH_API_KEY), or -AllowAnonymous if a gateway authenticates requests."
+        throw "Listening on '$ListenAddress' exposes the server to the network. Specify -ApiKey (or `$env:PSMCPKB_API_KEY), or -AllowAnonymous if a gateway authenticates requests."
     }
 
     if ($Foreground) {
@@ -150,7 +150,7 @@ function Start-McpServer {
     # Background process
     $existing = Get-McpServerState | Where-Object { [int]$_.port -eq $Port -and $_.Status -eq 'Running' }
     if ($existing) {
-        throw "An MCPPosh server is already running on port $Port (knowledge base '$($existing.knowledgeBase)', pid $($existing.pid)). Stop it with: Stop-McpServer -Port $Port"
+        throw "An PSMcpKnowledgeBase server is already running on port $Port (knowledge base '$($existing.knowledgeBase)', pid $($existing.pid)). Stop it with: Stop-McpServer -Port $Port"
     }
     if (-not (Test-McpPortAvailable -Port $Port)) {
         throw "Port $Port is already in use. Choose another port with -Port."
@@ -191,13 +191,13 @@ function Start-McpServer {
     }
 
     # API keys are handed over via the environment, never on the command line.
-    $previousKey = $env:MCPPOSH_API_KEY
+    $previousKey = $env:PSMCPKB_API_KEY
     try {
-        $env:MCPPOSH_API_KEY = if ($keys.Count -gt 0) { $keys -join ',' } else { $null }
+        $env:PSMCPKB_API_KEY = if ($keys.Count -gt 0) { $keys -join ',' } else { $null }
         $process = Start-Process @startArgs
     }
     finally {
-        $env:MCPPOSH_API_KEY = $previousKey
+        $env:PSMCPKB_API_KEY = $previousKey
     }
 
     $healthHost = if ($isLoopback -or $ListenAddress -in '*', '+', '0.0.0.0', '::') { 'localhost' } else { $ListenAddress }

@@ -1,15 +1,15 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpClientConfig.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpClientConfig.md
 schema: 2.0.0
 ---
 
 # Get-McpClientConfig
 
 ## SYNOPSIS
-Generates the configuration to connect an AI client to an MCPPosh server.
+Generates the configuration to connect an AI client to an PSMcpKnowledgeBase server.
 
 ## SYNTAX
 
@@ -51,7 +51,7 @@ Returns a claude mcp add command that registers the stdio server in Claude Code.
 
 ### EXAMPLE 3
 ```
-Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKeyPlaceholder -AsJson
+Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -Uri https://psmcpkb.azurecontainerapps.io/mcp -ApiKeyPlaceholder -AsJson
 ```
 
 Returns a .vscode/mcp.json for a hosted HTTP server.
@@ -137,7 +137,7 @@ Accept wildcard characters: False
 ```
 
 ### -ApiKeyPlaceholder
-Writes an environment variable reference such as ${env:MCPPOSH_API_KEY} instead of the key.
+Writes an environment variable reference such as ${env:PSMCPKB_API_KEY} instead of the key.
 
 ```yaml
 Type: SwitchParameter
@@ -153,7 +153,7 @@ Accept wildcard characters: False
 
 ### -ServerName
 Name of the server entry.
-Defaults to 'mcpposh-\<knowledge base\>'.
+Defaults to 'psmcpkb-\<knowledge base\>'.
 
 ```yaml
 Type: String
@@ -184,8 +184,8 @@ Accept wildcard characters: False
 
 ### -UseModuleName
 Stdio only: import the module by name instead of by path.
-This is the default when MCPPosh is
-installed in a standard module folder (for example with Install-PSResource MCPPosh).
+This is the default when PSMcpKnowledgeBase is
+installed in a standard module folder (for example with Install-PSResource PSMcpKnowledgeBase).
 
 ```yaml
 Type: SwitchParameter
@@ -222,12 +222,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### None. You cannot pipe objects to this cmdlet.
 ## OUTPUTS
 
-### MCPPosh.ClientConfig: Client, Transport, ServerName, ConfigFile, Json, Command (Claude Code) and Notes. With -AsJson: System.String.
+### PSMcpKnowledgeBase.ClientConfig: Client, Transport, ServerName, ConfigFile, Json, Command (Claude Code) and Notes. With -AsJson: System.String.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpClientConfig.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpClientConfig.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpClientConfig.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpClientConfig.md)
 
 [Start-McpServer]()
 

@@ -49,8 +49,8 @@ function Invoke-McpInitialize {
             resources = [ordered]@{ subscribe = $false; listChanged = $false }
         }
         serverInfo      = [ordered]@{
-            name    = 'MCPPosh'
-            title   = "MCPPosh - $($kb.Name)"
+            name    = 'PSMcpKnowledgeBase'
+            title   = "PSMcpKnowledgeBase - $($kb.Name)"
             version = $script:ModuleVersion
         }
         instructions    = Get-McpServerInstruction -Context $Context

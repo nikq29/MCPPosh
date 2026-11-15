@@ -30,18 +30,18 @@ function Test-McpServer {
         Starts the stdio server like an AI client, performs the MCP handshake, lists the tools and runs a search.
 
     .EXAMPLE
-        Test-McpServer -Uri https://mcpposh.azurecontainerapps.io -ApiKey $key
+        Test-McpServer -Uri https://psmcpkb.azurecontainerapps.io -ApiKey $key
 
         Checks a hosted HTTP server end to end. Failures are reported in the Error property instead of being thrown.
 
     .INPUTS
-        MCPPosh.Server. Objects with a Uri or Url property bind to -Uri.
+        PSMcpKnowledgeBase.Server. Objects with a Uri or Url property bind to -Uri.
 
     .OUTPUTS
-        MCPPosh.TestResult: Target, Transport, Success, ProtocolVersion, ServerName, ServerVersion, Instructions, Tools, Documents, SearchResults, TopResult, ElapsedMs and Error.
+        PSMcpKnowledgeBase.TestResult: Target, Transport, Success, ProtocolVersion, ServerName, ServerVersion, Instructions, Tools, Documents, SearchResults, TopResult, ElapsedMs and Error.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Test-McpServer.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Test-McpServer.md
 
     .LINK
         Start-McpServer
@@ -53,7 +53,7 @@ function Test-McpServer {
         Get-McpClientConfig
     #>
     [CmdletBinding(DefaultParameterSetName = 'Http')]
-    [OutputType('MCPPosh.TestResult')]
+    [OutputType('PSMcpKnowledgeBase.TestResult')]
     param(
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'Http', ValueFromPipelineByPropertyName)]
         [Alias('Url')]
@@ -75,7 +75,7 @@ function Test-McpServer {
         $watch = [System.Diagnostics.Stopwatch]::StartNew()
         $requestTimeout = $TimeoutSeconds
         $result = [ordered]@{
-            PSTypeName      = 'MCPPosh.TestResult'
+            PSTypeName      = 'PSMcpKnowledgeBase.TestResult'
             Target          = $null
             Transport       = $PSCmdlet.ParameterSetName
             Success         = $false
@@ -120,7 +120,7 @@ function Test-McpServer {
             $init = . $call 'initialize' ([ordered]@{
                     protocolVersion = $script:McpSupportedProtocolVersions[0]
                     capabilities    = [ordered]@{}
-                    clientInfo      = [ordered]@{ name = 'MCPPosh Test-McpServer'; version = $script:ModuleVersion }
+                    clientInfo      = [ordered]@{ name = 'PSMcpKnowledgeBase Test-McpServer'; version = $script:ModuleVersion }
                 })
             $result.ProtocolVersion = [string]$init['protocolVersion']
             $result.ServerName = [string]$init['serverInfo']['name']

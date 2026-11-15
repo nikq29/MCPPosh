@@ -4,7 +4,7 @@ function Get-McpKnowledgeBase {
         Lists knowledge bases or gets a specific one.
 
     .DESCRIPTION
-        Lists the knowledge bases below $env:MCPPOSH_HOME (or ~/.mcpposh) or returns a specific one, including the number of documents, characters, tags and the current revision.
+        Lists the knowledge bases below $env:PSMCPKB_HOME (or ~/.psmcpkb) or returns a specific one, including the number of documents, characters, tags and the current revision.
 
     .PARAMETER Name
         Name (wildcards allowed) or directory path of a knowledge base. Lists all when omitted.
@@ -23,10 +23,10 @@ function Get-McpKnowledgeBase {
         System.String. You can pipe objects with a Name property.
 
     .OUTPUTS
-        MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+        PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpKnowledgeBase.md
 
     .LINK
         New-McpKnowledgeBase
@@ -38,7 +38,7 @@ function Get-McpKnowledgeBase {
         Remove-McpKnowledgeBase
     #>
     [CmdletBinding()]
-    [OutputType('MCPPosh.KnowledgeBase')]
+    [OutputType('PSMcpKnowledgeBase.KnowledgeBase')]
     param(
         [Parameter(Position = 0, ValueFromPipelineByPropertyName)]
         [SupportsWildcards()]

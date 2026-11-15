@@ -4,7 +4,7 @@ function ConvertTo-McpDocumentObject {
         Converts a manifest record to a document object.
 
     .DESCRIPTION
-        Converts a document record from manifest.json to an MCPPosh.Document object with Id, Title, Format, Tags, source information, timestamps and the resource URI, optionally including the Markdown content.
+        Converts a document record from manifest.json to an PSMcpKnowledgeBase.Document object with Id, Title, Format, Tags, source information, timestamps and the resource URI, optionally including the Markdown content.
 
     .PARAMETER Record
         The document record from the manifest, an ordered dictionary with id, title, format and the other fields.
@@ -33,7 +33,7 @@ function ConvertTo-McpDocumentObject {
     )
 
     $object = [ordered]@{
-        PSTypeName    = 'MCPPosh.Document'
+        PSTypeName    = 'PSMcpKnowledgeBase.Document'
         Id            = [string]$Record.id
         Title         = [string]$Record.title
         Format        = [string]$Record.format
@@ -45,7 +45,7 @@ function ConvertTo-McpDocumentObject {
         Added         = ConvertTo-McpDateTime -Value $Record.added
         Updated       = ConvertTo-McpDateTime -Value $Record.updated
         KnowledgeBase = $KnowledgeBase.Name
-        Uri           = 'mcpposh://{0}/documents/{1}' -f $KnowledgeBase.Name, $Record.id
+        Uri           = 'psmcpkb://{0}/documents/{1}' -f $KnowledgeBase.Name, $Record.id
     }
     if ($IncludeContent) {
         $object['Content'] = Get-McpDocumentContent -KbPath $KnowledgeBase.Path -Id $Record.id

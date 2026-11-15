@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     Register-McpTestAzStub
     New-McpKnowledgeBase -Name Source | Out-Null
     Add-McpDocument -KnowledgeBase Source -Title 'One' -Content '# One' | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Publish-McpKnowledgeBase' {
     It 'uploads changed files with the manifest last and skips unchanged files' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $uploads = [System.Collections.Generic.List[string]]::new()
             $directories = [System.Collections.Generic.List[string]]::new()
             Mock Assert-McpAzStorageModule { }
@@ -25,21 +25,21 @@ Describe 'Publish-McpKnowledgeBase' {
             Mock New-AzStorageDirectory { $directories.Add($Path) }
             Mock Set-AzStorageFileContent { $uploads.Add($Path) }
 
-            $first = Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName mcpposh
+            $first = Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb
             $first.Uploaded | Should -Be $uploads.Count
             $uploads[-1] | Should -Be 'knowledgebases/Source/manifest.json'
             @($uploads | Where-Object { $_ -like 'knowledgebases/Source/documents/*.md' }).Count | Should -Be 2
             $directories | Should -Be @('knowledgebases', 'knowledgebases/Source', 'knowledgebases/Source/documents', 'knowledgebases/Source/index')
-            $first.Destination | Should -Be 'https://acct.file.core.windows.net/mcpposh/knowledgebases/Source'
+            $first.Destination | Should -Be 'https://acct.file.core.windows.net/psmcpkb/knowledgebases/Source'
 
             $uploads.Clear()
-            (Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName mcpposh).Uploaded | Should -Be 1
+            (Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb).Uploaded | Should -Be 1
             $uploads | Should -Be @('knowledgebases/Source/manifest.json')
         }
     }
 
     It 'prunes remote documents that no longer exist locally' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $deletes = [System.Collections.Generic.List[string]]::new()
             Mock Assert-McpAzStorageModule { }
             Mock New-AzStorageContext { [pscustomobject]@{ StorageAccountName = 'acct' } }
@@ -49,32 +49,32 @@ Describe 'Publish-McpKnowledgeBase' {
             Mock Get-AzStorageFile { [pscustomobject]@{ Name = 'obsolete-123456.md' }; [pscustomobject]@{ Name = 'obsolete-123456.json' } } -ParameterFilter { -not $Path }
             Mock Remove-AzStorageFile { $deletes.Add($Path) }
 
-            $result = Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName mcpposh -Prune -RemoteName Docs
+            $result = Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb -Prune -RemoteName Docs
             $result.Deleted | Should -BeGreaterThan 0
             $deletes | Should -Contain 'knowledgebases/Docs/documents/obsolete-123456.md'
         }
     }
 
     It 'reads the storage account key from the resource group' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Assert-McpAzStorageModule { }
             Mock Get-AzStorageAccountKey { @([pscustomobject]@{ KeyName = 'key1'; Value = 'c2VjcmV0' }) }
             Mock New-AzStorageContext { [pscustomobject]@{ StorageAccountName = $StorageAccountName } } -ParameterFilter { $StorageAccountKey -eq 'c2VjcmV0' }
             Mock Get-AzStorageFile { $null }
             Mock New-AzStorageDirectory { }
             Mock Set-AzStorageFileContent { }
-            Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -ResourceGroupName rg -ShareName mcpposh -Force | Out-Null
+            Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -ResourceGroupName rg -ShareName psmcpkb -Force | Out-Null
             Should -Invoke Get-AzStorageAccountKey -Times 1 -ParameterFilter { $ResourceGroupName -eq 'rg' -and $Name -eq 'acct' }
         }
     }
 
     It 'accepts an existing storage context' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Assert-McpAzStorageModule { }
             Mock Get-AzStorageFile { $null }
             Mock New-AzStorageDirectory { }
             Mock Set-AzStorageFileContent { }
-            $result = Publish-McpKnowledgeBase -Name Source -Context ([pscustomobject]@{ StorageAccountName = 'ctxacct' }) -ShareName mcpposh -Force
+            $result = Publish-McpKnowledgeBase -Name Source -Context ([pscustomobject]@{ StorageAccountName = 'ctxacct' }) -ShareName psmcpkb -Force
             $result.Destination | Should -Match 'ctxacct'
         }
     }

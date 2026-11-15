@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
     $script:Html = @(
@@ -27,7 +27,7 @@ AfterAll {
 
 Describe 'ConvertFrom-McpHtml' {
     BeforeAll {
-        $script:Converted = InModuleScope MCPPosh -Parameters @{ Html = $script:Html } {
+        $script:Converted = InModuleScope PSMcpKnowledgeBase -Parameters @{ Html = $script:Html } {
             param($Html) ConvertFrom-McpHtml -Html $Html -BaseUrl 'https://docs.example.com/vpn/index.html'
         }
     }
@@ -56,7 +56,7 @@ Describe 'ConvertFrom-McpHtml' {
     }
 
     It 'adds the title as heading when the page has no h1' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             (ConvertFrom-McpHtml -Html '<html><head><title>Only Title</title></head><body><p>Body</p></body></html>').Content | Should -Match '^# Only Title'
         }
     }

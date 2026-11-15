@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -15,7 +15,7 @@ Describe 'Read-McpZipEntryText' {
     It 'reads an entry and returns $null for missing entries' {
         $docx = Join-Path $script:Files 'zip.docx'
         New-McpTestDocx -Path $docx
-        InModuleScope MCPPosh -Parameters @{ Path = $docx } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Path = $docx } {
             param($Path)
             $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
             try {
@@ -33,7 +33,7 @@ Describe 'Read-McpZipEntryText (size limit)' {
     It 'refuses entries that decompress to more than MaxBytes' {
         $docx = Join-Path $script:Files 'limit.docx'
         New-McpTestDocx -Path $docx
-        InModuleScope MCPPosh -Parameters @{ Path = $docx } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Path = $docx } {
             param($Path)
             $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
             try {

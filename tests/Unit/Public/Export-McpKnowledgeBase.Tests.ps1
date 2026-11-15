@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Source -Description 'Source' | Out-Null
     Add-McpDocument -KnowledgeBase Source -Title 'One' -Content "# One`n`nFirst content about certificates." | Out-Null
     Add-McpDocument -KnowledgeBase Source -Title 'Two' -Content "# Two`n`nSecond content." | Out-Null

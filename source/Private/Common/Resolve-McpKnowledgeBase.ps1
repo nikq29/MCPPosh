@@ -4,7 +4,7 @@ function Resolve-McpKnowledgeBase {
         Resolves a knowledge base name or directory path to a knowledge base descriptor.
 
     .DESCRIPTION
-        Resolves a knowledge base name or directory path to an object with Name, Path, Description and Created. Names are looked up below $env:MCPPOSH_HOME/knowledgebases; values that look like a path are used as the knowledge base directory directly, for example a mounted Azure Files share.
+        Resolves a knowledge base name or directory path to an object with Name, Path, Description and Created. Names are looked up below $env:PSMCPKB_HOME/knowledgebases; values that look like a path are used as the knowledge base directory directly, for example a mounted Azure Files share.
 
     .PARAMETER KnowledgeBase
         Name of the knowledge base or path of its directory. Empty values resolve to the knowledge base Default.

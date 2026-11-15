@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Write-McpTextFile' {
     It 'writes UTF-8 without BOM, creates folders and replaces existing files' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $file = Join-Path $Home 'deep/folder/text.md'
             Write-McpTextFile -Path $file -Content 'first'
@@ -24,7 +24,7 @@ Describe 'Write-McpTextFile' {
     }
 
     It 'writes empty files' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $file = Join-Path $Home 'empty.md'
             Write-McpTextFile -Path $file -Content ''

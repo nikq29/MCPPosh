@@ -1,6 +1,6 @@
-# MCPPosh documentation
+# PSMcpKnowledgeBase documentation
 
-MCPPosh is a PowerShell module that serves your own documentation to AI agents through a
+PSMcpKnowledgeBase is a PowerShell module that serves your own documentation to AI agents through a
 [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. You build and maintain the knowledge base with
 PowerShell, and the server makes it searchable for agents such as Claude Desktop, Claude Code, GitHub Copilot in
 VS Code or Cursor.
@@ -27,14 +27,14 @@ VS Code or Cursor.
 
 ## Cmdlet reference
 
-The [cmdlet reference](en-US/MCPPosh.md) is generated from the comment-based help of the module with the Sampler
+The [cmdlet reference](en-US/PSMcpKnowledgeBase.md) is generated from the comment-based help of the module with the Sampler
 documentation task. The same help is available in PowerShell:
 
 ```powershell
-Get-Command -Module MCPPosh
+Get-Command -Module PSMcpKnowledgeBase
 Get-Help Add-McpDocument -Full
 Get-Help Add-McpDocument -Online   # opens the reference page on GitHub
-Get-Help about_MCPPosh
+Get-Help about_PSMcpKnowledgeBase
 ```
 
 | Area | Cmdlets |

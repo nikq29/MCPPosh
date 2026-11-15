@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Test-McpOriginAllowed' {
     It 'allows requests without origin and listed origins' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpOriginAllowed -Origin $null -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://app.example.com' -Settings @{ AllowedOrigins = @('https://app.example.com'); IsLoopback = $true } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://other.example.com' -Settings @{ AllowedOrigins = @('https://app.example.com'); IsLoopback = $false } | Should -BeFalse
@@ -19,7 +19,7 @@ Describe 'Test-McpOriginAllowed' {
     }
 
     It 'only allows local origins for loopback servers without list' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpOriginAllowed -Origin 'http://localhost:3000' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://evil.example.com' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeFalse
             Test-McpOriginAllowed -Origin 'null' -Settings @{ AllowedOrigins = @(); IsLoopback = $true } | Should -BeFalse
@@ -30,7 +30,7 @@ Describe 'Test-McpOriginAllowed' {
 
 Describe 'Test-McpOriginAllowed (network servers)' {
     It 'accepts any origin only when the server requires an API key' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeFalse
             Test-McpOriginAllowed -Origin $null -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue

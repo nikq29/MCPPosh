@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'New-McpErrorResponse' {
     It 'creates an error response with optional data' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $response = New-McpErrorResponse -Id 7 -Code -32601 -Message 'Method not found' -Data ([ordered]@{ method = 'x' })
             $response.jsonrpc | Should -Be '2.0'
             $response.id | Should -Be 7

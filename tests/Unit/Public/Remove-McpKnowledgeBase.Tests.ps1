@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Old | Out-Null
 }
 
@@ -17,7 +17,7 @@ Describe 'Remove-McpKnowledgeBase' {
     }
 
     It 'refuses to remove a knowledge base served by a running server' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Old
             Mock Get-McpServerState { [pscustomobject]@{ kbPath = $kb.Path; Status = 'Running' } }
             Remove-McpKnowledgeBase -Name Old -Confirm:$false -ErrorAction SilentlyContinue -ErrorVariable err
@@ -29,6 +29,6 @@ Describe 'Remove-McpKnowledgeBase' {
     It 'deletes the knowledge base' {
         Remove-McpKnowledgeBase -Name Old -Confirm:$false
         Get-McpKnowledgeBase -Name Old -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
-        Test-Path (Join-Path $env:MCPPOSH_HOME 'knowledgebases/Old') | Should -BeFalse
+        Test-Path (Join-Path $env:PSMCPKB_HOME 'knowledgebases/Old') | Should -BeFalse
     }
 }

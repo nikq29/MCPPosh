@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Docs | Out-Null
     $script:File = Join-Path $script:TestHome 'install.md'
     Set-Content -Path $script:File -Value "# Installation`n`nInstall with winget."
@@ -26,7 +26,7 @@ Describe 'Update-McpDocument' {
     }
 
     It 're-imports URL documents' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
                 Set-Content -LiteralPath $OutFile -Value '# Remote'
                 [pscustomobject]@{ Headers = @{ 'Content-Type' = 'text/markdown' } }
@@ -61,7 +61,7 @@ Describe 'Update-McpDocument' {
         $secret = Join-Path $script:TestHome 'secret.txt'
         Set-Content -Path $secret -Value 'CANARY-SECRET'
         $doc = Add-McpDocument -KnowledgeBase Docs -Title "Odd $Label" -Content 'Original text.'
-        InModuleScope MCPPosh -Parameters @{ Id = $doc.Id; SourceType = $SourceType; Source = $secret } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Id = $doc.Id; SourceType = $SourceType; Source = $secret } {
             param($Id, $SourceType, $Source)
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Docs
             $manifest = Read-McpManifest -KbPath $kb.Path

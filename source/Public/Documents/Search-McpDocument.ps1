@@ -37,10 +37,10 @@ function Search-McpDocument {
         System.String. You can pipe search queries.
 
     .OUTPUTS
-        MCPPosh.SearchResult: Score, DocumentId, Title, Heading, Tags, Source, Snippet and Text (the complete section).
+        PSMcpKnowledgeBase.SearchResult: Score, DocumentId, Title, Heading, Tags, Source, Snippet and Text (the complete section).
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Search-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Search-McpDocument.md
 
     .LINK
         Get-McpDocument
@@ -52,7 +52,7 @@ function Search-McpDocument {
         Start-McpServer
     #>
     [CmdletBinding()]
-    [OutputType('MCPPosh.SearchResult')]
+    [OutputType('PSMcpKnowledgeBase.SearchResult')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [string] $Query,

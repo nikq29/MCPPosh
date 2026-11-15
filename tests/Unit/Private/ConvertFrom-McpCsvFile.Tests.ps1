@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'ConvertFrom-McpCsvFile' {
     It 'converts semicolon separated files to a Markdown table' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'contacts.csv'
             Set-Content -Path $path -Value "Name;Role`nAnna;Admin`nBen;Support"
@@ -24,7 +24,7 @@ Describe 'ConvertFrom-McpCsvFile' {
     }
 
     It 'reads TSV files and handles empty files' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $tsv = Join-Path $Files 'data.tsv'
             Set-Content -Path $tsv -Value "A`tB`n1`t2"

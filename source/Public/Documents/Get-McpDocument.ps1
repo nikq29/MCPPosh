@@ -4,7 +4,7 @@ function Get-McpDocument {
         Lists the documents of a knowledge base.
 
     .DESCRIPTION
-        Returns the documents stored in a knowledge base as MCPPosh.Document objects. Filter by id, title, tag, format or source type, and add the Markdown content with -IncludeContent.
+        Returns the documents stored in a knowledge base as PSMcpKnowledgeBase.Document objects. Filter by id, title, tag, format or source type, and add the Markdown content with -IncludeContent.
 
     .PARAMETER Id
         Document ids (wildcards allowed).
@@ -46,10 +46,10 @@ function Get-McpDocument {
         System.String. You can pipe objects with an Id property.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocument.md
 
     .LINK
         Add-McpDocument
@@ -64,7 +64,7 @@ function Get-McpDocument {
         Search-McpDocument
     #>
     [CmdletBinding()]
-    [OutputType('MCPPosh.Document')]
+    [OutputType('PSMcpKnowledgeBase.Document')]
     param(
         [Parameter(Position = 0, ValueFromPipelineByPropertyName)]
         [SupportsWildcards()]

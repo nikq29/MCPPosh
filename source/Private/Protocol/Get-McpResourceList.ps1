@@ -4,7 +4,7 @@ function Get-McpResourceList {
         Handles the MCP method resources/list.
 
     .DESCRIPTION
-        Returns the documents of the knowledge base as MCP resources (URI mcpposh://<knowledge base>/documents/<id>, title, description, MIME type text/markdown and size), sorted by title and paged with a cursor of 500 entries.
+        Returns the documents of the knowledge base as MCP resources (URI psmcpkb://<knowledge base>/documents/<id>, title, description, MIME type text/markdown and size), sorted by title and paged with a cursor of 500 entries.
 
     .PARAMETER Context
         The server context created by New-McpServerContext.
@@ -40,7 +40,7 @@ function Get-McpResourceList {
     $page = @($documents | Select-Object -Skip $offset -First $pageSize)
     $resources = foreach ($doc in $page) {
         $resource = [ordered]@{
-            uri      = 'mcpposh://{0}/documents/{1}' -f $kbName, $doc.id
+            uri      = 'psmcpkb://{0}/documents/{1}' -f $kbName, $doc.id
             name     = [string]$doc.id
             title    = [string]$doc.title
             mimeType = 'text/markdown'

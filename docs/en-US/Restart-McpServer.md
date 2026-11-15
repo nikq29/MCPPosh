@@ -1,15 +1,15 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Restart-McpServer.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Restart-McpServer.md
 schema: 2.0.0
 ---
 
 # Restart-McpServer
 
 ## SYNOPSIS
-Restarts local MCPPosh HTTP servers with their previous settings.
+Restarts local PSMcpKnowledgeBase HTTP servers with their previous settings.
 
 ## SYNTAX
 
@@ -21,7 +21,7 @@ Restart-McpServer [[-KnowledgeBase] <String>] [-Port <Int32>] [-ApiKey <String[]
 ## DESCRIPTION
 API keys are never stored.
 If the server required an API key, pass -ApiKey again or set
-$env:MCPPOSH_API_KEY.
+$env:PSMCPKB_API_KEY.
 
 ## EXAMPLES
 
@@ -124,15 +124,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+### PSMcpKnowledgeBase.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
 ## OUTPUTS
 
-### MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version.
+### PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Restart-McpServer.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Restart-McpServer.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Restart-McpServer.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Restart-McpServer.md)
 
 [Start-McpServer]()
 

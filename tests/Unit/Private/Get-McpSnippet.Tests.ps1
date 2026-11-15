@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,11 +13,11 @@ AfterAll {
 
 Describe 'Get-McpSnippet' {
     It 'returns short texts unchanged with collapsed whitespace' {
-        InModuleScope MCPPosh { Get-McpSnippet -Text "a`n  b" -Query 'a' | Should -Be 'a b' }
+        InModuleScope PSMcpKnowledgeBase { Get-McpSnippet -Text "a`n  b" -Query 'a' | Should -Be 'a b' }
     }
 
     It 'centers long texts around the first query match' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $text = ('filler ' * 80) + 'the vpnagent restart is here ' + ('tail ' * 80)
             $snippet = Get-McpSnippet -Text $text -Query 'restart vpnagent' -Length 100
             $snippet | Should -Match 'vpnagent'
