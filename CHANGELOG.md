@@ -5,6 +5,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Azure template: Entra ID sign-in from claude.ai and other MCP clients failed with AADSTS9010010, because clients send
+  the endpoint URL as `resource` parameter while the scope was `api://<client id>/...`. The scope now uses the endpoint
+  URL `https://<app>/mcp` as Application ID URI (output `oauthApplicationIdUri`; set it on the app registration), and
+  `oauthResource` (`deploy.ps1 -OAuthResource`) sets it for a custom domain.
+
 ## [0.3.1] - 2026-11-15
 
 ### Changed

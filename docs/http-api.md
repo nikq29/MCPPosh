@@ -46,24 +46,28 @@ described in the MCP authorization specification. The server only checks tokens;
 - `Authorization: Bearer <token>` is first compared with the API keys, then checked as a JSON Web Token: RS256
   signature with the issuer's keys (from `<issuer>/.well-known/openid-configuration`), exact issuer, one of the
   audiences, expiry and not-before (five minutes clock skew) and, with `-OAuthScope`, the scope in the `scp` or `scope`
-  claim. The short scope name (`access_as_user` for `api://<app>/access_as_user`) is accepted too, because Entra ID
-  writes it that way. Without `-OAuthScope` the token needs a `scp`, `scope` or `roles` claim, so ID tokens are
-  rejected.
+  claim. The short scope name (`access_as_user` for `https://<host>/mcp/access_as_user`) is accepted too, because
+  Entra ID writes it that way. Without `-OAuthScope` the token needs a `scp`, `scope` or `roles` claim, so ID tokens
+  are rejected.
 - The issuer must be an `https` URL; plain `http` is accepted only for `localhost` (for example a local Keycloak).
 - `401` responses add `resource_metadata="<base>/.well-known/oauth-protected-resource/mcp"` (and `scope="..."`) to
   `WWW-Authenticate`. Clients read the metadata there: `resource` (`<base>/mcp`), `authorization_servers` (the
   issuer), `scopes_supported` and `bearer_methods_supported`.
-- Behind a reverse proxy, `<base>` is taken from `X-Forwarded-Proto` and `X-Forwarded-Host` (host names only).
+- Behind a reverse proxy, `<base>` is taken from `X-Forwarded-Proto` and `X-Forwarded-Host`, otherwise from the
+  `Host` header (host names only).
 - The signing keys are cached and refreshed daily; unknown key ids load them again at most once per minute.
 
 ```powershell
 $tenant = '<tenant id>'; $client = '<client id>'
 Start-McpServer -KnowledgeBase Contoso -ListenAddress '*' -Port 8080 -Foreground `
     -OAuthIssuer "https://login.microsoftonline.com/$tenant/v2.0" -OAuthAudience $client `
-    -OAuthScope "api://$client/access_as_user"
+    -OAuthScope "https://kb.contoso.com/mcp/access_as_user"
 ```
 
-Microsoft Entra ID does not support dynamic client registration, so clients need the client ID of an app
+MCP clients send `<base>/mcp` as `resource` parameter. Microsoft Entra ID only accepts it when it is the Application
+ID URI of the app registration and the scope belongs to it, so the Application ID URI must be the public endpoint
+URL (`https://kb.contoso.com/mcp`, no trailing slash), not `api://<client id>`; otherwise the sign-in fails with
+AADSTS9010010. Microsoft Entra ID does not support dynamic client registration, so clients need the client ID of an app
 registration, for example `claude mcp add --transport http --client-id <client id> --callback-port <port> ...`
 (see [Azure hosting](hosting-azure.md#sign-in-with-microsoft-entra-id)).
 
