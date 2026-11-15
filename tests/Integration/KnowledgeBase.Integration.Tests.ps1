@@ -115,6 +115,29 @@ Describe 'Exporting and importing knowledge bases' {
         (Get-McpKnowledgeBase -Name HandbookCopy).Documents | Should -Be 2
         Get-DocumentSnapshot -KnowledgeBase HandbookCopy | Should -Be $script:Snapshot
     }
+
+    It 'keeps file sources updatable only with -TrustSource' {
+        $source = Join-Path -Path $script:Work -ChildPath 'runbook.md'
+        Set-Content -Path $source -Value "# Runbook`n`nRestart the service with systemctl."
+        New-McpKnowledgeBase -Name Runbooks | Out-Null
+        $doc = Add-McpDocument -KnowledgeBase Runbooks -Path $source
+        $archive = Join-Path -Path $script:Work -ChildPath 'archives/runbooks.zip'
+        Export-McpKnowledgeBase -Name Runbooks -DestinationPath $archive | Out-Null
+        Set-Content -Path $source -Value "# Runbook`n`nRestart the service with the new script."
+
+        # Untrusted (default): the content is imported, but the source file is never read again.
+        Import-McpKnowledgeBase -Path $archive -Name RunbooksCopy -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+        "$warnings" | Should -BeLike '*1 document(s)*'
+        (Get-McpDocument -KnowledgeBase RunbooksCopy -Id $doc.Id).SourceType | Should -Be 'Imported'
+        Update-McpDocument -KnowledgeBase RunbooksCopy -All | Should -BeNullOrEmpty
+        (Get-McpDocument -KnowledgeBase RunbooksCopy -Id $doc.Id -IncludeContent).Content | Should -Match 'systemctl'
+
+        # Trusted backup: the source stays a file and is updated from disk.
+        Import-McpKnowledgeBase -Path $archive -Name RunbooksCopy -Force -TrustSource -Confirm:$false | Out-Null
+        (Get-McpDocument -KnowledgeBase RunbooksCopy -Id $doc.Id).SourceType | Should -Be 'File'
+        (Update-McpDocument -KnowledgeBase RunbooksCopy -All).Id | Should -Be $doc.Id
+        (Get-McpDocument -KnowledgeBase RunbooksCopy -Id $doc.Id -IncludeContent).Content | Should -Match 'new script'
+    }
 }
 
 Describe 'Removing knowledge bases' {

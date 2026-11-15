@@ -28,3 +28,24 @@ Describe 'Remove-McpDocumentRecord' {
         }
     }
 }
+
+Describe 'Remove-McpDocumentRecord (invalid ids)' {
+    It 'removes records with invalid ids from the manifest without deleting files' {
+        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+            param($TestHome)
+            $outside = Join-Path $TestHome 'outside-remove'
+            New-Item -ItemType Directory -Path $outside -Force | Out-Null
+            $victim = Join-Path $outside 'victim.md'
+            Set-Content -Path $victim -Value 'keep me'
+            $badId = Join-Path $outside 'victim'
+            $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
+            $manifest = Read-McpManifest -KbPath $kb.Path
+            $manifest['documents'] = @($manifest['documents']) + @([ordered]@{ id = $badId; title = 'evil' })
+            Save-McpManifest -KbPath $kb.Path -Manifest $manifest
+
+            Remove-McpDocumentRecord -KnowledgeBase $kb -Id $badId
+            @((Read-McpManifest -KbPath $kb.Path).documents | Where-Object { $_.id -eq $badId }).Count | Should -Be 0
+            Test-Path -LiteralPath $victim | Should -BeTrue
+        }
+    }
+}

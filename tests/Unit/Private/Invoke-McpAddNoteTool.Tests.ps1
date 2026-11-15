@@ -34,4 +34,75 @@ Describe 'Invoke-McpAddNoteTool' {
             { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = ('t' * 201); content = 'x' }) } | Should -Throw '*200 characters*'
         }
     }
+
+    Context 'limits against agents that fill the knowledge base' {
+        BeforeEach {
+            New-McpKnowledgeBase -Name Notes | Out-Null
+            $script:NotesContext = New-McpTestContext -KnowledgeBase Notes -AllowWrite
+        }
+
+        AfterEach {
+            Remove-McpKnowledgeBase -Name Notes -Confirm:$false
+            InModuleScope MCPPosh {
+                $script:McpMaxAgentNotes = 1000
+                $script:McpMaxAgentNoteChars = 10000000
+                $script:McpMaxNotesPerMinute = 30
+            }
+        }
+
+        It 'rejects new notes beyond the maximum number of agent notes but still updates existing ones' {
+            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+                param($Context)
+                $script:McpMaxAgentNotes = 2
+                $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'One'; content = 'first' })
+                $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Two'; content = 'second' })
+                { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Three'; content = 'third' }) } | Should -Throw '*maximum of 2 agent notes*'
+                (Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Two'; content = 'second, revised' })).structuredContent.changed | Should -BeTrue
+            }
+        }
+
+        It 'does not count documents added by people towards the agent note limits' {
+            Add-McpDocument -KnowledgeBase Notes -Title 'Manual' -Content ('x' * 500) | Out-Null
+            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+                param($Context)
+                $script:McpMaxAgentNotes = 1
+                $script:McpMaxAgentNoteChars = 100
+                (Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Agent'; content = 'short' })).structuredContent.created | Should -BeTrue
+            }
+        }
+
+        It 'rejects notes that would exceed the total size of all agent notes' {
+            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+                param($Context)
+                $script:McpMaxAgentNoteChars = 100
+                $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Big'; content = ('a' * 60) })
+                { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Bigger'; content = ('b' * 60) }) } | Should -Throw '*100 characters*'
+                # Replacing a note only counts its new size.
+                (Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Big'; content = ('c' * 90) })).structuredContent.changed | Should -BeTrue
+            }
+        }
+
+        It 'limits the number of notes written per minute' {
+            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+                param($Context)
+                $script:McpMaxNotesPerMinute = 2
+                $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'A'; content = 'a' })
+                $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'A'; content = 'b' })
+                { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'A'; content = 'c' }) } | Should -Throw '*2 notes per minute*'
+                # Writes older than a minute no longer count.
+                $Context.NoteWriteTimes.Clear()
+                $Context.NoteWriteTimes.Enqueue([datetime]::UtcNow.AddMinutes(-2))
+                $Context.NoteWriteTimes.Enqueue([datetime]::UtcNow.AddMinutes(-2))
+                (Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'A'; content = 'd' })).structuredContent.changed | Should -BeTrue
+            }
+        }
+
+        It 'reports limit errors to the model as tool errors' {
+            InModuleScope MCPPosh { $script:McpMaxAgentNotes = 0 }
+            $call = @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'add_note'; arguments = @{ title = 'Blocked'; content = 'x' } } }
+            $result = (Invoke-McpTestMessage -KnowledgeBase Notes -AllowWrite -Message $call).result
+            $result.isError | Should -BeTrue
+            $result.content[0].text | Should -BeLike '*maximum of 0 agent notes*'
+        }
+    }
 }

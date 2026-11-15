@@ -19,7 +19,7 @@ function Get-McpDocument {
         Only documents of these formats (Markdown, Html, Docx, ...).
 
     .PARAMETER SourceType
-        Only documents from these sources: File, Url, Inline or Agent (notes added by the AI agent).
+        Only documents from these sources: File, Url, Inline, Agent (notes added by the AI agent) or Imported (file and URL documents from an archive imported without -TrustSource).
 
     .PARAMETER IncludeContent
         Adds the Markdown content as a Content property.
@@ -46,7 +46,7 @@ function Get-McpDocument {
         System.String. You can pipe objects with an Id property.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline or Agent), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
         https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md
@@ -77,7 +77,7 @@ function Get-McpDocument {
 
         [string[]] $Format,
 
-        [ValidateSet('File', 'Url', 'Inline', 'Agent')]
+        [ValidateSet('File', 'Url', 'Inline', 'Agent', 'Imported')]
         [string[]] $SourceType,
 
         [switch] $IncludeContent,

@@ -81,7 +81,8 @@ function Invoke-McpRequest {
         $code = $exception.Data['McpRpcCode']
         if ($null -eq $code) {
             Write-McpLog -Context $Context -Level ERROR -Message ("{0} failed: {1}" -f $method, $exception.Message)
-            return New-McpErrorResponse -Id $id -Code -32603 -Message "Internal error: $($exception.Message)"
+            # Details (paths, stack information) stay in the server log.
+            return New-McpErrorResponse -Id $id -Code -32603 -Message 'Internal error. See the server log for details.'
         }
         Write-McpLog -Context $Context -Level WARN -Message ("{0} rejected ({1}): {2}" -f $method, $code, $exception.Message)
         New-McpErrorResponse -Id $id -Code ([int]$code) -Message $exception.Message -Data $exception.Data['McpRpcData']

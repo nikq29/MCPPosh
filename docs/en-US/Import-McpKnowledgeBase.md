@@ -14,13 +14,15 @@ Imports a knowledge base from a ZIP archive created by Export-McpKnowledgeBase.
 ## SYNTAX
 
 ```
-Import-McpKnowledgeBase [-Path] <String> [-Name <String>] [-Force]
+Import-McpKnowledgeBase [-Path] <String> [-Name <String>] [-Force] [-TrustSource]
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name.
-Only knowledge base files are extracted and paths are validated.
+Only knowledge base files are extracted and paths are validated. Archives with invalid document ids, more than 100000 entries or more than 1 GB of uncompressed content are rejected.
+
+Documents that were added from files or URLs keep their content but get the source type Imported, so Update-McpDocument never reads their source again: the author of an archive chooses these paths and URLs, and updating them would copy local files or responses of internal URLs into the knowledge base. Use -TrustSource to keep the source types of archives you created yourself, for example when you restore a backup on the same machine.
 
 ## EXAMPLES
 
@@ -37,6 +39,13 @@ Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name ContosoTest
 ```
 
 Imports the archive as a new knowledge base ContosoTest, for example to test changes.
+
+### EXAMPLE 3
+```
+Import-McpKnowledgeBase -Path .\contoso-kb.zip -Force -TrustSource
+```
+
+Restores your own backup and keeps the file and URL sources, so Update-McpDocument -All can update the documents again.
 
 ## PARAMETERS
 
@@ -74,6 +83,21 @@ Accept wildcard characters: False
 
 ### -Force
 Replace an existing knowledge base with the same name.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TrustSource
+Keep the source types File and Url and the source hashes from the archive, so Update-McpDocument reads the source files and URLs again. Only use it for archives you created yourself: Update-McpDocument reads any path and URL stored in the archive.
 
 ```yaml
 Type: SwitchParameter

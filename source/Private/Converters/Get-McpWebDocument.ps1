@@ -4,7 +4,7 @@ function Get-McpWebDocument {
         Downloads a URL and converts it to Markdown based on its content type.
 
     .DESCRIPTION
-        Downloads a web page or online document to a temporary file and converts it based on the Content-Type header (HTML, Markdown, PDF, Word, CSV, JSON, YAML, XML) or the URL extension. Relative links in HTML are resolved against the URL.
+        Downloads a web page or online document to a temporary file and converts it based on the Content-Type header (HTML, Markdown, PDF, Word, CSV, JSON, YAML, XML) or the URL extension. Relative links in HTML are resolved against the URL. Downloads larger than 100 MB are rejected before they are converted.
 
     .PARAMETER Url
         Absolute http or https URL of the page or document to download.
@@ -36,6 +36,11 @@ function Get-McpWebDocument {
         $tempFile = Join-Path -Path $tempDirectory -ChildPath ([regex]::Replace($fileName, '[^\w.-]', '_'))
 
         $response = Invoke-WebRequest -Uri $Url -OutFile $tempFile -PassThru -UseBasicParsing -MaximumRedirection 5 -UserAgent 'MCPPosh (PowerShell MCP documentation server)' -ErrorAction Stop
+        # Converters read the whole file into memory: reject oversized downloads before converting them.
+        $downloadedBytes = (Get-Item -LiteralPath $tempFile).Length
+        if ($downloadedBytes -gt $script:McpMaxDownloadBytes) {
+            throw [System.IO.InvalidDataException]::new("The download of '$($Url.AbsoluteUri)' ($downloadedBytes bytes) exceeds the limit of $($script:McpMaxDownloadBytes) bytes.")
+        }
         $contentType = ''
         if ($response -and $response.Headers) {
             $contentType = [string](@($response.Headers['Content-Type']) | Select-Object -First 1)

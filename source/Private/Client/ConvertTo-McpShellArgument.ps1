@@ -4,25 +4,37 @@ function ConvertTo-McpShellArgument {
         Quotes a value for use in a shell command line.
 
     .DESCRIPTION
-        Returns the value unchanged when it only contains safe characters, otherwise wraps it in quotes for the current platform (double quotes on Windows, single quotes elsewhere). Used for the claude mcp add command.
+        Returns the value unchanged when it only contains safe characters, otherwise wraps it in single quotes so the shell expands nothing: PowerShell quoting ('' for a quote) on Windows, POSIX quoting ('\'' for a quote) elsewhere. Used for the claude mcp add command.
 
     .PARAMETER Value
         The command-line argument to quote.
 
+    .PARAMETER Shell
+        PowerShell or Posix. Defaults to PowerShell on Windows and Posix on Linux and macOS.
+
     .EXAMPLE
         ConvertTo-McpShellArgument -Value 'Import-Module MCPPosh; Start-McpServer'
 
-        Returns 'Import-Module MCPPosh; Start-McpServer' on Linux and macOS.
+        Returns 'Import-Module MCPPosh; Start-McpServer' (in single quotes).
+
+    .EXAMPLE
+        ConvertTo-McpShellArgument -Value "C:\Docs\It's here" -Shell PowerShell
+
+        Returns 'C:\Docs\It''s here'.
     #>
     [CmdletBinding()]
     [OutputType([string])]
     param(
         [Parameter(Mandatory, Position = 0)]
         [AllowEmptyString()]
-        [string] $Value
+        [string] $Value,
+
+        [ValidateSet('PowerShell', 'Posix')]
+        [string] $Shell = $(if ($IsWindows) { 'PowerShell' } else { 'Posix' })
     )
 
     if ($Value -match '^[\w./:=@-]+$') { return $Value }
-    if ($IsWindows) { return '"' + $Value.Replace('"', '\"') + '"' }
+    # Single quotes in both shells: no variable, subexpression or escape character is expanded inside them.
+    if ($Shell -eq 'PowerShell') { return "'" + $Value.Replace("'", "''") + "'" }
     "'" + $Value.Replace("'", "'\''") + "'"
 }

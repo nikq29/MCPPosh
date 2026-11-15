@@ -22,5 +22,6 @@ function Test-McpKnowledgeBaseName {
         [string] $Name
     )
 
-    $Name -match '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$'
+    # \z instead of $: $ also matches before a trailing newline.
+    [regex]::IsMatch($Name, '\A[A-Za-z0-9][A-Za-z0-9._-]{0,63}\z')
 }

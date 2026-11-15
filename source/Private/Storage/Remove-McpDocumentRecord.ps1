@@ -4,7 +4,7 @@ function Remove-McpDocumentRecord {
         Removes a document from the manifest and deletes its files.
 
     .DESCRIPTION
-        Removes a document record from manifest.json while holding the knowledge base lock and deletes its content and index files. Throws an error when the document does not exist.
+        Removes a document record from manifest.json while holding the knowledge base lock and deletes its content and index files. Throws an error when the document does not exist. Records with an invalid id are only removed from the manifest; no files are deleted for them.
 
     .PARAMETER KnowledgeBase
         The resolved knowledge base (see Resolve-McpKnowledgeBase) that contains the document.
@@ -37,8 +37,12 @@ function Remove-McpDocumentRecord {
         }
         $manifest['documents'] = $remaining
         Save-McpManifest -KbPath $kbPath -Manifest $manifest
-        $paths = Get-McpDocumentPath -KbPath $kbPath -Id $Id
-        Remove-Item -LiteralPath $paths.Content, $paths.Index -Force -ErrorAction SilentlyContinue
+        # Records with an invalid id (manipulated manifest) are removed from the manifest only; their id
+        # must never be turned into a path, which could point outside the knowledge base.
+        if (Test-McpDocumentId -Id $Id) {
+            $paths = Get-McpDocumentPath -KbPath $kbPath -Id $Id
+            Remove-Item -LiteralPath $paths.Content, $paths.Index -Force -ErrorAction SilentlyContinue
+        }
     }
     finally {
         $kbLock.Dispose()

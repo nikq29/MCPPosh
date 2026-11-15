@@ -28,3 +28,20 @@ Describe 'Read-McpZipEntryText' {
         }
     }
 }
+
+Describe 'Read-McpZipEntryText (size limit)' {
+    It 'refuses entries that decompress to more than MaxBytes' {
+        $docx = Join-Path $script:Files 'limit.docx'
+        New-McpTestDocx -Path $docx
+        InModuleScope MCPPosh -Parameters @{ Path = $docx } {
+            param($Path)
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+            try {
+                { Read-McpZipEntryText -Archive $archive -EntryName 'word/document.xml' -MaxBytes 10 } | Should -Throw '*exceeds the limit of 10 bytes*'
+            }
+            finally {
+                $archive.Dispose()
+            }
+        }
+    }
+}

@@ -46,4 +46,22 @@ Describe 'Get-McpWebDocument' {
             (Get-McpWebDocument -Url 'https://example.com/README.md').Format | Should -Be 'Markdown'
         }
     }
+
+    It 'rejects downloads larger than the limit before converting them' {
+        InModuleScope MCPPosh {
+            $script:McpMaxDownloadBytes = 1KB
+            try {
+                Mock Invoke-WebRequest {
+                    Set-Content -LiteralPath $OutFile -Value ('x' * 4096) -NoNewline
+                    [pscustomobject]@{ Headers = @{ 'Content-Type' = 'text/plain' } }
+                }
+                Mock ConvertTo-McpMarkdown { throw 'must not be called' }
+                { Get-McpWebDocument -Url 'https://example.com/big.txt' } | Should -Throw '*https://example.com/big.txt*exceeds the limit of 1024 bytes*'
+                Should -Invoke ConvertTo-McpMarkdown -Times 0
+            }
+            finally {
+                $script:McpMaxDownloadBytes = 100MB
+            }
+        }
+    }
 }

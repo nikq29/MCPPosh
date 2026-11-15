@@ -4,7 +4,9 @@ function Import-McpKnowledgeBase {
         Imports a knowledge base from a ZIP archive created by Export-McpKnowledgeBase.
 
     .DESCRIPTION
-        Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name. Only knowledge base files are extracted and paths are validated.
+        Restores a knowledge base from a ZIP archive created by Export-McpKnowledgeBase, optionally under a new name. Only knowledge base files are extracted and paths are validated. Archives with invalid document ids, more than 100000 entries or more than 1 GB of uncompressed content are rejected.
+
+        Documents that were added from files or URLs keep their content but get the source type Imported, so Update-McpDocument never reads their source again: the author of an archive chooses these paths and URLs, and updating them would copy local files or responses of internal URLs into the knowledge base. Use -TrustSource to keep the source types of archives you created yourself, for example when you restore a backup on the same machine.
 
     .PARAMETER Path
         Path of the ZIP archive created by Export-McpKnowledgeBase. Accepts the FullName property of files through the pipeline.
@@ -15,6 +17,9 @@ function Import-McpKnowledgeBase {
     .PARAMETER Force
         Replace an existing knowledge base with the same name.
 
+    .PARAMETER TrustSource
+        Keep the source types File and Url and the source hashes from the archive, so Update-McpDocument reads the source files and URLs again. Only use it for archives you created yourself: Update-McpDocument reads any path and URL stored in the archive.
+
     .EXAMPLE
         Import-McpKnowledgeBase -Path .\contoso-kb.zip
 
@@ -24,6 +29,11 @@ function Import-McpKnowledgeBase {
         Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name ContosoTest
 
         Imports the archive as a new knowledge base ContosoTest, for example to test changes.
+
+    .EXAMPLE
+        Import-McpKnowledgeBase -Path .\contoso-kb.zip -Force -TrustSource
+
+        Restores your own backup and keeps the file and URL sources, so Update-McpDocument -All can update the documents again.
 
     .INPUTS
         System.String. You can pipe file objects; their FullName property binds to -Path.
@@ -50,7 +60,9 @@ function Import-McpKnowledgeBase {
         [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$')]
         [string] $Name,
 
-        [switch] $Force
+        [switch] $Force,
+
+        [switch] $TrustSource
     )
 
     process {
@@ -65,6 +77,10 @@ function Import-McpKnowledgeBase {
             $stagingRoot = [System.IO.Path]::GetFullPath($staging) + [System.IO.Path]::DirectorySeparatorChar
             $archive = [System.IO.Compression.ZipFile]::OpenRead($source)
             try {
+                if ($archive.Entries.Count -gt $script:McpMaxArchiveEntries) {
+                    throw "'$source' contains more than $($script:McpMaxArchiveEntries) entries."
+                }
+                $extractedBytes = 0L
                 foreach ($entry in $archive.Entries) {
                     if (-not $entry.Name) { continue }
                     $relative = $entry.FullName.Replace('\', '/')
@@ -77,7 +93,16 @@ function Import-McpKnowledgeBase {
                         throw "Archive entry '$relative' points outside the target folder."
                     }
                     $null = [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($destination))
-                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $destination, $true)
+                    # Count the bytes actually decompressed instead of trusting the sizes stored in the archive.
+                    $entryStream = $entry.Open()
+                    $fileStream = [System.IO.File]::Create($destination)
+                    try {
+                        $extractedBytes += Copy-McpStreamWithLimit -Source $entryStream -Destination $fileStream -MaxBytes ($script:McpMaxArchiveBytes - $extractedBytes) -Description "uncompressed content of '$source'"
+                    }
+                    finally {
+                        $fileStream.Dispose()
+                        $entryStream.Dispose()
+                    }
                 }
             }
             finally {
@@ -87,6 +112,33 @@ function Import-McpKnowledgeBase {
             $metaPath = Join-Path -Path $staging -ChildPath 'knowledgebase.json'
             if (-not (Test-Path -LiteralPath $metaPath) -or -not (Test-Path -LiteralPath (Join-Path $staging 'manifest.json'))) {
                 throw "'$source' is not an MCPPosh knowledge base archive (knowledgebase.json or manifest.json is missing)."
+            }
+            # Document ids become file names; reject manifests whose ids could address files outside the
+            # knowledge base (for example '../../secret' or absolute paths).
+            $manifest = Read-McpManifest -KbPath $staging
+            foreach ($document in @($manifest['documents'])) {
+                if (-not (Test-McpDocumentId -Id ([string]$document.id))) {
+                    throw "'$source' contains the invalid document id '$($document.id)'. Document ids only contain letters, digits, '_' and '-'."
+                }
+            }
+            # Update-McpDocument reads the source of File and Url documents again. The author of an archive chooses
+            # these sources, so an archive could make it copy any file readable by the current user (or the response
+            # of any URL reachable from this machine) into the knowledge base, where every agent can read it. Unless
+            # the archive is trusted, documents keep their content but become Imported documents that are never
+            # read from their source again. Everything except the known types without a source is converted, so
+            # unknown, differently cased or non-string types cannot reach the File or Url branch either.
+            $converted = 0
+            if (-not $TrustSource) {
+                foreach ($document in @($manifest['documents'])) {
+                    $type = $document['sourceType']
+                    if ($type -is [string] -and $type -cin 'Inline', 'Agent', 'Imported') { continue }
+                    $document['sourceType'] = 'Imported'
+                    $document.Remove('sourceHash')
+                    $converted++
+                }
+                if ($converted -gt 0) {
+                    Write-McpJsonFile -Path (Join-Path -Path $staging -ChildPath 'manifest.json') -InputObject $manifest
+                }
             }
             $meta = Read-McpJsonFile -Path $metaPath
             $targetName = if ($Name) { $Name } else { [string]$meta.name }
@@ -114,6 +166,9 @@ function Import-McpKnowledgeBase {
                 $null = New-Item -ItemType Directory -Path (Join-Path $staging $folder) -Force
             }
             Move-Item -LiteralPath $staging -Destination $target
+            if ($converted -gt 0) {
+                Write-Warning ("{0} document(s) from '{1}' were imported with the source type Imported and are not updated from their source files or URLs. Use -TrustSource for archives you created yourself, or add the sources again with Add-McpDocument." -f $converted, $source)
+            }
             $script:McpIndexCache.Remove($target)
             ConvertTo-McpKnowledgeBaseObject -KnowledgeBase (Resolve-McpKnowledgeBase -KnowledgeBase $targetName)
         }
