@@ -5,6 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Releases need only the tag again: the build moves the `Unreleased` entries into the version section, and the
+  release workflow commits that changelog to `main` after publishing. A section created before tagging is still used.
+
 ### Fixed
 
 - OAuth sign-in behind Azure Container Apps: the protected resource metadata and the `WWW-Authenticate` header used

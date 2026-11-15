@@ -1,10 +1,10 @@
 <#
     Replaces the Sampler task Create_changelog_release_output (tasks in .build override module tasks of the same name).
 
-    Releases move the [Unreleased] entries of CHANGELOG.md into a version section before the tag is created (see
-    docs/development.md), so the tagged commit carries the final changelog. Sampler's task only releases [Unreleased]
-    and fails when the section of the built version already exists; this task uses that section instead and otherwise
-    behaves like Sampler's task.
+    Releases move the [Unreleased] entries of CHANGELOG.md into the section of the built version (output/CHANGELOG.md,
+    which the release workflow then commits to main; see docs/development.md). Sampler's task fails when that section
+    already exists in CHANGELOG.md; this task uses the existing section instead and otherwise behaves like Sampler's
+    task.
 #>
 param
 (

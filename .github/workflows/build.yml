@@ -215,17 +215,6 @@ jobs:
           name: output
           path: output
 
-      # Releases move the [Unreleased] entries into a version section before tagging (docs/development.md).
-      - name: Check that CHANGELOG.md has a section for the release
-        if: ${{ !contains(needs.build.outputs.version, '-') }}
-        env:
-          VERSION: ${{ needs.build.outputs.version }}
-        run: |
-          grep -qF "## [$VERSION]" CHANGELOG.md || {
-            echo "::error file=CHANGELOG.md::No section ## [$VERSION]. Before tagging run: Update-Changelog -ReleaseVersion $VERSION -LinkMode None"
-            exit 1
-          }
-
       - name: Publish the module and the GitHub release (Sampler)
         shell: pwsh
         env:
@@ -234,15 +223,36 @@ jobs:
           GitHubToken: ${{ secrets.GITHUB_TOKEN }}
         run: ./build.ps1 -ResolveDependency -Tasks publish
 
-      # Sampler writes the [Unreleased] section into the GitHub release, which is empty after the entries were moved.
+      # The build moved the [Unreleased] entries into the version section of output/CHANGELOG.md (or used an existing
+      # section); Sampler may have written the [Unreleased] section of the repository into the GitHub release.
       - name: Use the changelog section as GitHub release notes
         if: ${{ !contains(needs.build.outputs.version, '-') }}
         env:
           VERSION: ${{ needs.build.outputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          awk -v heading="## [$VERSION]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          awk -v heading="## [$VERSION]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' output/CHANGELOG.md > "$RUNNER_TEMP/notes.md"
           gh release edit "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
+
+      # main gets the released changelog too, so the next release starts with an empty [Unreleased] section.
+      # Pushes with GITHUB_TOKEN start no workflow run.
+      - name: Commit the released changelog to main
+        if: ${{ !contains(needs.build.outputs.version, '-') }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            # shortcut: only when the tag is the tip of main, otherwise newer [Unreleased] entries would be overwritten.
+            echo "::warning file=CHANGELOG.md::main has moved past v$VERSION. On main run: Update-Changelog -ReleaseVersion $VERSION -LinkMode None"
+            exit 0
+          fi
+          cp output/CHANGELOG.md CHANGELOG.md
+          if git diff --quiet -- CHANGELOG.md; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Changelog for $VERSION" -- CHANGELOG.md
+          git push origin HEAD:main
 
   docker-release:
     name: Docker image (from the PowerShell Gallery)
