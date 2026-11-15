@@ -105,7 +105,7 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 Outputs: `mcpEndpoint` (`https://<app>/mcp`), `storageAccountName` and `shareName`.
 
 The issuer is the tenant you deploy to (`https://login.microsoftonline.com/<tenant id>/v2.0`); tokens must be issued
-for `<client id>` or `api://<client id>` and contain `api://<client id>/<oauthScope>`.
+for `<client id>` (v2 tokens) and contain `api://<client id>/<oauthScope>`.
 
 ### Sign in with Microsoft Entra ID
 
