@@ -127,6 +127,7 @@ $script:AzStubs = @{
     'Get-AzStorageFile'        = { param($ShareName, $Path, $Context, [Parameter(ValueFromPipeline)] $Directory) process { } }
     'New-AzStorageDirectory'   = { param($ShareName, $Path, $Context) }
     'Set-AzStorageFileContent' = { param($ShareName, $Source, $Path, $Context, [switch] $Force) }
+    'Get-AzStorageFileContent' = { param($ShareName, $Path, $Destination, $Context, [switch] $Force) }
     'Remove-AzStorageFile'     = { param($ShareName, $Path, $Context) }
 }
 
@@ -491,6 +492,16 @@ function Register-McpTestAzFileShare {
             if (-not (Test-Path -LiteralPath (Split-Path -Path $local -Parent))) { throw "The parent directory of '$Path' does not exist." }
             Copy-Item -LiteralPath $Source -Destination $local -Force
             $global:McpTestAzFileShareLog.Add([pscustomobject]@{ Action = 'Upload'; Path = $Path })
+        }
+        'Get-AzStorageFileContent' = {
+            [CmdletBinding()]
+            param($ShareName, $Path, $Destination, $Context, [switch] $Force)
+            $local = Join-Path -Path $Context.LocalRoot -ChildPath "$ShareName/$Path"
+            if (-not (Test-Path -LiteralPath $local)) {
+                Write-Error -Message "The specified resource does not exist: $ShareName/$Path"
+                return
+            }
+            Copy-Item -LiteralPath $local -Destination $Destination -Force
         }
         'Remove-AzStorageFile'     = {
             [CmdletBinding()]

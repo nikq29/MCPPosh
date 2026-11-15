@@ -98,7 +98,8 @@ Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 
 ```
 
 `Publish-McpKnowledgeBase` only uploads changed files and uploads the manifest last, so the server reloads only when
-all files are in place. See [Knowledge bases](knowledge-bases.md#publish-to-azure-files) for all options.
+all files are in place. With `allowWrite`, it stops when the share holds agent notes that do not exist locally,
+instead of removing them. See [Knowledge bases](knowledge-bases.md#publish-to-azure-files) for all options.
 
 ## 4. Connect AI clients
 

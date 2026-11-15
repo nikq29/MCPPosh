@@ -53,6 +53,10 @@ last so the server always sees a consistent state.
 -Prune removes documents from the
 share that no longer exist locally.
 
+Publishing stops when the share holds documents that do not exist locally and were not
+published from this computer, for example notes that agents saved on the server with
+add_note. Copy them to the local knowledge base first, or use -Force to replace them.
+
 Requires the Az.Storage module (Install-Module Az.Storage).
 
 ## EXAMPLES
@@ -214,7 +218,8 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-Upload all files, not only the changed ones.
+Upload all files, not only the changed ones, and replace documents that exist only on
+the share (for example agent notes) instead of stopping.
 
 ```yaml
 Type: SwitchParameter
