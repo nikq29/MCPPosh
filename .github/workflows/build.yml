@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         env:
           ModuleVersion: ${{ steps.version.outputs.version }}
-        run: ./build.ps1 -ResolveDependency -Tasks pack
+        run: ./build.ps1 -ResolveDependency -Tasks pack -UseModuleFast
 
       - name: Upload build output
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
