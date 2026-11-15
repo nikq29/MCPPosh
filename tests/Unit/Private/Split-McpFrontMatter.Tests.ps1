@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Split-McpFrontMatter' {
     It 'separates front matter with inline tag lists' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $result = Split-McpFrontMatter -Text "---`ntitle: `"Setup`"`ntags: [intern, setup]`n---`n# Setup"
             $result.Title | Should -Be 'Setup'
             $result.Tags | Should -Be @('intern', 'setup')
@@ -22,7 +22,7 @@ Describe 'Split-McpFrontMatter' {
     }
 
     It 'reads keywords lists and leaves text without front matter unchanged' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             (Split-McpFrontMatter -Text "---`nkeywords:`n  - a`n  - b`n---`nBody").Tags | Should -Be @('a', 'b')
             $plain = Split-McpFrontMatter -Text '# Just Markdown'
             $plain.Body | Should -Be '# Just Markdown'

@@ -86,7 +86,7 @@ function Start-McpHttpServer {
         })
 
     $null = Update-McpServerIndex -Context $Context -Force
-    Write-McpLog -Context $Context -Message ("HTTP server for knowledge base '{0}' listening on http://{1}:{2}/mcp (pid {3}, MCPPosh {4}, auth: {5}, write access: {6})" -f $kb.Name, $prefixHost, $Port, $PID, $script:ModuleVersion, $(if ($ApiKeys.Count) { 'API key' } else { 'none' }), $Context.AllowWrite)
+    Write-McpLog -Context $Context -Message ("HTTP server for knowledge base '{0}' listening on http://{1}:{2}/mcp (pid {3}, PSMcpKnowledgeBase {4}, auth: {5}, write access: {6})" -f $kb.Name, $prefixHost, $Port, $PID, $script:ModuleVersion, $(if ($ApiKeys.Count) { 'API key' } else { 'none' }), $Context.AllowWrite)
 
     $settings = @{
         ApiKeys        = $ApiKeys

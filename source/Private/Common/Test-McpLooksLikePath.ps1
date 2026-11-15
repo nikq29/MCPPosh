@@ -10,7 +10,7 @@ function Test-McpLooksLikePath {
         The value passed to a -KnowledgeBase or -Name parameter, either a name or a path.
 
     .EXAMPLE
-        Test-McpLooksLikePath -Value 'Z:\mcpposh\Shared'
+        Test-McpLooksLikePath -Value 'Z:\psmcpkb\Shared'
 
         Returns $true.
     #>

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Docs | Out-Null
     Add-McpDocument -KnowledgeBase Docs -Title 'FAQ' -Content "# FAQ`n`nQuestions about licensing." -Tags faq | Out-Null
     Add-McpDocument -KnowledgeBase Docs -Title 'VPN tip' -Content 'Restart the agent.' -Tags vpn | Out-Null
@@ -30,10 +30,10 @@ Describe 'Get-McpDocument' {
     It 'returns a document by id with summary, uri and content' {
         $faq = Get-McpDocument -KnowledgeBase Docs -Title FAQ
         $doc = Get-McpDocument -KnowledgeBase Docs -Id $faq.Id -IncludeContent
-        $doc.Uri | Should -Be "mcpposh://Docs/documents/$($faq.Id)"
+        $doc.Uri | Should -Be "psmcpkb://Docs/documents/$($faq.Id)"
         $doc.Summary | Should -Match 'licensing'
         $doc.Content | Should -Match '# FAQ'
-        $doc.PSObject.TypeNames | Should -Contain 'MCPPosh.Document'
+        $doc.PSObject.TypeNames | Should -Contain 'PSMcpKnowledgeBase.Document'
     }
 
     It 'writes an error for unknown ids and fails for unknown knowledge bases' {

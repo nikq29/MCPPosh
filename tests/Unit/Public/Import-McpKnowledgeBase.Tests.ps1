@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Source -Description 'Source' | Out-Null
     Add-McpDocument -KnowledgeBase Source -Title 'One' -Content "# One`n`nFirst content about certificates." | Out-Null
     $script:Zip = Join-Path $script:TestHome 'source.zip'
@@ -33,7 +33,7 @@ Describe 'Import-McpKnowledgeBase' {
         Set-Content -Path (Join-Path $folder 'readme.txt') -Value 'hi'
         $bogus = Join-Path $script:TestHome 'bogus.zip'
         Compress-Archive -Path (Join-Path $folder '*') -DestinationPath $bogus
-        { Import-McpKnowledgeBase -Path $bogus -Name Bogus } | Should -Throw '*not an MCPPosh knowledge base*'
+        { Import-McpKnowledgeBase -Path $bogus -Name Bogus } | Should -Throw '*not a PSMcpKnowledgeBase knowledge base*'
         Get-McpKnowledgeBase -Name Bogus -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 
@@ -144,24 +144,24 @@ Describe 'Import-McpKnowledgeBase (untrusted archives)' {
 
     It 'rejects archives whose content exceeds the size limit' {
         $zip = New-TestArchive -Name 'Big' -Files @{ 'documents/big-1a2b3c.md' = ('x' * 5000) }
-        InModuleScope MCPPosh { $script:McpMaxArchiveBytes = 1000 }
+        InModuleScope PSMcpKnowledgeBase { $script:McpMaxArchiveBytes = 1000 }
         try {
             { Import-McpKnowledgeBase -Path $zip } | Should -Throw '*exceeds the limit*'
         }
         finally {
-            InModuleScope MCPPosh { $script:McpMaxArchiveBytes = 1GB }
+            InModuleScope PSMcpKnowledgeBase { $script:McpMaxArchiveBytes = 1GB }
         }
         Get-McpKnowledgeBase -Name 'Big' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 
     It 'rejects archives with too many entries' {
         $zip = New-TestArchive -Name 'Many' -Files @{ 'documents/one-1a2b3c.md' = 'one'; 'documents/two-1a2b3c.md' = 'two' }
-        InModuleScope MCPPosh { $script:McpMaxArchiveEntries = 3 }
+        InModuleScope PSMcpKnowledgeBase { $script:McpMaxArchiveEntries = 3 }
         try {
             { Import-McpKnowledgeBase -Path $zip } | Should -Throw '*more than 3 entries*'
         }
         finally {
-            InModuleScope MCPPosh { $script:McpMaxArchiveEntries = 100000 }
+            InModuleScope PSMcpKnowledgeBase { $script:McpMaxArchiveEntries = 100000 }
         }
     }
 }

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Docs | Out-Null
     $script:Docs = Join-Path $script:TestHome 'docs'
     New-Item -ItemType Directory -Path (Join-Path $script:Docs 'sub') -Force | Out-Null
@@ -56,7 +56,7 @@ Describe 'Add-McpDocument' {
     }
 
     It 'imports web pages with the HTML converter' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
                 Set-Content -LiteralPath $OutFile -Value '<html><head><title>Online docs</title></head><body><h1>API</h1><p>The endpoint is /v1/items.</p></body></html>'
                 [pscustomobject]@{ Headers = @{ 'Content-Type' = 'text/html; charset=utf-8' } }

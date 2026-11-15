@@ -1,7 +1,7 @@
 function Get-McpServer {
     <#
     .SYNOPSIS
-        Shows MCPPosh HTTP servers: local background/foreground servers, or a remote server.
+        Shows PSMcpKnowledgeBase HTTP servers: local background/foreground servers, or a remote server.
 
     .DESCRIPTION
         Without -Uri, lists the HTTP servers started on this machine. Servers whose process is
@@ -27,18 +27,18 @@ function Get-McpServer {
         Lists the HTTP servers started on this machine with status, URL and process id.
 
     .EXAMPLE
-        Get-McpServer -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKey $key | Format-List
+        Get-McpServer -Uri https://psmcpkb.azurecontainerapps.io/mcp -ApiKey $key | Format-List
 
         Queries the health endpoint of a hosted server and shows its knowledge base, number of documents, revision and uptime.
 
     .INPUTS
-        MCPPosh.Server. KnowledgeBase and Port bind by property name.
+        PSMcpKnowledgeBase.Server. KnowledgeBase and Port bind by property name.
 
     .OUTPUTS
-        MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. Remote servers (-Uri) additionally report Documents, Revision and Error.
+        PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. Remote servers (-Uri) additionally report Documents, Revision and Error.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpServer.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpServer.md
 
     .LINK
         Start-McpServer
@@ -53,7 +53,7 @@ function Get-McpServer {
         Get-McpServerLog
     #>
     [CmdletBinding(DefaultParameterSetName = 'Local')]
-    [OutputType('MCPPosh.Server')]
+    [OutputType('PSMcpKnowledgeBase.Server')]
     param(
         [Parameter(Position = 0, ParameterSetName = 'Local', ValueFromPipelineByPropertyName)]
         [string] $KnowledgeBase,
@@ -87,7 +87,7 @@ function Get-McpServer {
             $startedAt = ConvertTo-McpDateTime -Value $state.startedAt
             $running = $state.Status -eq 'Running'
             [pscustomobject]@{
-                PSTypeName        = 'MCPPosh.Server'
+                PSTypeName        = 'PSMcpKnowledgeBase.Server'
                 KnowledgeBase     = [string]$state.knowledgeBase
                 Transport         = [string]$state.transport
                 Status            = if ($running) { 'Running' } else { 'Stopped' }

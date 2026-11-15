@@ -33,13 +33,13 @@ function Get-McpServerLog {
         Follows the log of the stdio servers that AI clients start, until Ctrl+C is pressed.
 
     .INPUTS
-        MCPPosh.Server. KnowledgeBase and Port bind by property name, for example from Get-McpServer.
+        PSMcpKnowledgeBase.Server. KnowledgeBase and Port bind by property name, for example from Get-McpServer.
 
     .OUTPUTS
         System.String. The lines of the log file.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpServerLog.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpServerLog.md
 
     .LINK
         Get-McpServer

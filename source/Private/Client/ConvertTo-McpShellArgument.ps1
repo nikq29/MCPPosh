@@ -13,9 +13,9 @@ function ConvertTo-McpShellArgument {
         PowerShell or Posix. Defaults to PowerShell on Windows and Posix on Linux and macOS.
 
     .EXAMPLE
-        ConvertTo-McpShellArgument -Value 'Import-Module MCPPosh; Start-McpServer'
+        ConvertTo-McpShellArgument -Value 'Import-Module PSMcpKnowledgeBase; Start-McpServer'
 
-        Returns 'Import-Module MCPPosh; Start-McpServer' (in single quotes).
+        Returns 'Import-Module PSMcpKnowledgeBase; Start-McpServer' (in single quotes).
 
     .EXAMPLE
         ConvertTo-McpShellArgument -Value "C:\Docs\It's here" -Shell PowerShell

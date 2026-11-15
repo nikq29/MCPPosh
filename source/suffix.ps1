@@ -1,16 +1,16 @@
-# Module initialization. ModuleBuilder places this file at the end of the built MCPPosh.psm1,
+# Module initialization. ModuleBuilder places this file at the end of the built PSMcpKnowledgeBase.psm1,
 # after all functions are defined.
 
 Initialize-McpConverterRegistry
 
 $mcpTypeData = @{
-    'MCPPosh.KnowledgeBase' = 'Name', 'Description', 'Documents', 'Updated'
-    'MCPPosh.Document'      = 'Id', 'Title', 'Format', 'Tags', 'Updated'
-    'MCPPosh.SearchResult'  = 'Score', 'Title', 'Heading', 'DocumentId'
-    'MCPPosh.Converter'     = 'Name', 'Extensions', 'Builtin'
-    'MCPPosh.Server'        = 'KnowledgeBase', 'Transport', 'Status', 'Url', 'ProcessId'
-    'MCPPosh.ClientConfig'  = 'Client', 'Transport', 'ServerName', 'ConfigFile'
-    'MCPPosh.TestResult'    = 'Target', 'Success', 'ProtocolVersion', 'Tools', 'ElapsedMs'
+    'PSMcpKnowledgeBase.KnowledgeBase' = 'Name', 'Description', 'Documents', 'Updated'
+    'PSMcpKnowledgeBase.Document'      = 'Id', 'Title', 'Format', 'Tags', 'Updated'
+    'PSMcpKnowledgeBase.SearchResult'  = 'Score', 'Title', 'Heading', 'DocumentId'
+    'PSMcpKnowledgeBase.Converter'     = 'Name', 'Extensions', 'Builtin'
+    'PSMcpKnowledgeBase.Server'        = 'KnowledgeBase', 'Transport', 'Status', 'Url', 'ProcessId'
+    'PSMcpKnowledgeBase.ClientConfig'  = 'Client', 'Transport', 'ServerName', 'ConfigFile'
+    'PSMcpKnowledgeBase.TestResult'    = 'Target', 'Success', 'ProtocolVersion', 'Tools', 'ElapsedMs'
 }
 foreach ($mcpEntry in $mcpTypeData.GetEnumerator()) {
     Update-TypeData -TypeName $mcpEntry.Key -DefaultDisplayPropertySet $mcpEntry.Value -Force

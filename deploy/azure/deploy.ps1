@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    Deploys MCPPosh to Azure Container Apps and optionally publishes a local knowledge base.
+    Deploys PSMcpKnowledgeBase to Azure Container Apps and optionally publishes a local knowledge base.
 .DESCRIPTION
     Requires the Az PowerShell modules (Az.Accounts, Az.Resources, Az.Storage) and the Bicep CLI
     (https://aka.ms/bicep-install). Creates or updates the resource group and all resources
     from main.bicep, then (with -Publish) uploads the local knowledge base to the file share.
 .EXAMPLE
-    ./deploy.ps1 -ResourceGroupName rg-mcpposh -Image ghcr.io/nikq29/mcpposh:latest -KnowledgeBase Contoso -Publish
+    ./deploy.ps1 -ResourceGroupName rg-psmcpkb -Image ghcr.io/nikq29/psmcpkb:latest -KnowledgeBase Contoso -Publish
 .EXAMPLE
-    ./deploy.ps1 -ResourceGroupName rg-mcpposh -Image myacr.azurecr.io/mcpposh:0.1.0 -RegistryServer myacr.azurecr.io -RegistryUsername myacr -RegistryPassword (Read-Host -AsSecureString)
+    ./deploy.ps1 -ResourceGroupName rg-psmcpkb -Image myacr.azurecr.io/psmcpkb:0.1.0 -RegistryServer myacr.azurecr.io -RegistryUsername myacr -RegistryPassword (Read-Host -AsSecureString)
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -18,7 +18,7 @@ param(
     [string] $Location = 'westeurope',
 
     [ValidatePattern('^[a-z0-9-]{3,20}$')]
-    [string] $Name = 'mcpposh',
+    [string] $Name = 'psmcpkb',
 
     [Parameter(Mandatory)]
     [string] $Image,
@@ -64,7 +64,7 @@ if (-not $ApiKey) {
 }
 
 $description = ''
-if (Get-Module -ListAvailable -Name MCPPosh) { Import-Module MCPPosh }
+if (Get-Module -ListAvailable -Name PSMcpKnowledgeBase) { Import-Module PSMcpKnowledgeBase }
 if (Get-Command Get-McpKnowledgeBase -ErrorAction SilentlyContinue) {
     $localKb = Get-McpKnowledgeBase -Name $KnowledgeBase -ErrorAction SilentlyContinue
     if ($localKb) { $description = $localKb.Description }
@@ -86,10 +86,10 @@ if ($RegistryServer) {
     $parameters['registryPassword'] = [System.Net.NetworkCredential]::new('', $RegistryPassword).Password
 }
 
-if (-not $PSCmdlet.ShouldProcess($ResourceGroupName, "Deploy MCPPosh ($Image)")) { return }
+if (-not $PSCmdlet.ShouldProcess($ResourceGroupName, "Deploy PSMcpKnowledgeBase ($Image)")) { return }
 
 New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Force | Out-Null
-$deployment = New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name "mcpposh-$(Get-Date -Format yyyyMMddHHmmss)" `
+$deployment = New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name "psmcpkb-$(Get-Date -Format yyyyMMddHHmmss)" `
     -TemplateFile (Join-Path $PSScriptRoot 'main.bicep') -TemplateParameterObject $parameters
 
 $endpoint = $deployment.Outputs['mcpEndpoint'].Value
@@ -98,7 +98,7 @@ $share = $deployment.Outputs['shareName'].Value
 
 if ($Publish) {
     if (-not (Get-Command Publish-McpKnowledgeBase -ErrorAction SilentlyContinue)) {
-        throw 'Import the MCPPosh module to publish the knowledge base.'
+        throw 'Import the PSMcpKnowledgeBase module to publish the knowledge base.'
     }
     Publish-McpKnowledgeBase -Name $KnowledgeBase -StorageAccountName $storageAccount -ShareName $share -ResourceGroupName $ResourceGroupName -Prune | Out-Host
 }

@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpKnowledgeBase.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpKnowledgeBase.md
 schema: 2.0.0
 ---
 
@@ -18,7 +18,7 @@ Get-McpKnowledgeBase [[-Name] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Lists the knowledge bases below $env:MCPPOSH_HOME (or ~/.mcpposh) or returns a specific one, including the number of documents, characters, tags and the current revision.
+Lists the knowledge bases below $env:PSMCPKB_HOME (or ~/.psmcpkb) or returns a specific one, including the number of documents, characters, tags and the current revision.
 
 ## EXAMPLES
 
@@ -62,12 +62,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String. You can pipe objects with a Name property.
 ## OUTPUTS
 
-### MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+### PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpKnowledgeBase.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpKnowledgeBase.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpKnowledgeBase.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpKnowledgeBase.md)
 
 [New-McpKnowledgeBase]()
 

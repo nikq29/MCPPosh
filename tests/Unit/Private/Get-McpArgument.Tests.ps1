@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Get-McpArgument' {
     It 'returns typed values and defaults' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $arguments = [ordered]@{ query = 'vpn'; limit = 3L; tags = @('a', 'b'); csv = 'x, y' }
             Get-McpArgument -Arguments $arguments -Name query -Required | Should -Be 'vpn'
             Get-McpArgument -Arguments $arguments -Name limit -Type Integer -Minimum 1 -Maximum 20 | Should -Be 3
@@ -24,14 +24,14 @@ Describe 'Get-McpArgument' {
     }
 
     It 'accepts whole doubles and numeric strings for integers' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Get-McpArgument -Arguments ([ordered]@{ n = 4.0 }) -Name n -Type Integer | Should -Be 4
             Get-McpArgument -Arguments ([ordered]@{ n = '7' }) -Name n -Type Integer | Should -Be 7
         }
     }
 
     It 'throws argument errors for invalid values' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             { Get-McpArgument -Arguments ([ordered]@{}) -Name query -Required } | Should -Throw '*Missing required argument*'
             { Get-McpArgument -Arguments ([ordered]@{ query = ' ' }) -Name query -Required } | Should -Throw '*must not be empty*'
             { Get-McpArgument -Arguments ([ordered]@{ query = 1L }) -Name query } | Should -Throw '*must be a string*'

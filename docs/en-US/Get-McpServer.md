@@ -1,15 +1,15 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpServer.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpServer.md
 schema: 2.0.0
 ---
 
 # Get-McpServer
 
 ## SYNOPSIS
-Shows MCPPosh HTTP servers: local background/foreground servers, or a remote server.
+Shows PSMcpKnowledgeBase HTTP servers: local background/foreground servers, or a remote server.
 
 ## SYNTAX
 
@@ -43,7 +43,7 @@ Lists the HTTP servers started on this machine with status, URL and process id.
 
 ### EXAMPLE 2
 ```
-Get-McpServer -Uri https://mcpposh.azurecontainerapps.io/mcp -ApiKey $key | Format-List
+Get-McpServer -Uri https://psmcpkb.azurecontainerapps.io/mcp -ApiKey $key | Format-List
 ```
 
 Queries the health endpoint of a hosted server and shows its knowledge base, number of documents, revision and uptime.
@@ -116,15 +116,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### MCPPosh.Server. KnowledgeBase and Port bind by property name.
+### PSMcpKnowledgeBase.Server. KnowledgeBase and Port bind by property name.
 ## OUTPUTS
 
-### MCPPosh.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. Remote servers (-Uri) additionally report Documents, Revision and Error.
+### PSMcpKnowledgeBase.Server: KnowledgeBase, Transport, Status (Running or Stopped), Url, Port, ListenAddress, ProcessId, StartedAt, Uptime, AuthRequired, AllowWrite, AllowAnonymous, AllowedOrigins, LogFile, KnowledgeBasePath and Version. Remote servers (-Uri) additionally report Documents, Revision and Error.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpServer.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpServer.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpServer.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpServer.md)
 
 [Start-McpServer]()
 

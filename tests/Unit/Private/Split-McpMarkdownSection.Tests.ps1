@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Split-McpMarkdownSection' {
     It 'splits by headings, keeps the heading path and ignores headings in code fences' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $chunks = @(Split-McpMarkdownSection -Content "# A`n`nText A`n`n## B`n`nText B`n`n``````md`n# not a heading`n```````n`n# C`n`nText C")
             $chunks.Count | Should -Be 3
             $chunks[1].heading | Should -Be 'A > B'
@@ -23,7 +23,7 @@ Describe 'Split-McpMarkdownSection' {
     }
 
     It 'splits long sections below the size limit' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $paragraphs = 1..40 | ForEach-Object { "Paragraph $_ " + ('word ' * 20) }
             $chunks = @(Split-McpMarkdownSection -Content ("# Long`n`n" + ($paragraphs -join "`n`n")) -MaxChars 500)
             $chunks.Count | Should -BeGreaterThan 5
@@ -32,7 +32,7 @@ Describe 'Split-McpMarkdownSection' {
     }
 
     It 'uses LF line endings on all platforms, also for CRLF input' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $chunks = @(Split-McpMarkdownSection -Content "# A`r`n`r`nLine 1`r`nLine 2`r`n`r`n## B`r`n`r`nText B")
             $chunks.Count | Should -Be 2
             $chunks[0].text | Should -Be "Line 1`nLine 2"

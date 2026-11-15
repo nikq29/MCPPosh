@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Copy-McpStreamWithLimit' {
     It 'copies a stream up to the limit and returns the number of bytes' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $source = [System.IO.MemoryStream]::new([byte[]](1..100))
             $target = [System.IO.MemoryStream]::new()
             Copy-McpStreamWithLimit -Source $source -Destination $target -MaxBytes 100 | Should -Be 100
@@ -20,7 +20,7 @@ Describe 'Copy-McpStreamWithLimit' {
     }
 
     It 'throws when more bytes arrive than allowed, regardless of declared sizes' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $source = [System.IO.MemoryStream]::new([byte[]]::new(200000))
             { Copy-McpStreamWithLimit -Source $source -Destination ([System.IO.MemoryStream]::new()) -MaxBytes 100000 -Description 'test data' } |
                 Should -Throw '*test data exceeds the limit of 100000 bytes*'
@@ -28,7 +28,7 @@ Describe 'Copy-McpStreamWithLimit' {
     }
 
     It 'copies a complete stream when a timeout is set' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $source = [System.IO.MemoryStream]::new([byte[]](1..100))
             $target = [System.IO.MemoryStream]::new()
             Copy-McpStreamWithLimit -Source $source -Destination $target -MaxBytes 100 -TimeoutSeconds 5 | Should -Be 100
@@ -37,7 +37,7 @@ Describe 'Copy-McpStreamWithLimit' {
     }
 
     It 'throws a TimeoutException when the source stops sending before the end' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             # A pipe whose writer sends a few bytes and then stays open: reads block like a stalled client.
             $writer = [System.IO.Pipes.AnonymousPipeServerStream]::new([System.IO.Pipes.PipeDirection]::Out)
             $reader = [System.IO.Pipes.AnonymousPipeClientStream]::new([System.IO.Pipes.PipeDirection]::In, $writer.ClientSafePipeHandle)

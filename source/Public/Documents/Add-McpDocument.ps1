@@ -69,10 +69,10 @@ function Add-McpDocument {
         System.String, System.IO.FileInfo. You can pipe paths or file objects from Get-ChildItem, and objects with a Url or Uri property.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+        PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Add-McpDocument.md
 
     .LINK
         Get-McpDocument
@@ -87,7 +87,7 @@ function Add-McpDocument {
         Search-McpDocument
     #>
     [CmdletBinding(DefaultParameterSetName = 'Path', SupportsShouldProcess)]
-    [OutputType('MCPPosh.Document')]
+    [OutputType('PSMcpKnowledgeBase.Document')]
     param(
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'Path', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Alias('FullName', 'PSPath', 'LiteralPath')]
@@ -188,7 +188,7 @@ function Add-McpDocument {
                     foreach ($item in @($items)) {
                         if ($item.PSIsContainer) {
                             $children = Get-ChildItem -LiteralPath $item.FullName -File -Recurse:$Recurse -ErrorAction SilentlyContinue |
-                                Where-Object { $_.FullName -notmatch '[\\/](\.git|\.svn|\.hg|node_modules|\.mcpposh)[\\/]' }
+                                Where-Object { $_.FullName -notmatch '[\\/](\.git|\.svn|\.hg|node_modules|\.psmcpkb)[\\/]' }
                             $candidates = @($children)
                         }
                         else {

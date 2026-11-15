@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
 }
 
@@ -12,7 +12,7 @@ AfterAll {
 
 Describe 'Save-McpManifest' {
     It 'increments the revision and sets the updated timestamp' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $manifest = Read-McpManifest -KbPath $kb.Path
             $before = [long]$manifest.revision

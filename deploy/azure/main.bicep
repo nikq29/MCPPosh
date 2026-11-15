@@ -1,8 +1,8 @@
-// MCPPosh on Azure Container Apps
+// PSMcpKnowledgeBase on Azure Container Apps
 //
 // Creates: Log Analytics workspace, storage account with an Azure Files share (the knowledge
 // base storage), a Container Apps environment with the share mounted at /data, and the
-// MCPPosh container app with HTTPS ingress and an API key.
+// PSMcpKnowledgeBase container app with HTTPS ingress and an API key.
 //
 // Deploy with deploy.ps1 or:
 //   az deployment group create -g <rg> -f main.bicep -p image=<image> apiKey=<key>
@@ -12,12 +12,12 @@ targetScope = 'resourceGroup'
 @description('Base name for all resources (lowercase letters, digits and hyphens).')
 @minLength(3)
 @maxLength(20)
-param name string = 'mcpposh'
+param name string = 'psmcpkb'
 
 @description('Azure region.')
 param location string = resourceGroup().location
 
-@description('Container image, e.g. ghcr.io/<owner>/mcpposh:latest or <registry>.azurecr.io/mcpposh:0.1.0.')
+@description('Container image, e.g. ghcr.io/<owner>/psmcpkb:latest or <registry>.azurecr.io/psmcpkb:0.1.0.')
 param image string
 
 @description('API key clients must send as "Authorization: Bearer <key>". Several keys can be separated by commas.')
@@ -63,7 +63,7 @@ param shareQuotaGiB int = 5
 
 var suffix = uniqueString(resourceGroup().id, name)
 var storageAccountName = take('${replace(toLower(name), '-', '')}${suffix}', 24)
-var shareName = 'mcpposh'
+var shareName = 'psmcpkb'
 var useRegistry = !empty(registryServer)
 var registrySecrets = useRegistry ? [
   {
@@ -126,7 +126,7 @@ resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
 
 resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
   parent: environment
-  name: 'mcpposh-data'
+  name: 'psmcpkb-data'
   properties: {
     azureFile: {
       accountName: storage.name
@@ -167,7 +167,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
-          name: 'mcpposh'
+          name: 'psmcpkb'
           image: image
           resources: {
             cpu: json('0.5')
@@ -175,23 +175,23 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
           }
           env: [
             {
-              name: 'MCPPOSH_API_KEY'
+              name: 'PSMCPKB_API_KEY'
               secretRef: 'api-key'
             }
             {
-              name: 'MCPPOSH_KNOWLEDGEBASE'
+              name: 'PSMCPKB_KNOWLEDGEBASE'
               value: knowledgeBase
             }
             {
-              name: 'MCPPOSH_DESCRIPTION'
+              name: 'PSMCPKB_DESCRIPTION'
               value: knowledgeBaseDescription
             }
             {
-              name: 'MCPPOSH_ALLOW_WRITE'
+              name: 'PSMCPKB_ALLOW_WRITE'
               value: string(allowWrite)
             }
             {
-              name: 'MCPPOSH_ALLOWED_ORIGINS'
+              name: 'PSMCPKB_ALLOWED_ORIGINS'
               value: allowedOrigins
             }
           ]

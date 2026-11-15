@@ -5,7 +5,7 @@ function New-McpKnowledgeBase {
 
     .DESCRIPTION
         A knowledge base is a folder that holds normalized Markdown documents, a manifest and a
-        search index. By default it is created below $env:MCPPOSH_HOME (or ~/.mcpposh). Use -Path
+        search index. By default it is created below $env:PSMCPKB_HOME (or ~/.psmcpkb). Use -Path
         to place it somewhere else, e.g. on a mounted Azure Files share.
 
         The description is sent to the AI agent as server instructions and in the tool
@@ -18,7 +18,7 @@ function New-McpKnowledgeBase {
         What the documentation is about. Shown to the AI agent.
 
     .PARAMETER Path
-        Optional directory for the knowledge base. Defaults to $env:MCPPOSH_HOME/knowledgebases/<Name>.
+        Optional directory for the knowledge base. Defaults to $env:PSMCPKB_HOME/knowledgebases/<Name>.
 
     .EXAMPLE
         New-McpKnowledgeBase -Name Contoso -Description 'Internal documentation for the Contoso platform: architecture, runbooks and coding guidelines.'
@@ -26,7 +26,7 @@ function New-McpKnowledgeBase {
         Creates the knowledge base Contoso. The description tells AI agents what the documentation covers and when to use it.
 
     .EXAMPLE
-        New-McpKnowledgeBase -Name Shared -Path Z:\mcpposh\Shared
+        New-McpKnowledgeBase -Name Shared -Path Z:\psmcpkb\Shared
 
         Creates a knowledge base on a mapped network drive. Pass the path to -KnowledgeBase of the other cmdlets to work with it.
 
@@ -34,10 +34,10 @@ function New-McpKnowledgeBase {
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+        PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/New-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/New-McpKnowledgeBase.md
 
     .LINK
         Get-McpKnowledgeBase
@@ -49,7 +49,7 @@ function New-McpKnowledgeBase {
         Add-McpDocument
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.KnowledgeBase')]
+    [OutputType('PSMcpKnowledgeBase.KnowledgeBase')]
     param(
         [Parameter(Mandatory, Position = 0)]
         [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$')]

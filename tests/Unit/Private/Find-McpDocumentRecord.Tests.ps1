@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -19,7 +19,7 @@ Describe 'Find-McpDocumentRecord' {
     }
 
     It 'finds records by id, source and title' {
-        InModuleScope MCPPosh -Parameters @{ Records = $script:Records } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Records = $script:Records } {
             param($Records)
             (Find-McpDocumentRecord -Documents $Records -Id 'b-2').title | Should -Be 'Note'
             (Find-McpDocumentRecord -Documents $Records -SourceType File -Source '/docs/a.md').id | Should -Be 'a-1'
@@ -29,7 +29,7 @@ Describe 'Find-McpDocumentRecord' {
     }
 
     It 'returns $null when nothing matches' {
-        InModuleScope MCPPosh -Parameters @{ Records = $script:Records } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Records = $script:Records } {
             param($Records)
             Find-McpDocumentRecord -Documents $Records -Id 'missing' | Should -BeNullOrEmpty
             Find-McpDocumentRecord -Documents @() -SourceType File -Source '/x' | Should -BeNullOrEmpty

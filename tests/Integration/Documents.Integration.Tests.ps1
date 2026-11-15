@@ -4,12 +4,12 @@
     custom converters. No mocks.
 #>
 BeforeDiscovery {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:FormatCases = @(Get-McpTestFixtureFormat | ForEach-Object { @{ Format = $_ } })
 }
 
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment -Name documents
     $script:Files = Join-Path -Path $script:TestHome -ChildPath 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null

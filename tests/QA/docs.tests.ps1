@@ -4,7 +4,7 @@
 #>
 BeforeDiscovery {
     $projectPath = Join-Path -Path $PSScriptRoot -ChildPath '../..' | Convert-Path
-    $module = Get-Module -Name 'MCPPosh' -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+    $module = Get-Module -Name 'PSMcpKnowledgeBase' -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
     $exportedFunctions = @((Import-PowerShellDataFile -Path $module.Path).FunctionsToExport)
 
     $script:cmdletCases = @($exportedFunctions | ForEach-Object { @{ Name = $_ } })
@@ -23,7 +23,7 @@ BeforeAll {
     $projectPath = Join-Path -Path $PSScriptRoot -ChildPath '../..' | Convert-Path
     $docsPath = Join-Path -Path $projectPath -ChildPath 'docs'
     $referencePath = Join-Path -Path $docsPath -ChildPath 'en-US'
-    Import-Module -Name 'MCPPosh' -Force -ErrorAction Stop
+    Import-Module -Name 'PSMcpKnowledgeBase' -Force -ErrorAction Stop
 
     function Get-MarkdownLinkTarget {
         param([string] $Content)
@@ -60,11 +60,11 @@ Describe 'Cmdlet reference' -Tag 'Documentation' {
 
     It 'Should link the online help of <Name> to its reference page' -ForEach $cmdletCases {
         $uri = @((Get-Help -Name $Name).relatedLinks.navigationLink | Where-Object { $_.uri } | Select-Object -First 1).uri
-        $uri | Should -Be "https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/$Name.md"
+        $uri | Should -Be "https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/$Name.md"
     }
 
     It 'Should list <Name> on the module page' -ForEach $cmdletCases {
-        Get-Content -LiteralPath (Join-Path $referencePath 'MCPPosh.md') -Raw | Should -Match ([regex]::Escape("[$Name]($Name.md)"))
+        Get-Content -LiteralPath (Join-Path $referencePath 'PSMcpKnowledgeBase.md') -Raw | Should -Match ([regex]::Escape("[$Name]($Name.md)"))
     }
 
     It 'Should have no placeholders in <File>' -ForEach $referenceCases {

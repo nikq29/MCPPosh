@@ -3,12 +3,12 @@
     foreground and background servers, logs, status, restart and stop. No mocks.
 #>
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment -Name integration
     New-McpKnowledgeBase -Name Srv -Description 'Integration tests' | Out-Null
     Add-McpDocument -KnowledgeBase Srv -Title 'Printer' -Content "# Printer`n`nThe hallway printer is PRN-01 and uses IPP." | Out-Null
-    $script:Pwsh = & (Get-Module MCPPosh) { Get-McpPwshPath }
-    $script:Manifest = & (Get-Module MCPPosh) { $script:ModuleManifestPath }
+    $script:Pwsh = & (Get-Module PSMcpKnowledgeBase) { Get-McpPwshPath }
+    $script:Manifest = & (Get-Module PSMcpKnowledgeBase) { $script:ModuleManifestPath }
     $script:Init = (Get-McpTestRpcMessage)[0]
 }
 
@@ -73,7 +73,7 @@ Describe 'HTTP transport (background process)' {
 
     It 'requires the API key and accepts Bearer and X-API-Key' {
         (Invoke-WebRequest -Uri "$($script:Base)/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -SkipHttpErrorCheck).StatusCode | Should -Be 401
-        (Invoke-RestMethod -Uri "$($script:Base)/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -Headers $script:Auth).result.serverInfo.name | Should -Be 'MCPPosh'
+        (Invoke-RestMethod -Uri "$($script:Base)/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -Headers $script:Auth).result.serverInfo.name | Should -Be 'PSMcpKnowledgeBase'
         (Invoke-RestMethod -Uri "$($script:Base)/mcp" -Method Post -Body $script:Init -ContentType 'application/json' -Headers @{ 'X-API-Key' = $script:Key }).result.protocolVersion | Should -Be '2025-06-18'
     }
 
@@ -168,9 +168,9 @@ Describe 'Server options' {
     It 'runs in the foreground of its own process with -Foreground, -ListenAddress and -AllowAnonymous' {
         $port = Get-McpTestFreePort
         $output = Join-Path -Path $script:TestHome -ChildPath "foreground-$port.log"
-        $process = Start-McpTestProcess -OutputPath $output -ArgumentList $script:Manifest, $env:MCPPOSH_HOME, $port -ScriptBlock {
+        $process = Start-McpTestProcess -OutputPath $output -ArgumentList $script:Manifest, $env:PSMCPKB_HOME, $port -ScriptBlock {
             param($Manifest, $McpHome, $Port)
-            $env:MCPPOSH_HOME = $McpHome
+            $env:PSMCPKB_HOME = $McpHome
             Import-Module -Name $Manifest
             Start-McpServer -KnowledgeBase Srv -Port ([int]$Port) -ListenAddress 127.0.0.1 -AllowAnonymous -Foreground
         }
@@ -206,13 +206,13 @@ Describe 'Server options' {
     }
 
     It 'refuses to listen on all interfaces without an API key' {
-        $savedKey = $env:MCPPOSH_API_KEY
-        Remove-Item -Path Env:MCPPOSH_API_KEY -ErrorAction SilentlyContinue
+        $savedKey = $env:PSMCPKB_API_KEY
+        Remove-Item -Path Env:PSMCPKB_API_KEY -ErrorAction SilentlyContinue
         try {
             { Start-McpServer -KnowledgeBase Web -Port (Get-McpTestFreePort) -ListenAddress 0.0.0.0 } | Should -Throw '*-AllowAnonymous*'
         }
         finally {
-            if ($savedKey) { $env:MCPPOSH_API_KEY = $savedKey }
+            if ($savedKey) { $env:PSMCPKB_API_KEY = $savedKey }
         }
     }
 

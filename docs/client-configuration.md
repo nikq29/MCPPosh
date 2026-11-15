@@ -1,6 +1,6 @@
 # Client configuration
 
-`Get-McpClientConfig` creates the configuration that connects an AI client to an MCPPosh server, either over stdio
+`Get-McpClientConfig` creates the configuration that connects an AI client to a PSMcpKnowledgeBase server, either over stdio
 (the client starts the server) or over HTTP (the client connects to a running server).
 
 ```powershell
@@ -13,7 +13,7 @@ The result contains:
 | --- | --- |
 | `Client` | the client the configuration was created for |
 | `Transport` | `Stdio` or `Http` |
-| `ServerName` | name of the server entry, by default `mcpposh-<knowledge base>` |
+| `ServerName` | name of the server entry, by default `psmcpkb-<knowledge base>` |
 | `ConfigFile` | where the client expects its configuration |
 | `Json` | the configuration as JSON |
 | `Command` | for Claude Code: the `claude mcp add` command |
@@ -26,10 +26,10 @@ The result contains:
 With stdio the client starts `pwsh` and runs `Start-McpServer -Transport Stdio`. The generated arguments are
 `-NoLogo -NoProfile -NonInteractive -Command "Import-Module …; Start-McpServer -KnowledgeBase '…' -Transport Stdio"`.
 
-- When MCPPosh is installed in a standard module folder (for example with `Install-PSResource`), the module is
+- When PSMcpKnowledgeBase is installed in a standard module folder (for example with `Install-PSResource`), the module is
   imported by name, so the configuration keeps working after updates. Otherwise the full path of the module
   manifest is used. `-UseModuleName` forces the import by name.
-- When `$env:MCPPOSH_HOME` is set, it is added to the `env` section of the entry.
+- When `$env:PSMCPKB_HOME` is set, it is added to the `env` section of the entry.
 - `-AllowWrite` adds `-AllowWrite`, so the agent gets the `add_note` tool.
 - The full path of `pwsh` is used, because some clients (for example Claude Desktop on macOS) do not inherit the
   `PATH` of your shell.
@@ -47,10 +47,10 @@ Merge the entry under `mcpServers` into the configuration file and restart Claud
 ```json
 {
   "mcpServers": {
-    "mcpposh-contoso": {
+    "psmcpkb-contoso": {
       "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
       "args": ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
-               "Import-Module MCPPosh; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
+               "Import-Module PSMcpKnowledgeBase; Start-McpServer -KnowledgeBase 'Contoso' -Transport Stdio"]
     }
   }
 }
@@ -65,7 +65,7 @@ Configuration file locations: Windows `%APPDATA%\Claude\claude_desktop_config.js
 (Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode).Command
 ```
 
-Run the returned `claude mcp add mcpposh-contoso -- pwsh …` command, or put the JSON into the `.mcp.json` file of your
+Run the returned `claude mcp add psmcpkb-contoso -- pwsh …` command, or put the JSON into the `.mcp.json` file of your
 project to share the server with your team.
 
 ### VS Code (GitHub Copilot)
@@ -97,11 +97,11 @@ server of the knowledge base is used.
 
 ```powershell
 Get-McpClientConfig -KnowledgeBase Contoso -Client VSCode -Transport Http -ApiKeyPlaceholder
-Get-McpClientConfig -KnowledgeBase Contoso -Client Cursor -Transport Http -Uri https://mcpposh.example.com/mcp -ApiKey $key
-(Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode -Transport Http -Uri https://mcpposh.example.com -ApiKey $key).Command
+Get-McpClientConfig -KnowledgeBase Contoso -Client Cursor -Transport Http -Uri https://psmcpkb.example.com/mcp -ApiKey $key
+(Get-McpClientConfig -KnowledgeBase Contoso -Client ClaudeCode -Transport Http -Uri https://psmcpkb.example.com -ApiKey $key).Command
 ```
 
-A base URL such as `https://mcpposh.example.com` is completed to `https://mcpposh.example.com/mcp`.
+A base URL such as `https://psmcpkb.example.com` is completed to `https://psmcpkb.example.com/mcp`.
 
 ### API keys
 
@@ -111,10 +111,10 @@ A base URL such as `https://mcpposh.example.com` is completed to `https://mcppos
 
 | Client | Placeholder | How the key is provided |
 | --- | --- | --- |
-| VS Code | `${input:mcpposh-api-key}` | VS Code prompts for the key once and stores it securely (an `inputs` entry is added) |
-| Claude Code | `${MCPPOSH_API_KEY}` | environment variable |
-| Cursor | `${env:MCPPOSH_API_KEY}` | environment variable |
-| Generic | `${MCPPOSH_API_KEY}` | depends on the client |
+| VS Code | `${input:psmcpkb-api-key}` | VS Code prompts for the key once and stores it securely (an `inputs` entry is added) |
+| Claude Code | `${PSMCPKB_API_KEY}` | environment variable |
+| Cursor | `${env:PSMCPKB_API_KEY}` | environment variable |
+| Generic | `${PSMCPKB_API_KEY}` | depends on the client |
 
 ### Claude Desktop over HTTP
 
@@ -125,10 +125,10 @@ in Claude Desktop (*Settings › Connectors*), or use the `mcp-remote` bridge th
 ```json
 {
   "mcpServers": {
-    "mcpposh-contoso": {
+    "psmcpkb-contoso": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcpposh.example.com/mcp", "--header", "Authorization:${MCPPOSH_AUTH_HEADER}"],
-      "env": { "MCPPOSH_AUTH_HEADER": "Bearer <your-api-key>" }
+      "args": ["-y", "mcp-remote", "https://psmcpkb.example.com/mcp", "--header", "Authorization:${PSMCPKB_AUTH_HEADER}"],
+      "env": { "PSMCPKB_AUTH_HEADER": "Bearer <your-api-key>" }
     }
   }
 }
@@ -138,7 +138,7 @@ in Claude Desktop (*Settings › Connectors*), or use the `mcp-remote` bridge th
 
 ```powershell
 Test-McpServer -KnowledgeBase Contoso -Query 'VPN'                  # what stdio clients start
-Test-McpServer -Uri https://mcpposh.example.com -ApiKey $key        # HTTP servers
+Test-McpServer -Uri https://psmcpkb.example.com -ApiKey $key        # HTTP servers
 Get-McpServerLog -KnowledgeBase Contoso -Stdio -Tail 20             # shows "initialize from <client>"
 ```
 
