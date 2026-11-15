@@ -21,8 +21,8 @@ module version as tag (for example `0.1.0`) and `latest` for stable versions, fo
 
 ## Image contents
 
-- Base image `mcr.microsoft.com/dotnet/runtime-deps:8.0-bookworm-slim`.
-- PowerShell from the official release archive for the target architecture (`PWSH_VERSION`, default 7.4.6).
+- Base image `mcr.microsoft.com/dotnet/runtime-deps:10.0-trixie-slim`.
+- PowerShell from the official release archive for the target architecture (`PWSH_VERSION`, default 7.6.10).
 - PSMcpKnowledgeBase installed for all users with PSResourceGet by `docker/Install-PSMcpKnowledgeBase.ps1`.
 - Entry point `docker/entrypoint.ps1`, which creates the knowledge base if needed, imports seed documents and starts
   `Start-McpServer -Transport Http -ListenAddress '*' -Foreground`.
@@ -79,7 +79,7 @@ docker build -f docker/Dockerfile --build-arg PSMCPKB_VERSION=0.1.0 -t psmcpkb .
 | --- | --- | --- |
 | `PSMCPKB_SOURCE` | `PSGallery` or `Local` | `PSGallery` |
 | `PSMCPKB_VERSION` | module version, empty for the latest stable version; prerelease versions such as `0.2.0-preview0003` are supported | empty |
-| `PWSH_VERSION` | PowerShell version | `7.4.6` |
+| `PWSH_VERSION` | PowerShell version | `7.6.10` |
 
 When a specific version is requested from the Gallery, the installation is retried for up to ten minutes, because a
 freshly published version can take a few minutes to become available.

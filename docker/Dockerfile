@@ -10,7 +10,7 @@
 # Run:
 #   docker run -p 8080:8080 -e PSMCPKB_API_KEY=change-me -v psmcpkb-data:/data psmcpkb
 
-ARG PWSH_VERSION=7.4.6
+ARG PWSH_VERSION=7.6.10
 # Set by BuildKit for each target platform (amd64, arm64). Do not give it a default: a default
 # replaces the automatic value, and a multi-platform build would put the x64 PowerShell into
 # the arm64 image.
@@ -27,13 +27,18 @@ ADD https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/
 
 FROM pwsh-${TARGETARCH} AS pwsh
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-trixie-slim
+
+# Pick up security fixes published after the base image was built.
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
 # SHA-256 of the PowerShell release archives (hashes.sha256 of the GitHub release). Update them
 # together with PWSH_VERSION; the build fails when the downloaded archive does not match.
-ARG PWSH_SHA256_AMD64=6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e157561
-ARG PWSH_SHA256_ARM64=c0159b03e85f44ae1e7697818a011558da6c813d0aae848bf5ac13bf435d8624
+ARG PWSH_SHA256_AMD64=e261cabc91c78a9afe8d1e5f24731ab0d38204735ab2ec94b0af55102652e10d
+ARG PWSH_SHA256_ARM64=439432cdecf4418413b9a8f547e3ab4d9b40e8e4258913ec3d15fc92c67a9235
 
 # PSGallery (default) or Local (nupkg files in docker/packages, e.g. from ./build.ps1 -Tasks pack).
 ARG PSMCPKB_SOURCE=PSGallery
