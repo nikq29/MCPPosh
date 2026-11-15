@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Connect identity provider such as Microsoft Entra ID next to API keys and publishes
   `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
   The issuer must use https (http only for localhost), tokens need a scope or app roles (ID tokens are rejected), and
-  the signing keys are refreshed daily.
+  the signing keys are refreshed daily. Like API key servers, OAuth servers accept browser clients from any origin.
 - Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
   `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
   portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has
@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Publish-McpKnowledgeBase` stops when the share holds documents that do not exist locally and were not published
   from this computer, for example notes that agents saved with `add_note`. Before, it uploaded the local manifest
   and removed those notes from the server (and deleted their files with `-Prune`). `-Force` replaces them.
+  The check runs again right before the manifest is uploaded, so a note saved during a long upload is kept too.
+- Background HTTP servers start when the knowledge base path, origins or OAuth settings contain curly apostrophes
+  (U+2019, which macOS types in folder names), and the commands of `Get-McpClientConfig` stay valid for such paths
+  on Windows. PowerShell treats these characters as single quotes, so the quoted values ended early.
+- Successful `/health` requests (Azure probes every 30 seconds) are no longer written to the server log, which is
+  never rotated.
 
 ### Security
 

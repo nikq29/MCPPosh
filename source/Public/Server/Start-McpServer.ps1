@@ -204,7 +204,9 @@ function Start-McpServer {
     $stdoutLog = Join-Path -Path $logDirectory -ChildPath "server-$Port.stdout.log"
     $stderrLog = Join-Path -Path $logDirectory -ChildPath "server-$Port.stderr.log"
 
-    $quote = { param($Value) "'" + ([string]$Value).Replace("'", "''") + "'" }
+    # PowerShell also ends single-quoted strings at the curly quotes U+2018-U+201B (macOS types U+2019 in folder
+    # names); this escapes all of them.
+    $quote = { param($Value) "'" + [System.Management.Automation.Language.CodeGeneration]::EscapeSingleQuotedStringContent([string]$Value) + "'" }
     $command = [System.Text.StringBuilder]::new()
     $null = $command.Append("`$ErrorActionPreference = 'Stop'; `$ProgressPreference = 'SilentlyContinue'; ")
     $null = $command.Append("Import-Module -Name $(& $quote $script:ModuleManifestPath) -Force; ")

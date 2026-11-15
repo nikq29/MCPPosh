@@ -38,6 +38,18 @@ Describe 'ConvertTo-McpShellArgument' {
         }
     }
 
+    It 'escapes the curly quotes PowerShell also treats as single quotes' {
+        InModuleScope PSMcpKnowledgeBase {
+            $value = "C:\Users\Bob$([char]0x2019)s KB$([char]0x2018); Get-Process"
+            $quoted = ConvertTo-McpShellArgument -Value $value -Shell PowerShell
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput("Write-Output $quoted", [ref]$tokens, [ref]$errors)
+            $errors | Should -BeNullOrEmpty
+            $ast.EndBlock.Statements[0].PipelineElements[0].CommandElements[1].Value | Should -Be $value
+        }
+    }
+
     It 'uses PowerShell quoting on Windows and POSIX quoting elsewhere by default' {
         InModuleScope PSMcpKnowledgeBase {
             $expected = if ($IsWindows) { "'it''s'" } else { "'it'\''s'" }

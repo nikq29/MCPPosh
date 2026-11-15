@@ -129,6 +129,8 @@ function Start-McpHttpServer {
             finally {
                 try { $httpContext.Response.Close() } catch { $null = $_ }
             }
+            # Health probes (every 30 s in Azure) would fill the never-rotated log on the share; log them only when they fail.
+            if ($httpContext.Request.Url.AbsolutePath -eq '/health' -and $status -eq 200) { continue }
             Write-McpLog -Context $Context -Level DEBUG -Message ('{0} {1} -> {2} ({3} ms, {4})' -f $httpContext.Request.HttpMethod, $httpContext.Request.Url.AbsolutePath, $status, $watch.ElapsedMilliseconds, $httpContext.Request.RemoteEndPoint)
         }
     }

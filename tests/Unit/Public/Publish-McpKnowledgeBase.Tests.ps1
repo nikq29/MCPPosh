@@ -70,6 +70,28 @@ Describe 'Publish-McpKnowledgeBase' {
         }
     }
 
+    It 'checks again before the manifest upload, so a note saved during the upload is not dropped' {
+        InModuleScope PSMcpKnowledgeBase {
+            $downloads = [System.Collections.Generic.List[int]]::new()
+            $uploads = [System.Collections.Generic.List[string]]::new()
+            Mock Assert-McpAzStorageModule { }
+            Mock New-AzStorageContext { [pscustomobject]@{ StorageAccountName = 'acct' } }
+            Mock Get-AzStorageFile { $null }
+            Mock New-AzStorageDirectory { }
+            Mock Set-AzStorageFileContent { $uploads.Add($Path) }
+            # The first download sees no agent notes; an agent saves one while the documents are uploaded.
+            Mock Get-AzStorageFileContent {
+                $downloads.Add(1)
+                if ($downloads.Count -ge 2) { Set-Content -LiteralPath $Destination -Value '{"documents":[{"id":"late-abc123","title":"Late note","sourceType":"Agent"}]}' }
+            }
+
+            { Publish-McpKnowledgeBase -Name Source -StorageAccountName acct -StorageAccountKey 'a2V5' -ShareName psmcpkb -RemoteName Race } | Should -Throw "*'Late note' (late-abc123)*"
+            $downloads.Count | Should -Be 2
+            $uploads | Should -Not -Contain 'knowledgebases/Race/manifest.json'
+            @($uploads | Where-Object { $_ -like 'knowledgebases/Race/documents/*' }).Count | Should -BeGreaterThan 0
+        }
+    }
+
     It 'reads the storage account key from the resource group' {
         InModuleScope PSMcpKnowledgeBase {
             Mock Assert-McpAzStorageModule { }

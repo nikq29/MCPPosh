@@ -129,4 +129,20 @@ Describe 'Start-McpServer' {
             { Start-McpServer -KnowledgeBase Srv -Port (Get-McpFreePort) -StartTimeoutSeconds 5 } | Should -Throw '*boom: listener failed*'
         }
     }
+
+    It 'quotes the background command so values with curly quotes (macOS folder names) survive' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Start-Process { [System.Diagnostics.Process]::Start((Get-McpPwshPath), '-NoProfile -Command exit 1') }
+            $origin = "https://kb.example.com/Bob$([char]0x2019)s$([char]0x2018); Get-Process"
+            { Start-McpServer -KnowledgeBase Srv -Port (Get-McpFreePort) -AllowedOrigin $origin -StartTimeoutSeconds 5 } | Should -Throw
+            Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+                $encoded = $ArgumentList[[array]::IndexOf([object[]]$ArgumentList, '-EncodedCommand') + 1]
+                $command = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($encoded))
+                $tokens = $null
+                $errors = $null
+                $ast = [System.Management.Automation.Language.Parser]::ParseInput($command, [ref]$tokens, [ref]$errors)
+                $errors.Count -eq 0 -and $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $node.Value -eq $origin }, $true).Count -eq 1
+            }
+        }
+    }
 }
