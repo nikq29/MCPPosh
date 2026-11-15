@@ -5,6 +5,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- OAuth sign-in behind Azure Container Apps: the protected resource metadata and the `WWW-Authenticate` header used
+  the container port (`https://<app>:8080/...`) because the ingress sends no `X-Forwarded-Host`, so MCP clients such
+  as claude.ai could not find the authorization server and opened `/authorize` on the server (404). The public URL
+  now comes from the `Host` header.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added

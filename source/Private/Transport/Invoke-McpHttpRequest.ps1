@@ -66,6 +66,8 @@ function Invoke-McpHttpRequest {
     $scheme = ([string]$request.Headers['X-Forwarded-Proto'] -split ',')[0].Trim().ToLowerInvariant()
     if ($scheme -notin 'http', 'https') { $scheme = $request.Url.Scheme }
     $authority = ([string]$request.Headers['X-Forwarded-Host'] -split ',')[0].Trim()
+    # Then the Host header: Url.Authority adds the local port (8080 in the container) when Host has none.
+    if ($authority -notmatch '^[A-Za-z0-9.\-]+(:\d{1,5})?$') { $authority = [string]$request.Headers['Host'] }
     if ($authority -notmatch '^[A-Za-z0-9.\-]+(:\d{1,5})?$') { $authority = $request.Url.Authority }
     $publicBaseUrl = "${scheme}://$authority"
 

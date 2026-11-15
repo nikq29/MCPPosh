@@ -183,6 +183,9 @@ Describe 'Invoke-McpHttpRequest' {
             $forwarded.resource | Should -Be 'https://kb.example.com/mcp'
             $spoofed = (Invoke-TestHttp -Path '/.well-known/oauth-protected-resource/mcp' -OAuth $script:OAuth -Headers @{ 'X-Forwarded-Proto' = 'javascript'; 'X-Forwarded-Host' = 'evil.example.com", x="y' }).Body | ConvertFrom-Json
             $spoofed.resource | Should -Be "$($script:Base)/mcp"
+            # Azure Container Apps sends X-Forwarded-Proto but no X-Forwarded-Host; Url.Authority would add the local port.
+            $proxied = (Invoke-TestHttp -Path '/.well-known/oauth-protected-resource/mcp' -OAuth $script:OAuth -Headers @{ 'X-Forwarded-Proto' = 'https'; Host = 'localhost' }).Body | ConvertFrom-Json
+            $proxied.resource | Should -Be 'https://localhost/mcp'
         }
 
         It 'points unauthorized clients to the metadata and requires a token even without API keys' {
