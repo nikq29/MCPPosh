@@ -52,7 +52,16 @@ function Invoke-McpToolCall {
     }
     catch {
         # Tool execution errors are reported to the model (isError) so it can correct itself.
-        Write-McpLog -Context $Context -Level WARN -Message "Tool $name failed: $($_.Exception.Message)"
-        New-McpToolResult -Text "Error: $($_.Exception.Message)" -IsError
+        # Only argument errors (written for the model) are passed on; unexpected exceptions can contain
+        # file system paths or other internals and stay in the server log.
+        $exception = $_.Exception
+        if ($exception -is [System.ArgumentException]) {
+            Write-McpLog -Context $Context -Level WARN -Message "Tool $name failed: $($exception.Message)"
+            New-McpToolResult -Text "Error: $($exception.Message)" -IsError
+        }
+        else {
+            Write-McpLog -Context $Context -Level ERROR -Message "Tool $name failed: $($exception.GetType().FullName): $($exception.Message)"
+            New-McpToolResult -Text "Error: the tool $name failed because of an internal error." -IsError
+        }
     }
 }

@@ -35,8 +35,8 @@ function ConvertFrom-McpDocxFile {
     }
 
     $wordNs = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
-    $document = [System.Xml.XmlDocument]::new()
-    $document.LoadXml($documentXml)
+    # Word parts never contain a DTD; parsing without DTD processing blocks entity expansion bombs.
+    $document = ConvertTo-McpXmlDocument -Xml $documentXml -Description "'$Path' (word/document.xml)"
     $ns = [System.Xml.XmlNamespaceManager]::new($document.NameTable)
     $ns.AddNamespace('w', $wordNs)
 
@@ -44,8 +44,7 @@ function ConvertFrom-McpDocxFile {
     # but the style *name* is always the English built-in name ("heading 1", "Title").
     $headingLevels = @{}
     if ($stylesXml) {
-        $styles = [System.Xml.XmlDocument]::new()
-        $styles.LoadXml($stylesXml)
+        $styles = ConvertTo-McpXmlDocument -Xml $stylesXml -Description "'$Path' (word/styles.xml)"
         $styleNs = [System.Xml.XmlNamespaceManager]::new($styles.NameTable)
         $styleNs.AddNamespace('w', $wordNs)
         foreach ($style in $styles.SelectNodes('//w:style[@w:type="paragraph"]', $styleNs)) {

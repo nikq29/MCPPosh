@@ -136,7 +136,7 @@ function Get-McpClientConfig {
 
         if ($Client -eq 'ClaudeCode') {
             $envArgument = if ($env:MCPPOSH_HOME) { " -e MCPPOSH_HOME=$(ConvertTo-McpShellArgument $env:MCPPOSH_HOME)" } else { '' }
-            $command = "claude mcp add$envArgument $ServerName -- $(ConvertTo-McpShellArgument $pwsh) -NoLogo -NoProfile -NonInteractive -Command $(ConvertTo-McpShellArgument $serverCommand)"
+            $command = "claude mcp add$envArgument $(ConvertTo-McpShellArgument $ServerName) -- $(ConvertTo-McpShellArgument $pwsh) -NoLogo -NoProfile -NonInteractive -Command $(ConvertTo-McpShellArgument $serverCommand)"
         }
     }
     else {
@@ -183,7 +183,7 @@ function Get-McpClientConfig {
                 $entry['url'] = $endpoint
                 if ($keyValue) { $entry['headers'] = [ordered]@{ Authorization = "Bearer $keyValue" } }
                 $headerArgument = if ($keyValue) { ' --header ' + (ConvertTo-McpShellArgument "Authorization: Bearer $keyValue") } else { '' }
-                $command = "claude mcp add --transport http $ServerName $endpoint$headerArgument"
+                $command = "claude mcp add --transport http $(ConvertTo-McpShellArgument $ServerName) $(ConvertTo-McpShellArgument $endpoint)$headerArgument"
             }
             'VSCode' {
                 $entry['type'] = 'http'

@@ -63,9 +63,17 @@ Export-McpKnowledgeBase -Name Contoso -DestinationPath .\contoso-kb.zip
 Import-McpKnowledgeBase -Path .\contoso-kb.zip                       # restore under the original name
 Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name ContosoTest     # import as a copy
 Import-McpKnowledgeBase -Path .\contoso-kb.zip -Name Contoso -Force  # replace an existing knowledge base
+Import-McpKnowledgeBase -Path .\contoso-kb.zip -Force -TrustSource   # restore your own backup with its sources
 ```
 
 The import only extracts the expected files and rejects entries that would be written outside the target folder.
+
+Documents that were added from files or URLs keep their content, but are imported with the source type `Imported`.
+`Update-McpDocument` skips them: the paths and URLs in an archive are chosen by whoever created it, and reading them
+would copy files of your machine or pages of your internal network into the knowledge base. Use `-TrustSource` only
+for archives you created yourself, for example to restore a backup; the documents then keep the source types `File`
+and `Url` and are updated from their sources again. Otherwise add the sources again with `Add-McpDocument` and remove
+the imported copies.
 
 ## Publish to Azure Files
 

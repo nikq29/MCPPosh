@@ -100,6 +100,10 @@ Only available when the server runs with `-AllowWrite`. Stores a Markdown note i
 Notes get the source type `Agent` and the tag `agent-note`. A note with the same title is updated. The result reports
 whether the note was created, updated or unchanged, together with its document id.
 
+A knowledge base holds at most 1000 agent notes with at most 10 million characters in total, and a server accepts at
+most 30 notes per minute. Beyond these limits the tool returns an error result (`isError`) that explains the limit;
+updating an existing note with the same title still works. See [Security](security.md#write-access).
+
 ## Write access
 
 By default agents can only read. Start the server with `-AllowWrite` (or the client configuration with
@@ -141,15 +145,16 @@ Protocol errors are returned as JSON-RPC errors:
 | Code | Meaning |
 | --- | --- |
 | -32700 | parse error: the message is not valid JSON |
-| -32600 | invalid request (wrong `jsonrpc` version, invalid id, empty batch, unsupported protocol version header) |
+| -32600 | invalid request (wrong `jsonrpc` version, invalid id, empty batch, batch with more than 100 messages, unsupported protocol version header) |
 | -32601 | method not found |
 | -32602 | invalid params, unknown tool, `add_note` without write access |
-| -32603 | internal error |
+| -32603 | internal error; details are written to the server log only |
 | -32002 | resource not found |
 | -32001 | unauthorized (HTTP transport without a valid API key) |
 
 Problems while running a tool, for example a missing `query` or an unknown document id, are returned as a normal tool
-result with `isError: true`, so the model can correct the call.
+result with `isError: true`, so the model can correct the call. Unexpected failures (for example file system errors)
+are reported as a generic tool error; the details are only written to the server log.
 
 ## Example session
 

@@ -10,11 +10,38 @@ AfterAll {
 }
 
 Describe 'ConvertTo-McpShellArgument' {
-    It 'leaves safe values unchanged and quotes others' {
+    It 'leaves safe values unchanged' {
         InModuleScope MCPPosh {
             ConvertTo-McpShellArgument -Value 'mcpposh-docs' | Should -Be 'mcpposh-docs'
-            $quoted = ConvertTo-McpShellArgument -Value "Import-Module 'x'; Start"
-            if ($IsWindows) { $quoted | Should -Be "`"Import-Module 'x'; Start`"" } else { $quoted | Should -Be "'Import-Module '\''x'\''; Start'" }
+            ConvertTo-McpShellArgument -Value 'https://docs.example.com/mcp' -Shell PowerShell | Should -Be 'https://docs.example.com/mcp'
+        }
+    }
+
+    It 'quotes values for POSIX shells' {
+        InModuleScope MCPPosh {
+            ConvertTo-McpShellArgument -Value "Import-Module 'x'; Start" -Shell Posix | Should -Be "'Import-Module '\''x'\''; Start'"
+            ConvertTo-McpShellArgument -Value 'a $(id) `b`' -Shell Posix | Should -Be "'a `$(id) ``b``'"
+        }
+    }
+
+    It 'quotes values for PowerShell so that nothing is expanded' {
+        InModuleScope MCPPosh {
+            ConvertTo-McpShellArgument -Value "Import-Module 'x'; Start" -Shell PowerShell | Should -Be "'Import-Module ''x''; Start'"
+            $quoted = ConvertTo-McpShellArgument -Value 'C:\KB $(Get-Process) `n "x"' -Shell PowerShell
+            $quoted | Should -Be "'C:\KB `$(Get-Process) ``n `"x`"'"
+            # Parsing the quoted value as PowerShell yields the original string without running anything.
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput("Write-Output $quoted", [ref]$tokens, [ref]$errors)
+            $errors | Should -BeNullOrEmpty
+            $ast.EndBlock.Statements[0].PipelineElements[0].CommandElements[1].Value | Should -Be 'C:\KB $(Get-Process) `n "x"'
+        }
+    }
+
+    It 'uses PowerShell quoting on Windows and POSIX quoting elsewhere by default' {
+        InModuleScope MCPPosh {
+            $expected = if ($IsWindows) { "'it''s'" } else { "'it'\''s'" }
+            ConvertTo-McpShellArgument -Value "it's" | Should -Be $expected
         }
     }
 }

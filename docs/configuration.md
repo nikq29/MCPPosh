@@ -58,7 +58,7 @@ Document record:
 | `id` | document id, for example `installation-guide-3f9a1c` |
 | `title` | title |
 | `format` | converter that produced the content (`Markdown`, `Html`, `Docx`, `Pdf`, `Csv`, `Json`, `Yaml`, `Xml`, `Code`, `Text` or a custom converter) |
-| `sourceType` | `File`, `Url`, `Inline` or `Agent` |
+| `sourceType` | `File`, `Url`, `Inline`, `Agent` or `Imported` (file and URL documents from an archive imported without `-TrustSource`) |
 | `source` | full file path or URL, empty for inline documents and agent notes |
 | `tags` | tags |
 | `hash` | SHA-256 of the normalized content |
@@ -100,7 +100,12 @@ name, so only changed files are uploaded the next time.
 | `list_documents` page size | 100 by default, 1-500 |
 | `resources/list` page size | 500 |
 | `add_note` | title at most 200, content at most 200000 characters |
-| HTTP request body | at most 10 MB |
+| Agent notes (`add_note`) | at most 1000 notes and 10 million characters per knowledge base, 30 notes per minute per server |
+| HTTP request body | at most 10 MB, `Content-Type: application/json`, complete within 30 seconds |
+| JSON-RPC batch | at most 100 messages |
+| `Import-McpKnowledgeBase` | at most 100000 archive entries and 1 GB uncompressed content |
+| Word (.docx) import | at most 64 MB per decompressed part, no document type definitions (DTDs) |
+| URL import (`-Url`) | at most 100 MB per download |
 | URL import | at most 5 redirects, `http` and `https` only |
 | Stop words | English and German |
 
