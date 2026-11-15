@@ -35,6 +35,15 @@ az acr build -r myacr -t psmcpkb:0.1.0 -f docker/Dockerfile --build-arg PSMCPKB_
 
 ## 2. Deploy
 
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fnikq29%2FPSMcpKnowledgeBase%2Fmain%2Fdeploy%2Fazure%2Fazuredeploy.json)
+
+The button opens the template in the Azure portal: choose a subscription, a resource group and a region, enter an
+API key of at least 16 characters, and adjust the other [template parameters](#template-parameters) if needed. The
+image defaults to `ghcr.io/nikq29/psmcpkb:latest`; enter a fixed version such as `ghcr.io/nikq29/psmcpkb:0.1.1`
+for production. The `mcpEndpoint` output of the deployment is the URL for the AI clients. To publish knowledge
+afterwards, continue with [step 3](#3-publish-and-manage-knowledge).
+
+With `deploy.ps1` you can deploy and publish in one step, and an API key is generated for you.
 Requirements: Az PowerShell (`Install-PSResource Az`) and the [Bicep CLI](https://aka.ms/bicep-install).
 
 ```powershell
@@ -65,7 +74,7 @@ Alternatively deploy the template with the Azure CLI:
 
 ```bash
 az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
-  -p image=ghcr.io/nikq29/psmcpkb:latest apiKey=<at least 16 characters> knowledgeBase=Contoso
+  -p apiKey=<at least 16 characters> knowledgeBase=Contoso
 ```
 
 ### Template parameters
@@ -74,7 +83,7 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 | --- | --- | --- |
 | `name` | base name of all resources | `psmcpkb` |
 | `location` | Azure region | resource group location |
-| `image` | container image | required |
+| `image` | container image | `ghcr.io/nikq29/psmcpkb:latest` |
 | `apiKey` | API key(s), comma-separated, at least 16 characters (secure) | required |
 | `knowledgeBase` | knowledge base name on the share | `Default` |
 | `knowledgeBaseDescription` | description used when the knowledge base is created | empty |
