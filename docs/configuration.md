@@ -9,6 +9,9 @@ JSON and Markdown files.
 | --- | --- | --- |
 | `PSMCPKB_HOME` | all cmdlets | data directory; default `~/.psmcpkb` (in the container `/data`) |
 | `PSMCPKB_API_KEY` | `Start-McpServer`, `Restart-McpServer` | comma-separated API keys used when `-ApiKey` is not specified |
+| `PSMCPKB_OAUTH_ISSUER` | `Start-McpServer` | OAuth issuer URL used when `-OAuthIssuer` is not specified |
+| `PSMCPKB_OAUTH_AUDIENCE` | `Start-McpServer` | comma-separated accepted audiences used when `-OAuthAudience` is not specified |
+| `PSMCPKB_OAUTH_SCOPE` | `Start-McpServer` | required scope used when `-OAuthScope` is not specified |
 
 Additional variables of the container image (`PSMCPKB_KNOWLEDGEBASE`, `PSMCPKB_DESCRIPTION`, `PSMCPKB_PORT`,
 `PSMCPKB_ALLOW_WRITE`, `PSMCPKB_ALLOW_ANONYMOUS`, `PSMCPKB_ALLOWED_ORIGINS`, `PSMCPKB_IMPORT_PATH`) are described in
@@ -75,8 +78,9 @@ terms) and `tf` (term frequencies). Index files are rebuilt automatically when t
 ### servers/&lt;knowledge base&gt;-&lt;port&gt;.json
 
 Written by running HTTP servers and removed when they stop: `pid`, `processStartTime`, `knowledgeBase`, `kbPath`,
-`transport`, `port`, `listenAddress`, `url`, `allowWrite`, `authRequired`, `allowAnonymous`, `allowedOrigins`,
-`logFile`, `startedAt` and `version`. API keys are never written.
+`transport`, `port`, `listenAddress`, `url`, `allowWrite`, `authRequired`, `apiKeyRequired`, `oauthIssuer`,
+`oauthAudience`, `oauthScope`, `allowAnonymous`, `allowedOrigins`, `logFile`, `startedAt` and `version`. API keys are
+never written; the OAuth settings are not secret and let `Restart-McpServer` keep them.
 
 ### .publish/
 

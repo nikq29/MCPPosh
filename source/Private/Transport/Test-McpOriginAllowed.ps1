@@ -40,7 +40,8 @@ function Test-McpOriginAllowed {
             return $false
         }
     }
-    # Network servers: with an API key a foreign page cannot authenticate, so any origin may try.
-    # Anonymous servers (behind a gateway, possibly with cookie authentication) need an explicit list.
-    @($Settings.ApiKeys | Where-Object { $_ }).Count -gt 0
+    # Network servers: with an API key or OAuth a foreign page cannot authenticate (no cookies, the token is sent
+    # explicitly), so any origin may try. Anonymous servers (behind a gateway, possibly with cookie authentication)
+    # need an explicit list.
+    @($Settings.ApiKeys | Where-Object { $_ }).Count -gt 0 -or [bool]$Settings.OAuth
 }

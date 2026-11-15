@@ -5,11 +5,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- OAuth sign-in for HTTP servers: `Start-McpServer -OAuthIssuer -OAuthAudience -OAuthScope` (or
+  `PSMCPKB_OAUTH_ISSUER`, `PSMCPKB_OAUTH_AUDIENCE`, `PSMCPKB_OAUTH_SCOPE`) accepts JWT access tokens of an OpenID
+  Connect identity provider such as Microsoft Entra ID next to API keys and publishes
+  `/.well-known/oauth-protected-resource` so MCP clients can sign in. `Restart-McpServer` keeps the OAuth settings.
+  The issuer must use https (http only for localhost), tokens need a scope or app roles (ID tokens are rejected), and
+  the signing keys are refreshed daily. Like API key servers, OAuth servers accept browser clients from any origin.
+- Azure template: `oauthClientId`/`oauthScope` enable Entra ID sign-in for the tenant of the deployment, and
+  `allowAnonymous` is now available; `apiKey` is optional when one of them is used. The Deploy to Azure button opens a
+  portal form (`createUiDefinition.json`) that lists the app registrations you own. `deploy.ps1` has
+  `-OAuthClientId`, `-OAuthScope`, `-AllowAnonymous` and `-AllowedOrigin`.
+
 ### Changed
 
 - Releases move the `Unreleased` entries of `CHANGELOG.md` into a version section before the tag is created; the
   release workflow stops when the section is missing and uses it for the GitHub release and the module manifest.
   The sections of 0.1.0, 0.1.1 and 0.2.0 were added afterwards.
+
+### Fixed
+
+- `Publish-McpKnowledgeBase` checks the share for documents that do not exist locally again right before the
+  manifest is uploaded, so a note that an agent saves during a long upload is kept too.
+- Background HTTP servers start when the knowledge base path, origins or OAuth settings contain curly apostrophes
+  (U+2019, which macOS types in folder names), and the commands of `Get-McpClientConfig` stay valid for such paths
+  on Windows. PowerShell treats these characters as single quotes, so the quoted values ended early.
+- Successful `/health` requests (Azure probes every 30 seconds) are no longer written to the server log, which is
+  never rotated.
 
 ## [0.2.0] - 2026-11-15
 

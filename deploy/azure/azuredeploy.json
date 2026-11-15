@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.49.2.45890",
-      "templateHash": "5279490799267104163"
+      "templateHash": "7487305905822205308"
     }
   },
   "parameters": {
@@ -34,9 +34,9 @@
     },
     "apiKey": {
       "type": "securestring",
-      "minLength": 16,
+      "defaultValue": "",
       "metadata": {
-        "description": "API key clients must send as \"Authorization: Bearer <key>\". Several keys can be separated by commas."
+        "description": "API key clients must send as \"Authorization: Bearer <key>\" (at least 16 characters). Several keys can be separated by commas. Leave empty only with oauthClientId or allowAnonymous; without any of them the server does not start."
       }
     },
     "knowledgeBase": {
@@ -58,6 +58,27 @@
       "defaultValue": false,
       "metadata": {
         "description": "Enable the add_note tool so AI agents can store new knowledge. Keep maxReplicas at 1 when enabled."
+      }
+    },
+    "allowAnonymous": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Accept requests without API key or token. Only behind a gateway that authenticates every request, e.g. Container Apps authentication or API Management."
+      }
+    },
+    "oauthClientId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Client ID of a Microsoft Entra app registration in this tenant. Clients can then sign in with OAuth in addition to the API key. Empty: OAuth off."
+      }
+    },
+    "oauthScope": {
+      "type": "string",
+      "defaultValue": "access_as_user",
+      "metadata": {
+        "description": "Scope the app registration exposes and the access tokens must contain (short name, e.g. access_as_user)."
       }
     },
     "allowedOrigins": {
@@ -120,6 +141,10 @@
     "storageAccountName": "[take(format('{0}{1}', replace(toLower(parameters('name')), '-', ''), variables('suffix')), 24)]",
     "shareName": "psmcpkb",
     "useRegistry": "[not(empty(parameters('registryServer')))]",
+    "useApiKey": "[not(empty(parameters('apiKey')))]",
+    "apiKeySecrets": "[if(variables('useApiKey'), createArray(createObject('name', 'api-key', 'value', parameters('apiKey'))), createArray())]",
+    "apiKeyEnv": "[if(variables('useApiKey'), createArray(createObject('name', 'PSMCPKB_API_KEY', 'secretRef', 'api-key')), createArray())]",
+    "oauthEnv": "[if(empty(parameters('oauthClientId')), createArray(), createArray(createObject('name', 'PSMCPKB_OAUTH_ISSUER', 'value', format('{0}{1}/v2.0', environment().authentication.loginEndpoint, tenant().tenantId)), createObject('name', 'PSMCPKB_OAUTH_AUDIENCE', 'value', parameters('oauthClientId')), createObject('name', 'PSMCPKB_OAUTH_SCOPE', 'value', format('api://{0}/{1}', parameters('oauthClientId'), parameters('oauthScope')))))]",
     "registrySecrets": "[if(variables('useRegistry'), createArray(createObject('name', 'registry-password', 'value', parameters('registryPassword'))), createArray())]"
   },
   "resources": [
@@ -220,7 +245,7 @@
             "transport": "http",
             "allowInsecure": false
           },
-          "secrets": "[concat(createArray(createObject('name', 'api-key', 'value', parameters('apiKey'))), variables('registrySecrets'))]",
+          "secrets": "[concat(variables('apiKeySecrets'), variables('registrySecrets'))]",
           "registries": "[if(variables('useRegistry'), createArray(createObject('server', parameters('registryServer'), 'username', parameters('registryUsername'), 'passwordSecretRef', 'registry-password')), createArray())]"
         },
         "template": {
@@ -232,28 +257,7 @@
                 "cpu": "[json('0.5')]",
                 "memory": "1Gi"
               },
-              "env": [
-                {
-                  "name": "PSMCPKB_API_KEY",
-                  "secretRef": "api-key"
-                },
-                {
-                  "name": "PSMCPKB_KNOWLEDGEBASE",
-                  "value": "[parameters('knowledgeBase')]"
-                },
-                {
-                  "name": "PSMCPKB_DESCRIPTION",
-                  "value": "[parameters('knowledgeBaseDescription')]"
-                },
-                {
-                  "name": "PSMCPKB_ALLOW_WRITE",
-                  "value": "[string(parameters('allowWrite'))]"
-                },
-                {
-                  "name": "PSMCPKB_ALLOWED_ORIGINS",
-                  "value": "[parameters('allowedOrigins')]"
-                }
-              ],
+              "env": "[concat(variables('apiKeyEnv'), createArray(createObject('name', 'PSMCPKB_KNOWLEDGEBASE', 'value', parameters('knowledgeBase')), createObject('name', 'PSMCPKB_DESCRIPTION', 'value', parameters('knowledgeBaseDescription')), createObject('name', 'PSMCPKB_ALLOW_WRITE', 'value', string(parameters('allowWrite'))), createObject('name', 'PSMCPKB_ALLOW_ANONYMOUS', 'value', string(parameters('allowAnonymous'))), createObject('name', 'PSMCPKB_ALLOWED_ORIGINS', 'value', parameters('allowedOrigins'))), variables('oauthEnv'))]",
               "volumeMounts": [
                 {
                   "volumeName": "data",

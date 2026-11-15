@@ -2,7 +2,7 @@
 //
 // Creates: Log Analytics workspace, storage account with an Azure Files share (the knowledge
 // base storage), a Container Apps environment with the share mounted at /data, and the
-// PSMcpKnowledgeBase container app with HTTPS ingress and an API key.
+// PSMcpKnowledgeBase container app with HTTPS ingress, an API key and/or Microsoft Entra ID sign-in (OAuth).
 //
 // Deploy with deploy.ps1, the "Deploy to Azure" button (azuredeploy.json) or:
 //   az deployment group create -g <rg> -f main.bicep -p apiKey=<key>
@@ -22,10 +22,9 @@ param location string = resourceGroup().location
 @description('Container image, e.g. ghcr.io/nikq29/psmcpkb:0.1.1 (a fixed version) or <registry>.azurecr.io/psmcpkb:0.1.0.')
 param image string = 'ghcr.io/nikq29/psmcpkb:latest'
 
-@description('API key clients must send as "Authorization: Bearer <key>". Several keys can be separated by commas.')
+@description('API key clients must send as "Authorization: Bearer <key>" (at least 16 characters). Several keys can be separated by commas. Leave empty only with oauthClientId or allowAnonymous; without any of them the server does not start.')
 @secure()
-@minLength(16)
-param apiKey string
+param apiKey string = ''
 
 @description('Name of the knowledge base on the share (see Publish-McpKnowledgeBase -RemoteName).')
 param knowledgeBase string = 'Default'
@@ -35,6 +34,15 @@ param knowledgeBaseDescription string = ''
 
 @description('Enable the add_note tool so AI agents can store new knowledge. Keep maxReplicas at 1 when enabled.')
 param allowWrite bool = false
+
+@description('Accept requests without API key or token. Only behind a gateway that authenticates every request, e.g. Container Apps authentication or API Management.')
+param allowAnonymous bool = false
+
+@description('Client ID of a Microsoft Entra app registration in this tenant. Clients can then sign in with OAuth in addition to the API key. Empty: OAuth off.')
+param oauthClientId string = ''
+
+@description('Scope the app registration exposes and the access tokens must contain (short name, e.g. access_as_user).')
+param oauthScope string = 'access_as_user'
 
 @description('Comma-separated browser origins allowed via CORS (optional).')
 param allowedOrigins string = ''
@@ -67,6 +75,35 @@ var suffix = uniqueString(resourceGroup().id, name)
 var storageAccountName = take('${replace(toLower(name), '-', '')}${suffix}', 24)
 var shareName = 'psmcpkb'
 var useRegistry = !empty(registryServer)
+var useApiKey = !empty(apiKey)
+var apiKeySecrets = useApiKey ? [
+  {
+    name: 'api-key'
+    value: apiKey
+  }
+] : []
+var apiKeyEnv = useApiKey ? [
+  {
+    name: 'PSMCPKB_API_KEY'
+    secretRef: 'api-key'
+  }
+] : []
+// v2 tokens of the tenant this template is deployed to; they carry the client ID as audience. v1 tokens have another
+// issuer and are rejected (the app registration must request v2 tokens, see docs/hosting-azure.md).
+var oauthEnv = empty(oauthClientId) ? [] : [
+  {
+    name: 'PSMCPKB_OAUTH_ISSUER'
+    value: '${az.environment().authentication.loginEndpoint}${tenant().tenantId}/v2.0'
+  }
+  {
+    name: 'PSMCPKB_OAUTH_AUDIENCE'
+    value: oauthClientId
+  }
+  {
+    name: 'PSMCPKB_OAUTH_SCOPE'
+    value: 'api://${oauthClientId}/${oauthScope}'
+  }
+]
 var registrySecrets = useRegistry ? [
   {
     name: 'registry-password'
@@ -152,12 +189,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         transport: 'http'
         allowInsecure: false
       }
-      secrets: concat([
-        {
-          name: 'api-key'
-          value: apiKey
-        }
-      ], registrySecrets)
+      secrets: concat(apiKeySecrets, registrySecrets)
       registries: useRegistry ? [
         {
           server: registryServer
@@ -175,11 +207,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
-          env: [
-            {
-              name: 'PSMCPKB_API_KEY'
-              secretRef: 'api-key'
-            }
+          env: concat(apiKeyEnv, [
             {
               name: 'PSMCPKB_KNOWLEDGEBASE'
               value: knowledgeBase
@@ -193,10 +221,14 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
               value: string(allowWrite)
             }
             {
+              name: 'PSMCPKB_ALLOW_ANONYMOUS'
+              value: string(allowAnonymous)
+            }
+            {
               name: 'PSMCPKB_ALLOWED_ORIGINS'
               value: allowedOrigins
             }
-          ]
+          ], oauthEnv)
           volumeMounts: [
             {
               volumeName: 'data'

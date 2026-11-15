@@ -45,6 +45,28 @@ Describe 'Restart-McpServer' {
         }
     }
 
+    It 'restarts OAuth servers with the stored OAuth settings and without an API key' {
+        InModuleScope PSMcpKnowledgeBase {
+            Mock Get-McpServerState {
+                [pscustomobject]@{ knowledgeBase = 'Srv'; kbPath = 'x'; port = 7103; listenAddress = '*'; authRequired = $true; apiKeyRequired = $false
+                    oauthIssuer = 'https://idp.example.com'; oauthAudience = @('a', 'api://a'); oauthScope = 'api://a/s'; Status = 'Stopped'; StateFile = 'x' }
+            }
+            Mock Remove-Item { }
+            Mock Start-McpServer { }
+            $previous = $env:PSMCPKB_API_KEY
+            $env:PSMCPKB_API_KEY = $null
+            try {
+                Restart-McpServer -Port 7103
+            }
+            finally {
+                $env:PSMCPKB_API_KEY = $previous
+            }
+            Should -Invoke Start-McpServer -Times 1 -Exactly -ParameterFilter {
+                $OAuthIssuer -eq 'https://idp.example.com' -and ($OAuthAudience -join ',') -eq 'a,api://a' -and $OAuthScope -eq 'api://a/s' -and -not $ApiKey
+            }
+        }
+    }
+
     It 'writes an error when no server matches' {
         Restart-McpServer -Port 7199 -ErrorAction SilentlyContinue -ErrorVariable err
         $err | Should -Not -BeNullOrEmpty

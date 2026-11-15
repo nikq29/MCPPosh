@@ -1,0 +1,275 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "name",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Base name",
+        "defaultValue": "psmcpkb",
+        "toolTip": "Base name for all resources.",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z0-9-]{3,20}$",
+          "validationMessage": "3 to 20 lowercase letters, digits and hyphens."
+        }
+      },
+      {
+        "name": "image",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Container image",
+        "defaultValue": "ghcr.io/nikq29/psmcpkb:latest",
+        "toolTip": "Use a fixed version such as ghcr.io/nikq29/psmcpkb:0.2.0 for production.",
+        "constraints": {
+          "required": true
+        }
+      },
+      {
+        "name": "knowledgeBase",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Knowledge base",
+        "defaultValue": "Default",
+        "toolTip": "Name of the knowledge base on the share (see Publish-McpKnowledgeBase -RemoteName).",
+        "constraints": {
+          "required": true
+        }
+      },
+      {
+        "name": "knowledgeBaseDescription",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Description",
+        "multiLine": true,
+        "toolTip": "Sent to AI agents as server instructions; used when the knowledge base is created.",
+        "constraints": {
+          "required": false
+        }
+      }
+    ],
+    "steps": [
+      {
+        "name": "auth",
+        "label": "Authentication",
+        "elements": [
+          {
+            "name": "oauthInfo",
+            "type": "Microsoft.Common.InfoBox",
+            "options": {
+              "style": "Info",
+              "text": "Clients can sign in with Microsoft Entra ID (OAuth), use an API key, or both. The app registration must expose an API scope and accept v2 access tokens.",
+              "uri": "https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/hosting-azure.md#sign-in-with-microsoft-entra-id"
+            }
+          },
+          {
+            "name": "oauthMode",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Sign-in with Microsoft Entra ID",
+            "defaultValue": "Off",
+            "toolTip": "Choose an app registration you own in this tenant, or enter the client ID of any app registration.",
+            "constraints": {
+              "allowedValues": [
+                { "label": "Off", "value": "none" },
+                { "label": "Choose one of my app registrations", "value": "pick" },
+                { "label": "Enter a client ID", "value": "manual" }
+              ],
+              "required": true
+            }
+          },
+          {
+            "name": "ownedApps",
+            "type": "Microsoft.Solutions.GraphApiControl",
+            "request": {
+              "method": "GET",
+              "path": "v1.0/me/ownedObjects/microsoft.graph.application?$select=appId,displayName"
+            }
+          },
+          {
+            "name": "appPicker",
+            "type": "Microsoft.Common.DropDown",
+            "label": "App registration",
+            "filter": true,
+            "toolTip": "App registrations in this tenant that you are an owner of.",
+            "visible": "[equals(steps('auth').oauthMode, 'pick')]",
+            "constraints": {
+              "allowedValues": "[map(steps('auth').ownedApps.value, (item) => parse(concat('{\"label\":\"', replace(item.displayName, '\"', ''), '\",\"description\":\"', item.appId, '\",\"value\":\"', item.appId, '\"}')))]",
+              "required": true
+            }
+          },
+          {
+            "name": "noOwnedApps",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": "[and(equals(steps('auth').oauthMode, 'pick'), empty(steps('auth').ownedApps.value))]",
+            "options": {
+              "style": "Warning",
+              "text": "You are not the owner of any app registration in this tenant. Enter a client ID instead, or create an app registration first.",
+              "uri": "https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/hosting-azure.md#sign-in-with-microsoft-entra-id"
+            }
+          },
+          {
+            "name": "clientId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Client ID",
+            "placeholder": "00000000-0000-0000-0000-000000000000",
+            "toolTip": "Application (client) ID of the app registration.",
+            "visible": "[equals(steps('auth').oauthMode, 'manual')]",
+            "constraints": {
+              "required": true,
+              "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "validationMessage": "A GUID such as 00000000-0000-0000-0000-000000000000."
+            }
+          },
+          {
+            "name": "oauthScope",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Scope",
+            "defaultValue": "access_as_user",
+            "toolTip": "Scope the app registration exposes (Expose an API); access tokens must contain it.",
+            "visible": "[not(equals(steps('auth').oauthMode, 'none'))]",
+            "constraints": {
+              "required": true,
+              "regex": "^[A-Za-z0-9._-]+$",
+              "validationMessage": "The short scope name, e.g. access_as_user."
+            }
+          },
+          {
+            "name": "apiKey",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "API key",
+              "confirmPassword": "Confirm API key"
+            },
+            "toolTip": "Clients send it as 'Authorization: Bearer <key>'. Several keys can be separated by commas. Optional when Entra ID sign-in or anonymous access is used.",
+            "options": {
+              "hideConfirmation": true
+            },
+            "constraints": {
+              "required": "[and(equals(steps('auth').oauthMode, 'none'), not(steps('auth').allowAnonymous))]",
+              "regex": "^(|.{16,})$",
+              "validationMessage": "At least 16 characters."
+            }
+          },
+          {
+            "name": "allowAnonymous",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Allow anonymous access",
+            "toolTip": "Accept requests without API key or token."
+          },
+          {
+            "name": "anonymousWarning",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": "[steps('auth').allowAnonymous]",
+            "options": {
+              "style": "Warning",
+              "text": "Everyone who knows the URL can read the knowledge base. Only use this behind a gateway that authenticates every request, for example Container Apps authentication or API Management."
+            }
+          }
+        ]
+      },
+      {
+        "name": "options",
+        "label": "Options",
+        "elements": [
+          {
+            "name": "allowWrite",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Allow AI agents to store notes (add_note)",
+            "toolTip": "Keep the maximum replicas at 1 when enabled."
+          },
+          {
+            "name": "allowedOrigins",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Allowed browser origins",
+            "placeholder": "https://app.example.com",
+            "toolTip": "Comma-separated origins allowed via CORS (optional).",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "minReplicas",
+            "type": "Microsoft.Common.Slider",
+            "label": "Minimum replicas",
+            "toolTip": "0 allows scale to zero (cold starts of a few seconds).",
+            "min": 0,
+            "max": 10,
+            "defaultValue": 1,
+            "showStepMarkers": false
+          },
+          {
+            "name": "maxReplicas",
+            "type": "Microsoft.Common.Slider",
+            "label": "Maximum replicas",
+            "min": 1,
+            "max": 10,
+            "defaultValue": 1,
+            "showStepMarkers": false
+          },
+          {
+            "name": "shareQuotaGiB",
+            "type": "Microsoft.Common.Slider",
+            "label": "File share quota",
+            "subLabel": "GiB",
+            "min": 1,
+            "max": 1024,
+            "defaultValue": 5,
+            "showStepMarkers": false
+          },
+          {
+            "name": "registryServer",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Container registry server",
+            "placeholder": "myregistry.azurecr.io",
+            "toolTip": "Only for private images. Leave empty for public images.",
+            "constraints": {
+              "required": false
+            }
+          },
+          {
+            "name": "registryUsername",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Registry user name",
+            "visible": "[not(empty(steps('options').registryServer))]",
+            "constraints": {
+              "required": true
+            }
+          },
+          {
+            "name": "registryPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "Registry password",
+              "confirmPassword": "Confirm registry password"
+            },
+            "visible": "[not(empty(steps('options').registryServer))]",
+            "options": {
+              "hideConfirmation": true
+            },
+            "constraints": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "name": "[basics('name')]",
+      "image": "[basics('image')]",
+      "knowledgeBase": "[basics('knowledgeBase')]",
+      "knowledgeBaseDescription": "[coalesce(basics('knowledgeBaseDescription'), '')]",
+      "apiKey": "[coalesce(steps('auth').apiKey, '')]",
+      "allowAnonymous": "[steps('auth').allowAnonymous]",
+      "oauthClientId": "[if(equals(steps('auth').oauthMode, 'pick'), steps('auth').appPicker, if(equals(steps('auth').oauthMode, 'manual'), steps('auth').clientId, ''))]",
+      "oauthScope": "[coalesce(steps('auth').oauthScope, 'access_as_user')]",
+      "allowWrite": "[steps('options').allowWrite]",
+      "allowedOrigins": "[coalesce(steps('options').allowedOrigins, '')]",
+      "minReplicas": "[steps('options').minReplicas]",
+      "maxReplicas": "[steps('options').maxReplicas]",
+      "shareQuotaGiB": "[steps('options').shareQuotaGiB]",
+      "registryServer": "[coalesce(steps('options').registryServer, '')]",
+      "registryUsername": "[coalesce(steps('options').registryUsername, '')]",
+      "registryPassword": "[coalesce(steps('options').registryPassword, '')]"
+    }
+  }
+}

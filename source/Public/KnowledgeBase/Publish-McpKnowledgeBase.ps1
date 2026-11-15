@@ -163,8 +163,10 @@ function Publish-McpKnowledgeBase {
 
         # Notes saved by agents on the server (add_note) exist only in the remote manifest, and uploading the local
         # manifest would drop them. Documents published from here before were removed locally on purpose.
-        if (-not $Force) {
+        $assertNoRemoteOnly = {
+            if ($Force) { return }
             $remoteManifestPath = Join-Path -Path $snapshot -ChildPath '.remote-manifest.json'
+            Remove-Item -LiteralPath $remoteManifestPath -Force -ErrorAction SilentlyContinue
             $null = Get-AzStorageFileContent -ShareName $ShareName -Path "$remoteRoot/manifest.json" -Destination $remoteManifestPath -Context $storageContext -Force -ErrorAction SilentlyContinue
             $remoteManifest = Read-McpJsonFile -Path $remoteManifestPath
             $localIds = @((Read-McpManifest -KbPath $snapshot)['documents'] | ForEach-Object { [string]$_.id })
@@ -173,6 +175,7 @@ function Publish-McpKnowledgeBase {
                 throw ("The share contains {0} document(s) that do not exist locally and were not published from here, for example notes saved by agents with add_note: {1}. Publishing would remove them from the server. Copy them to the local knowledge base first, or use -Force to replace them." -f $remoteOnly.Count, (($remoteOnly | ForEach-Object { "'$($_.title)' ($($_.id))" }) -join ', '))
             }
         }
+        . $assertNoRemoteOnly
 
         $uploaded = 0
         $skipped = 0
@@ -184,6 +187,9 @@ function Publish-McpKnowledgeBase {
                 $skipped++
                 continue
             }
+            # Uploading the documents can take minutes; check again right before the manifest replaces the remote one,
+            # so a note an agent saved in the meantime is not dropped.
+            if ($file.RelativePath -eq 'manifest.json') { . $assertNoRemoteOnly }
             Write-Verbose "Uploading $($file.RelativePath)"
             $null = Set-AzStorageFileContent -ShareName $ShareName -Source $file.FullPath -Path "$remoteRoot/$($file.RelativePath)" -Context $storageContext -Force
             $uploaded++

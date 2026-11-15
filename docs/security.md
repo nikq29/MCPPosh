@@ -26,9 +26,9 @@ stdin and stdout. They do not open network ports.
 
 - **Loopback by default**: servers listen on `localhost` unless `-ListenAddress` says otherwise. A loopback server
   without API key can be used by every local user and process of the machine; set `-ApiKey` on shared machines.
-- **API keys required on the network**: listening on any other address requires API keys. `-AllowAnonymous`
-  disables this check and must only be used behind a gateway that authenticates every request (for example Azure
-  Container Apps authentication or API Management).
+- **Authentication required on the network**: listening on any other address requires API keys or OAuth
+  (`-OAuthIssuer`). `-AllowAnonymous` disables this check and must only be used behind a gateway that
+  authenticates every request (for example Azure Container Apps authentication or API Management).
 - **Key handling**: keys are accepted as `Authorization: Bearer <key>` or `X-API-Key`, compared in constant time,
   never written to disk or to logs, and passed to background processes through the environment instead of the
   command line. Use long random keys, for example:
@@ -38,6 +38,15 @@ stdin and stdout. They do not open network ports.
   $key = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
   ```
 
+- **OAuth tokens**: with `-OAuthIssuer` the server accepts JSON Web Tokens signed with RS256 by the issuer's
+  published keys; `none` and HMAC algorithms are rejected, so the public key cannot be used to forge tokens. Issuer,
+  audience, expiry, not-before and the configured scope are checked; without `-OAuthScope` a token still needs a
+  `scp`, `scope` or `roles` claim, so ID tokens (sign-in proof, same audience) are rejected. The issuer must use
+  https (http only for localhost), because the signing keys are downloaded from it. Signing keys are downloaded over
+  the issuer's OpenID configuration, cached, refreshed daily (so keys the issuer withdraws stop working) and
+  downloaded again at most once per minute, so made-up key ids cannot make the server flood the identity provider.
+  Tokens are never logged or stored. The forwarded headers used for the
+  metadata URL are restricted to `http`/`https` and host names, so they cannot inject response headers.
 - **Key rotation**: configure several keys (`-ApiKey old, new` or `PSMCPKB_API_KEY=old,new`), switch the clients,
   then remove the old key.
 - **DNS rebinding protection**: loopback servers reject browser requests from non-local origins. Allow specific

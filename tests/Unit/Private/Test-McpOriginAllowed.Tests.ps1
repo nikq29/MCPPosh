@@ -29,9 +29,10 @@ Describe 'Test-McpOriginAllowed' {
 }
 
 Describe 'Test-McpOriginAllowed (network servers)' {
-    It 'accepts any origin only when the server requires an API key' {
+    It 'accepts any origin only when the server requires an API key or an OAuth token' {
         InModuleScope PSMcpKnowledgeBase {
             Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @('k1'); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
+            Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false; OAuth = @{ Issuer = 'https://idp.example.com' } } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://any.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeFalse
             Test-McpOriginAllowed -Origin $null -Settings @{ ApiKeys = @(); AllowedOrigins = @(); IsLoopback = $false } | Should -BeTrue
             Test-McpOriginAllowed -Origin 'https://app.example.com' -Settings @{ ApiKeys = @(); AllowedOrigins = @('https://app.example.com'); IsLoopback = $false } | Should -BeTrue

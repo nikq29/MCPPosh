@@ -22,6 +22,7 @@ Restart-McpServer [[-KnowledgeBase] <String>] [-Port <Int32>] [-ApiKey <String[]
 API keys are never stored.
 If the server required an API key, pass -ApiKey again or set
 $env:PSMCPKB_API_KEY.
+OAuth settings (issuer, audiences, scope) are not secret; they are stored and reused.
 
 ## EXAMPLES
 
