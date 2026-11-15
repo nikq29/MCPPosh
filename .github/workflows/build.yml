@@ -206,6 +206,17 @@ jobs:
           name: output
           path: output
 
+      # Releases move the [Unreleased] entries into a version section before tagging (docs/development.md).
+      - name: Check that CHANGELOG.md has a section for the release
+        if: ${{ !contains(needs.build.outputs.version, '-') }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          grep -qF "## [$VERSION]" CHANGELOG.md || {
+            echo "::error file=CHANGELOG.md::No section ## [$VERSION]. Before tagging run: Update-Changelog -ReleaseVersion $VERSION -LinkMode None"
+            exit 1
+          }
+
       - name: Publish the module and the GitHub release (Sampler)
         shell: pwsh
         env:
@@ -213,6 +224,16 @@ jobs:
           GalleryApiToken: ${{ secrets.GALLERY_API_TOKEN }}
           GitHubToken: ${{ secrets.GITHUB_TOKEN }}
         run: ./build.ps1 -ResolveDependency -Tasks publish
+
+      # Sampler writes the [Unreleased] section into the GitHub release, which is empty after the entries were moved.
+      - name: Use the changelog section as GitHub release notes
+        if: ${{ !contains(needs.build.outputs.version, '-') }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v heading="## [$VERSION]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          gh release edit "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
 
   docker-release:
     name: Docker image (from the PowerShell Gallery)
