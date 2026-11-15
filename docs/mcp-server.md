@@ -52,7 +52,7 @@ Searches the knowledge base with BM25 (see [Search](search.md)) and returns the 
 
 | Argument | Type | Required | Description |
 | --- | --- | --- | --- |
-| `query` | string | yes | search terms or a short question |
+| `query` | string, at most 1000 characters | yes | search terms or a short question |
 | `limit` | integer 1-20 | no (default 5) | maximum number of sections |
 | `tags` | string array | no | only documents with at least one of these tags |
 
@@ -96,7 +96,7 @@ Only available when the server runs with `-AllowWrite`. Stores a Markdown note i
 | --- | --- | --- | --- |
 | `title` | string, at most 200 characters | yes | short descriptive title |
 | `content` | string, at most 200000 characters | yes | note content in Markdown |
-| `tags` | string array | no | additional tags |
+| `tags` | string array, at most 20 tags of at most 50 characters | no | additional tags |
 
 Notes get the source type `Agent` and the tag `agent-note`. A note with the same title is updated. The result reports
 whether the note was created, updated or unchanged, together with its document id.

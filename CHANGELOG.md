@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown tables, search chunks and the text of the MCP tool results use LF line endings on every platform;
   on Windows they contained CRLF. Documents with CRLF line endings are chunked without carriage returns.
 - The `Publish-McpKnowledgeBase` unit tests no longer fail when the Az.Storage module is installed.
+- `Publish-McpKnowledgeBase` stops when the share holds documents that do not exist locally and were not published
+  from this computer, for example notes that agents saved with `add_note`. Before, it uploaded the local manifest
+  and removed those notes from the server (and deleted their files with `-Prune`). `-Force` replaces them.
 
 ### Security
 
@@ -58,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   batches are limited to 100 messages.
 - A request body that does not arrive completely within 30 seconds is answered with `408` and the connection is
   closed. Before, one client that stopped sending in the middle of a request blocked the server for everyone.
+- `search_documentation` rejects queries longer than 1000 characters. Every unknown word is compared with the whole
+  vocabulary, so one huge query could block the server for everyone for a long time.
+- `add_note` accepts at most 20 tags of at most 50 characters. Tags are stored in the manifest and were not counted
+  by the limits on agent notes.
 - `add_note` is limited to 1000 agent notes and 10 million characters of agent notes per knowledge base and to
   30 notes per minute per server, so an agent cannot fill the disk or keep the server busy rebuilding the index.
 - API keys are compared as SHA-256 hashes in constant time; before, the response time revealed the key length.

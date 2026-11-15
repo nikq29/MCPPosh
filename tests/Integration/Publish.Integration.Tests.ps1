@@ -88,6 +88,17 @@ Describe 'Publishing a knowledge base to Azure Files' {
         $result.Destination | Should -Match '/knowledgebases/Contoso$'
         Test-Path -LiteralPath (Join-Path $script:AzureRoot 'psmcpkbstore/psmcpkb/knowledgebases/Contoso/manifest.json') | Should -BeTrue
     }
+
+    It 'stops instead of removing notes that agents saved on the server, unless -Force is used' {
+        # Like add_note on the hosted server: the note exists only on the share.
+        $note = Add-McpDocument -KnowledgeBase $script:Remote -Title 'Agent finding' -Content 'The printer needs driver v3.'
+        { Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -StorageAccountKey 'account-key' -RemoteName Docs } |
+            Should -Throw "*'Agent finding' ($($note.Id))*"
+        (Get-McpDocument -KnowledgeBase $script:Remote).Id | Should -Contain $note.Id
+
+        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbstore -ShareName psmcpkb -StorageAccountKey 'account-key' -RemoteName Docs -Force | Out-Null
+        (Get-McpDocument -KnowledgeBase $script:Remote).Id | Should -Not -Contain $note.Id
+    }
 }
 
 Describe 'Serving the published knowledge base' {

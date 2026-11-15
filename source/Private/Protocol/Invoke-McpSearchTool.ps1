@@ -27,6 +27,8 @@ function Invoke-McpSearchTool {
     )
 
     $query = Get-McpArgument -Arguments $Arguments -Name 'query' -Required
+    # Each unknown word scans the whole vocabulary, and requests run one at a time: a huge query would block the server.
+    if ($query.Length -gt 1000) { throw [System.ArgumentException]::new('The query must not exceed 1000 characters. Use a few specific keywords.') }
     $limit = Get-McpArgument -Arguments $Arguments -Name 'limit' -Type Integer -Default 5 -Minimum 1 -Maximum 20
     $tags = Get-McpArgument -Arguments $Arguments -Name 'tags' -Type StringArray -Default @()
 
