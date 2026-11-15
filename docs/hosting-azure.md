@@ -124,6 +124,35 @@ One app registration serves as both the API and the client that signs users in:
 
 API keys keep working next to OAuth, for scripts and `Test-McpServer`.
 
+### Custom domain
+
+To serve the endpoint as `https://kb.contoso.com/mcp` instead of `https://<app>.azurecontainerapps.io/mcp`, add
+the domain to the Container App with a free managed certificate:
+
+1. Get the app's FQDN and domain verification ID:
+
+   ```bash
+   az containerapp show -n psmcpkb -g rg-psmcpkb \
+     --query "{fqdn:properties.configuration.ingress.fqdn, id:properties.customDomainVerificationId}"
+   ```
+
+2. At your DNS provider, create `CNAME kb.contoso.com → <fqdn>` and `TXT asuid.kb.contoso.com → <id>`. For an apex
+   domain, use an `A` record to the environment's IP (`az containerapp env show -n psmcpkb-env -g rg-psmcpkb
+   --query properties.staticIp`) instead of the CNAME.
+3. Add the hostname and bind it with a managed certificate (or in the portal: *Container App › Custom domains › Add
+   custom domain › Managed certificate*):
+
+   ```bash
+   az containerapp hostname add  -n psmcpkb -g rg-psmcpkb --hostname kb.contoso.com
+   az containerapp hostname bind -n psmcpkb -g rg-psmcpkb --hostname kb.contoso.com \
+     --environment psmcpkb-env --validation-method CNAME
+   ```
+
+The default `azurecontainerapps.io` URL keeps working. OAuth needs no change: the server builds its protected
+resource metadata from the host the client called. Browser clients need the new origin in `allowedOrigins`.
+The template does not manage custom domains, so a redeploy of the template removes the binding; run step 3 again
+afterwards.
+
 ## 3. Publish and manage knowledge
 
 ```powershell
