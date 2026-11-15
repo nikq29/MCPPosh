@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
     New-McpKnowledgeBase -Name Kb | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Get-McpSearchIndex' {
     It 'loads chunks and postings and caches the index' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $index = Get-McpSearchIndex -KbPath $kb.Path
             $index.Chunks.Count | Should -Be 3
@@ -27,7 +27,7 @@ Describe 'Get-McpSearchIndex' {
     }
 
     It 'rebuilds missing or corrupt index files from the content' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $doc = (Read-McpManifest -KbPath $kb.Path).documents[0]
             $paths = Get-McpDocumentPath -KbPath $kb.Path -Id $doc.id
@@ -43,7 +43,7 @@ Describe 'Get-McpSearchIndex' {
 
 Describe 'Get-McpSearchIndex (manipulated manifest)' {
     It 'skips documents whose id points outside the knowledge base and writes nothing there' {
-        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ TestHome = $script:TestHome } {
             param($TestHome)
             $outside = Join-Path $TestHome 'outside-index'
             New-Item -ItemType Directory -Path $outside -Force | Out-Null

@@ -61,7 +61,7 @@ function Invoke-McpSearchTool {
                 heading    = $result.Heading
                 score      = $result.Score
                 tags       = $result.Tags
-                uri        = ('mcpposh://{0}/documents/{1}' -f $kbName, $result.DocumentId)
+                uri        = ('psmcpkb://{0}/documents/{1}' -f $kbName, $result.DocumentId)
                 text       = $result.Text
             })
     }

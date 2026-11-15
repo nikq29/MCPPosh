@@ -58,7 +58,7 @@ function Invoke-McpHttpRequest {
                 return 405
             }
             # The knowledge base name is only shown to authorized clients (always, when no API key is required).
-            $title = if ($authorized) { "MCPPosh MCP server for knowledge base '$($Context.KnowledgeBase.Name)'." } else { 'MCPPosh MCP server.' }
+            $title = if ($authorized) { "PSMcpKnowledgeBase MCP server for knowledge base '$($Context.KnowledgeBase.Name)'." } else { 'PSMcpKnowledgeBase MCP server.' }
             Send-McpHttpResponse -Response $response -StatusCode 200 -ContentType 'text/plain; charset=utf-8' `
                 -Body "$title`nMCP endpoint (Streamable HTTP): /mcp`nHealth: /health`n"
             return 200
@@ -70,7 +70,7 @@ function Invoke-McpHttpRequest {
                 return 405
             }
             # Without a valid key only liveness is reported; the exact version would help attackers pick exploits.
-            $health = [ordered]@{ status = 'ok'; server = 'MCPPosh' }
+            $health = [ordered]@{ status = 'ok'; server = 'PSMcpKnowledgeBase' }
             if ($authorized) {
                 $health['version'] = $script:ModuleVersion
                 $index = Update-McpServerIndex -Context $Context
@@ -99,7 +99,7 @@ function Invoke-McpHttpRequest {
                 return 204
             }
             if (-not $authorized) {
-                Send-McpHttpResponse -Response $response -StatusCode 401 -Headers ($corsHeaders + @{ 'WWW-Authenticate' = 'Bearer realm="MCPPosh"' }) `
+                Send-McpHttpResponse -Response $response -StatusCode 401 -Headers ($corsHeaders + @{ 'WWW-Authenticate' = 'Bearer realm="PSMcpKnowledgeBase"' }) `
                     -Body (ConvertTo-McpJson -Compress -InputObject (New-McpErrorResponse -Id $null -Code -32001 -Message 'Unauthorized: missing or invalid API key'))
                 return 401
             }

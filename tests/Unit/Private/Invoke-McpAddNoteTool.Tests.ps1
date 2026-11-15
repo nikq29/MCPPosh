@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
@@ -29,7 +29,7 @@ Describe 'Invoke-McpAddNoteTool' {
     }
 
     It 'rejects titles and contents that are too long' {
-        InModuleScope MCPPosh -Parameters @{ Context = $script:WriteContext } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:WriteContext } {
             param($Context)
             { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = ('t' * 201); content = 'x' }) } | Should -Throw '*200 characters*'
         }
@@ -43,7 +43,7 @@ Describe 'Invoke-McpAddNoteTool' {
 
         AfterEach {
             Remove-McpKnowledgeBase -Name Notes -Confirm:$false
-            InModuleScope MCPPosh {
+            InModuleScope PSMcpKnowledgeBase {
                 $script:McpMaxAgentNotes = 1000
                 $script:McpMaxAgentNoteChars = 10000000
                 $script:McpMaxNotesPerMinute = 30
@@ -51,7 +51,7 @@ Describe 'Invoke-McpAddNoteTool' {
         }
 
         It 'rejects new notes beyond the maximum number of agent notes but still updates existing ones' {
-            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+            InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:NotesContext } {
                 param($Context)
                 $script:McpMaxAgentNotes = 2
                 $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'One'; content = 'first' })
@@ -63,7 +63,7 @@ Describe 'Invoke-McpAddNoteTool' {
 
         It 'does not count documents added by people towards the agent note limits' {
             Add-McpDocument -KnowledgeBase Notes -Title 'Manual' -Content ('x' * 500) | Out-Null
-            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+            InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:NotesContext } {
                 param($Context)
                 $script:McpMaxAgentNotes = 1
                 $script:McpMaxAgentNoteChars = 100
@@ -72,7 +72,7 @@ Describe 'Invoke-McpAddNoteTool' {
         }
 
         It 'rejects notes that would exceed the total size of all agent notes' {
-            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+            InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:NotesContext } {
                 param($Context)
                 $script:McpMaxAgentNoteChars = 100
                 $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Big'; content = ('a' * 60) })
@@ -83,7 +83,7 @@ Describe 'Invoke-McpAddNoteTool' {
         }
 
         It 'limits the number of notes written per minute' {
-            InModuleScope MCPPosh -Parameters @{ Context = $script:NotesContext } {
+            InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:NotesContext } {
                 param($Context)
                 $script:McpMaxNotesPerMinute = 2
                 $null = Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'A'; content = 'a' })
@@ -98,7 +98,7 @@ Describe 'Invoke-McpAddNoteTool' {
         }
 
         It 'reports limit errors to the model as tool errors' {
-            InModuleScope MCPPosh { $script:McpMaxAgentNotes = 0 }
+            InModuleScope PSMcpKnowledgeBase { $script:McpMaxAgentNotes = 0 }
             $call = @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'add_note'; arguments = @{ title = 'Blocked'; content = 'x' } } }
             $result = (Invoke-McpTestMessage -KnowledgeBase Notes -AllowWrite -Message $call).result
             $result.isError | Should -BeTrue

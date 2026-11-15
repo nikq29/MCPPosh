@@ -1,13 +1,13 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
     $script:Context = New-McpTestContext -KnowledgeBase Proto
     $script:WriteContext = New-McpTestContext -KnowledgeBase Proto -AllowWrite
-    $script:KbPath = & (Get-Module MCPPosh) { (Resolve-McpKnowledgeBase -KnowledgeBase Proto).Path }
+    $script:KbPath = & (Get-Module PSMcpKnowledgeBase) { (Resolve-McpKnowledgeBase -KnowledgeBase Proto).Path }
 }
 
 AfterAll {
@@ -17,7 +17,7 @@ AfterAll {
 
 Describe 'Stop-McpStdioClient' {
     It 'stops the process of a stdio client' {
-        InModuleScope MCPPosh -Parameters @{ KbPath = $script:KbPath } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ KbPath = $script:KbPath } {
             param($KbPath)
             $client = Start-McpStdioClient -KbPath $KbPath
             $process = $client.Process

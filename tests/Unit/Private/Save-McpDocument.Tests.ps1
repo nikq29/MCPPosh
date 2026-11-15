@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
 }
 
@@ -12,7 +12,7 @@ AfterAll {
 
 Describe 'Save-McpDocument' {
     It 'creates a document with content, index and manifest record' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $saved = Save-McpDocument -KnowledgeBase $kb -Title 'VPN' -Content "# VPN`n`nRestart the agent." -SourceType Inline -Tags vpn, ' ', vpn
             $saved.Created | Should -BeTrue
@@ -25,7 +25,7 @@ Describe 'Save-McpDocument' {
     }
 
     It 'detects unchanged documents and updates changed ones' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             $unchanged = Save-McpDocument -KnowledgeBase $kb -Title 'VPN' -Content "# VPN`n`nRestart the agent." -SourceType Inline -Tags vpn
             $unchanged.Changed | Should -BeFalse
@@ -37,7 +37,7 @@ Describe 'Save-McpDocument' {
     }
 
     It 'merges existing tags and throws for unknown ids' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             (Save-McpDocument -KnowledgeBase $kb -Title 'VPN' -Content 'new' -SourceType Inline -Tags extra -MergeExistingTags).Record.tags | Should -Be @('extra', 'vpn')
             { Save-McpDocument -KnowledgeBase $kb -Id 'missing' -Title 'x' -Content 'x' } | Should -Throw '*was not found*'

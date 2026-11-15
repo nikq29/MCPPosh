@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Test-McpServerProcess' {
     It 'checks process id and start time' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $start = [System.Diagnostics.Process]::GetCurrentProcess().StartTime.ToUniversalTime().ToString('o')
             Test-McpServerProcess -ProcessId $PID -ProcessStartTime $start | Should -BeTrue
             Test-McpServerProcess -ProcessId $PID | Should -BeTrue
@@ -23,7 +23,7 @@ Describe 'Test-McpServerProcess' {
 
 Describe 'Test-McpServerProcess (unverifiable identity)' {
     It 'does not confirm a process whose recorded start time cannot be read' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Test-McpServerProcess -ProcessId $PID -ProcessStartTime 'not a date' | Should -BeFalse
         }
     }

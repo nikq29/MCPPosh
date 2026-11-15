@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'Get-McpWebDocument' {
     It 'converts HTML pages and resolves the title' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
                 Set-Content -LiteralPath $OutFile -Value '<html><head><title>Online docs</title></head><body><h1>API</h1><a href="v2">next</a></body></html>'
                 [pscustomobject]@{ Headers = @{ 'Content-Type' = 'text/html; charset=utf-8' } }
@@ -26,7 +26,7 @@ Describe 'Get-McpWebDocument' {
     }
 
     It 'uses the converter of the content type and the URL as title fallback' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
                 Set-Content -LiteralPath $OutFile -Value 'a,b'
                 [pscustomobject]@{ Headers = @{ 'Content-Type' = 'text/csv' } }
@@ -38,7 +38,7 @@ Describe 'Get-McpWebDocument' {
     }
 
     It 'detects the format from the extension when the content type is unknown' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-WebRequest {
                 Set-Content -LiteralPath $OutFile -Value '# Readme'
                 [pscustomobject]@{ Headers = @{ 'Content-Type' = 'application/octet-stream' } }
@@ -48,7 +48,7 @@ Describe 'Get-McpWebDocument' {
     }
 
     It 'rejects downloads larger than the limit before converting them' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $script:McpMaxDownloadBytes = 1KB
             try {
                 Mock Invoke-WebRequest {

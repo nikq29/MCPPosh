@@ -28,14 +28,14 @@ function Get-McpWebDocument {
         [string] $Format
     )
 
-    $tempDirectory = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('mcpposh-' + [guid]::NewGuid().ToString('N'))
+    $tempDirectory = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('psmcpkb-' + [guid]::NewGuid().ToString('N'))
     $null = New-Item -ItemType Directory -Path $tempDirectory -Force
     try {
         $fileName = [System.IO.Path]::GetFileName($Url.AbsolutePath)
         if (-not $fileName) { $fileName = 'index' }
         $tempFile = Join-Path -Path $tempDirectory -ChildPath ([regex]::Replace($fileName, '[^\w.-]', '_'))
 
-        $response = Invoke-WebRequest -Uri $Url -OutFile $tempFile -PassThru -UseBasicParsing -MaximumRedirection 5 -UserAgent 'MCPPosh (PowerShell MCP documentation server)' -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $Url -OutFile $tempFile -PassThru -UseBasicParsing -MaximumRedirection 5 -UserAgent 'PSMcpKnowledgeBase (PowerShell MCP documentation server)' -ErrorAction Stop
         # Converters read the whole file into memory: reject oversized downloads before converting them.
         $downloadedBytes = (Get-Item -LiteralPath $tempFile).Length
         if ($downloadedBytes -gt $script:McpMaxDownloadBytes) {

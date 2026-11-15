@@ -3,7 +3,7 @@
     import and remove knowledge bases on disk. No mocks.
 #>
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment -Name kb
     $script:Work = Join-Path -Path $script:TestHome -ChildPath 'work'
     New-Item -ItemType Directory -Path $script:Work -Force | Out-Null
@@ -21,12 +21,12 @@ AfterAll {
 }
 
 Describe 'Creating and listing knowledge bases' {
-    It 'creates a knowledge base in MCPPOSH_HOME' {
+    It 'creates a knowledge base in PSMCPKB_HOME' {
         $kb = New-McpKnowledgeBase -Name Handbook -Description 'Operations handbook'
         $kb.Name | Should -Be 'Handbook'
         $kb.Description | Should -Be 'Operations handbook'
         $kb.Documents | Should -Be 0
-        $kb.Path | Should -Be (Join-Path -Path $env:MCPPOSH_HOME -ChildPath 'knowledgebases' | Join-Path -ChildPath 'Handbook')
+        $kb.Path | Should -Be (Join-Path -Path $env:PSMCPKB_HOME -ChildPath 'knowledgebases' | Join-Path -ChildPath 'Handbook')
         Test-Path -LiteralPath (Join-Path $kb.Path 'knowledgebase.json') | Should -BeTrue
         { New-McpKnowledgeBase -Name Handbook } | Should -Throw '*already exists*'
     }

@@ -4,7 +4,7 @@ function Get-McpServerStateFile {
         Returns the path of the state file of a local HTTP server.
 
     .DESCRIPTION
-        Returns the path of the JSON state file for the HTTP server of a knowledge base on a port: servers/<knowledge base slug>-<port>.json in the MCPPosh data directory.
+        Returns the path of the JSON state file for the HTTP server of a knowledge base on a port: servers/<knowledge base slug>-<port>.json in the PSMcpKnowledgeBase data directory.
 
     .PARAMETER KnowledgeBaseName
         Name of the knowledge base the server provides.
@@ -15,7 +15,7 @@ function Get-McpServerStateFile {
     .EXAMPLE
         Get-McpServerStateFile -KnowledgeBaseName Contoso -Port 5050
 
-        Returns for example ~/.mcpposh/servers/contoso-5050.json.
+        Returns for example ~/.psmcpkb/servers/contoso-5050.json.
     #>
     [CmdletBinding()]
     [OutputType([string])]

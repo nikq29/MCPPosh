@@ -23,13 +23,13 @@ function Remove-McpDocument {
         Removes all documents with the tag obsolete without asking for confirmation.
 
     .INPUTS
-        MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
+        PSMcpKnowledgeBase.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 
     .OUTPUTS
         None.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Remove-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Remove-McpDocument.md
 
     .LINK
         Get-McpDocument

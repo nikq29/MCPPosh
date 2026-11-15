@@ -14,7 +14,7 @@ Get-ChildItem \\server\wiki -Filter *.html -Recurse | Add-McpDocument -Knowledge
 
 - `-Path` accepts files, folders and wildcards. Without `-Recurse` only the files directly in a folder are imported.
 - `-Include` and `-Exclude` filter by file name with wildcards.
-- Files in `.git`, `.svn`, `.hg`, `node_modules` and `.mcpposh` folders are skipped.
+- Files in `.git`, `.svn`, `.hg`, `node_modules` and `.psmcpkb` folders are skipped.
 - `-Title` sets the title of all imported files; by default the title comes from the document itself.
 - `-Tags` adds tags. When you import a file again without `-Tags`, its existing tags are kept.
 - `-Format` forces a converter instead of detecting it from the extension.
@@ -26,7 +26,7 @@ Get-ChildItem \\server\wiki -Filter *.html -Recurse | Add-McpDocument -Knowledge
 Add-McpDocument -KnowledgeBase Contoso -Url https://learn.microsoft.com/powershell/scripting/overview -Tags powershell
 ```
 
-The URL is downloaded (at most five redirects and 100 MB, user agent `MCPPosh (PowerShell MCP documentation server)`)
+The URL is downloaded (at most five redirects and 100 MB, user agent `PSMcpKnowledgeBase (PowerShell MCP documentation server)`)
 and converted based on the `Content-Type` header:
 
 | Content type | Converter |

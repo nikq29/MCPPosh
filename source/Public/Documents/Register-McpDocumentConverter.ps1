@@ -42,10 +42,10 @@ function Register-McpDocumentConverter {
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        MCPPosh.Converter: Name, Extensions, ScriptBlock and Builtin.
+        PSMcpKnowledgeBase.Converter: Name, Extensions, ScriptBlock and Builtin.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Register-McpDocumentConverter.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Register-McpDocumentConverter.md
 
     .LINK
         Get-McpDocumentConverter
@@ -57,7 +57,7 @@ function Register-McpDocumentConverter {
         Add-McpDocument
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    [OutputType('MCPPosh.Converter')]
+    [OutputType('PSMcpKnowledgeBase.Converter')]
     param(
         [Parameter(Mandatory, Position = 0)]
         [ValidatePattern('^[A-Za-z][A-Za-z0-9_-]*$')]
@@ -86,7 +86,7 @@ function Register-McpDocumentConverter {
     if ($PSCmdlet.ShouldProcess($Name, "Register converter for $($extensions -join ', ')")) {
         foreach ($item in @($existing)) { $null = $script:McpConverters.Remove($item) }
         $converter = [pscustomobject]@{
-            PSTypeName  = 'MCPPosh.Converter'
+            PSTypeName  = 'PSMcpKnowledgeBase.Converter'
             Name        = $Name
             Extensions  = $extensions
             ScriptBlock = $ScriptBlock

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Read-McpJsonFile' {
     It 'reads and parses a JSON file' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $file = Join-Path $Home 'data.json'
             Set-Content -Path $file -Value '{"name":"value"}'
@@ -20,7 +20,7 @@ Describe 'Read-McpJsonFile' {
     }
 
     It 'returns $null for missing and empty files' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             Read-McpJsonFile -Path (Join-Path $Home 'missing.json') | Should -BeNullOrEmpty
             $empty = Join-Path $Home 'empty.json'

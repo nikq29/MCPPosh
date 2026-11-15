@@ -1,11 +1,11 @@
 # Security
 
-MCPPosh gives AI agents read access (and optionally write access) to your documentation. This page explains the
+PSMcpKnowledgeBase gives AI agents read access (and optionally write access) to your documentation. This page explains the
 security model and recommendations.
 
 ## What agents can access
 
-- An MCPPosh server provides exactly one knowledge base. Agents can search and read all of its documents, nothing
+- A PSMcpKnowledgeBase server provides exactly one knowledge base. Agents can search and read all of its documents, nothing
   else: no files outside the knowledge base, no commands, no other knowledge bases. Document ids are file names and
   may only contain letters, digits, `_` and `-`; documents with other ids in `manifest.json` (for example from a
   manipulated archive or share) are ignored, so they can never address files outside the knowledge base.
@@ -38,7 +38,7 @@ stdin and stdout. They do not open network ports.
   $key = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
   ```
 
-- **Key rotation**: configure several keys (`-ApiKey old, new` or `MCPPOSH_API_KEY=old,new`), switch the clients,
+- **Key rotation**: configure several keys (`-ApiKey old, new` or `PSMCPKB_API_KEY=old,new`), switch the clients,
   then remove the old key.
 - **DNS rebinding protection**: loopback servers reject browser requests from non-local origins. Allow specific
   browser applications with `-AllowedOrigin`.
@@ -100,7 +100,7 @@ untrusted content can therefore store instructions that later agents read (store
 
 ## Data at rest
 
-Knowledge bases are plain files below `$env:MCPPOSH_HOME`. Protect the folder with file system permissions, and use
+Knowledge bases are plain files below `$env:PSMCPKB_HOME`. Protect the folder with file system permissions, and use
 encrypted storage (for example Azure Files with encryption at rest, which is the default) for sensitive content.
 Logs contain search queries and client names but no API keys and no document content.
 

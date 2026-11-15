@@ -26,10 +26,10 @@ function Get-McpDocumentConverter {
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        MCPPosh.Converter: Name, Extensions, ScriptBlock and Builtin.
+        PSMcpKnowledgeBase.Converter: Name, Extensions, ScriptBlock and Builtin.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocumentConverter.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocumentConverter.md
 
     .LINK
         Register-McpDocumentConverter
@@ -38,7 +38,7 @@ function Get-McpDocumentConverter {
         Unregister-McpDocumentConverter
     #>
     [CmdletBinding()]
-    [OutputType('MCPPosh.Converter')]
+    [OutputType('PSMcpKnowledgeBase.Converter')]
     param(
         [Parameter(Position = 0)]
         [SupportsWildcards()]

@@ -4,12 +4,12 @@ function Get-McpServerStateRoot {
         Returns the folder with the state files of local HTTP servers.
 
     .DESCRIPTION
-        Returns the servers folder below the MCPPosh data directory, where running HTTP servers store their process id, port and settings, and creates it when needed.
+        Returns the servers folder below the PSMcpKnowledgeBase data directory, where running HTTP servers store their process id, port and settings, and creates it when needed.
 
     .EXAMPLE
         Get-McpServerStateRoot
 
-        Returns for example /home/user/.mcpposh/servers.
+        Returns for example /home/user/.psmcpkb/servers.
     #>
     [CmdletBinding()]
     param()

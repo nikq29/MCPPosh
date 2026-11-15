@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Write-McpLog' {
     It 'appends timestamped lines to the log file' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $context = [pscustomobject]@{ LogPath = (Join-Path $Home 'logs/test.log'); EchoLog = $false }
             Write-McpLog -Context $context -Message 'first'
@@ -23,7 +23,7 @@ Describe 'Write-McpLog' {
     }
 
     It 'never fails when the log cannot be written' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $context = [pscustomobject]@{ LogPath = '/proc/0/cannot/write.log'; EchoLog = $false }
             { Write-McpLog -Context $context -Message 'x' } | Should -Not -Throw
         }
@@ -32,7 +32,7 @@ Describe 'Write-McpLog' {
 
 Describe 'Write-McpLog (log injection)' {
     It 'escapes line breaks and control characters so clients cannot forge log lines' {
-        InModuleScope MCPPosh -Parameters @{ TestHome = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ TestHome = $script:TestHome } {
             param($TestHome)
             $context = [pscustomobject]@{ LogPath = (Join-Path $TestHome 'logs/injection.log'); EchoLog = $false }
             Write-McpLog -Context $context -Message "search `"x`nINJECTED [ERROR] forged`r`tend$([char]0)`""

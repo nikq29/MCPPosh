@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
@@ -20,7 +20,7 @@ Describe 'Invoke-McpSearchTool' {
         $result.content[0].text | Should -Match 'Veeam'
         $result.content[0].text | Should -Match '## 1\. Backup'
         $result.structuredContent.results[0].title | Should -Be 'Backup'
-        $result.structuredContent.results[0].uri | Should -Match '^mcpposh://Proto/documents/backup-'
+        $result.structuredContent.results[0].uri | Should -Match '^psmcpkb://Proto/documents/backup-'
     }
 
     It 'explains when nothing was found' {

@@ -1,23 +1,23 @@
 # Configuration reference
 
-MCPPosh is configured with cmdlet parameters and a few environment variables. Everything else is stored in plain
+PSMcpKnowledgeBase is configured with cmdlet parameters and a few environment variables. Everything else is stored in plain
 JSON and Markdown files.
 
 ## Environment variables
 
 | Variable | Used by | Meaning |
 | --- | --- | --- |
-| `MCPPOSH_HOME` | all cmdlets | data directory; default `~/.mcpposh` (in the container `/data`) |
-| `MCPPOSH_API_KEY` | `Start-McpServer`, `Restart-McpServer` | comma-separated API keys used when `-ApiKey` is not specified |
+| `PSMCPKB_HOME` | all cmdlets | data directory; default `~/.psmcpkb` (in the container `/data`) |
+| `PSMCPKB_API_KEY` | `Start-McpServer`, `Restart-McpServer` | comma-separated API keys used when `-ApiKey` is not specified |
 
-Additional variables of the container image (`MCPPOSH_KNOWLEDGEBASE`, `MCPPOSH_DESCRIPTION`, `MCPPOSH_PORT`,
-`MCPPOSH_ALLOW_WRITE`, `MCPPOSH_ALLOW_ANONYMOUS`, `MCPPOSH_ALLOWED_ORIGINS`, `MCPPOSH_IMPORT_PATH`) are described in
+Additional variables of the container image (`PSMCPKB_KNOWLEDGEBASE`, `PSMCPKB_DESCRIPTION`, `PSMCPKB_PORT`,
+`PSMCPKB_ALLOW_WRITE`, `PSMCPKB_ALLOW_ANONYMOUS`, `PSMCPKB_ALLOWED_ORIGINS`, `PSMCPKB_IMPORT_PATH`) are described in
 [Docker](hosting-docker.md#environment-variables).
 
 ## Data directory
 
 ```text
-$env:MCPPOSH_HOME (default ~/.mcpposh)
+$env:PSMCPKB_HOME (default ~/.psmcpkb)
 ├── knowledgebases/
 │   └── <name>/
 │       ├── knowledgebase.json
@@ -111,5 +111,5 @@ name, so only changed files are uploaded the next time.
 
 ## PowerShell preferences
 
-MCPPosh cmdlets support the common parameters. Use `-Verbose` to see which documents were added, updated or
+PSMcpKnowledgeBase cmdlets support the common parameters. Use `-Verbose` to see which documents were added, updated or
 unchanged, and `-WhatIf`/`-Confirm` with all cmdlets that change data.

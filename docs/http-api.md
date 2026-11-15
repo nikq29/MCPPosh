@@ -17,7 +17,7 @@ Other paths return `404 Not Found`.
 
 ## Authentication
 
-When the server has API keys (`-ApiKey` or `MCPPOSH_API_KEY`), every request to `/mcp` must contain one of them:
+When the server has API keys (`-ApiKey` or `PSMCPKB_API_KEY`), every request to `/mcp` must contain one of them:
 
 ```http
 Authorization: Bearer <key>
@@ -29,7 +29,7 @@ or
 X-API-Key: <key>
 ```
 
-Requests without a valid key get `401 Unauthorized` with `WWW-Authenticate: Bearer realm="MCPPosh"` and a JSON-RPC
+Requests without a valid key get `401 Unauthorized` with `WWW-Authenticate: Bearer realm="PSMcpKnowledgeBase"` and a JSON-RPC
 error with code -32001. Keys are compared in constant time. Several keys can be configured at the same time, for
 example to rotate keys without downtime.
 
@@ -62,7 +62,7 @@ everyone else.
 Browsers send an `Origin` header. The server
 
 - allows requests without `Origin`,
-- allows origins listed with `-AllowedOrigin` (or `MCPPOSH_ALLOWED_ORIGINS`) and answers them with CORS headers
+- allows origins listed with `-AllowedOrigin` (or `PSMCPKB_ALLOWED_ORIGINS`) and answers them with CORS headers
   (`Access-Control-Allow-Origin`, `-Headers`, `-Methods`, `-Expose-Headers`),
 - otherwise allows only `localhost`, `127.0.0.1` and `::1` origins when it listens on a loopback address (protection
   against DNS rebinding),
@@ -74,7 +74,7 @@ Browsers send an `Origin` header. The server
 ## GET /health
 
 ```json
-{"status":"ok","server":"MCPPosh"}
+{"status":"ok","server":"PSMcpKnowledgeBase"}
 ```
 
 With a valid API key (or when the server has no keys) the response also contains `version`, `knowledgeBase`,

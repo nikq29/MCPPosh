@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
     $script:Doc = Add-McpDocument -KnowledgeBase Kb -Title 'Install Guide' -Content "# Install`n`nInstall the **package** with winget." -Tags setup
 }
@@ -13,9 +13,9 @@ AfterAll {
 
 Describe 'ConvertTo-McpKnowledgeBaseObject' {
     It 'summarizes documents, characters, tags and revision' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $object = ConvertTo-McpKnowledgeBaseObject -KnowledgeBase (Resolve-McpKnowledgeBase -KnowledgeBase Kb)
-            $object.PSObject.TypeNames | Should -Contain 'MCPPosh.KnowledgeBase'
+            $object.PSObject.TypeNames | Should -Contain 'PSMcpKnowledgeBase.KnowledgeBase'
             $object.Documents | Should -Be 1
             $object.Characters | Should -BeGreaterThan 10
             $object.Tags | Should -Be @('setup')

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv -Description 'Test server' | Out-Null
     Add-McpDocument -KnowledgeBase Srv -Title 'Printer' -Content "# Printer`n`nThe hallway printer is PRN-01 and uses IPP." | Out-Null
 }
@@ -23,10 +23,10 @@ Describe 'Test-McpServer' {
     }
 
     It 'tests HTTP servers through the MCP endpoint' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-McpHttpRpc {
                 switch ($Message.method) {
-                    'initialize' { [ordered]@{ id = $Message.id; result = [ordered]@{ protocolVersion = '2025-11-25'; serverInfo = [ordered]@{ name = 'MCPPosh'; version = '9.9.9' }; instructions = 'x' } } }
+                    'initialize' { [ordered]@{ id = $Message.id; result = [ordered]@{ protocolVersion = '2025-11-25'; serverInfo = [ordered]@{ name = 'PSMcpKnowledgeBase'; version = '9.9.9' }; instructions = 'x' } } }
                     'tools/list' { [ordered]@{ id = $Message.id; result = [ordered]@{ tools = @([ordered]@{ name = 'search_documentation' }, [ordered]@{ name = 'list_documents' }) } } }
                     'tools/call' {
                         if ($Message.params.name -eq 'list_documents') { [ordered]@{ id = $Message.id; result = [ordered]@{ structuredContent = [ordered]@{ total = 4 } } } }
@@ -45,7 +45,7 @@ Describe 'Test-McpServer' {
     }
 
     It 'reports failures instead of throwing' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Invoke-McpHttpRpc { throw 'Unauthorized (HTTP 401): missing or invalid API key.' }
             $result = Test-McpServer -Uri 'http://localhost:5050/mcp'
             $result.Success | Should -BeFalse

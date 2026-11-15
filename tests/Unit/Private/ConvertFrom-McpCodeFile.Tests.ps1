@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
 }
@@ -13,7 +13,7 @@ AfterAll {
 
 Describe 'ConvertFrom-McpCodeFile' {
     It 'wraps scripts in a code block with the detected language' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'deploy.ps1'
             Set-Content -Path $path -Value 'Write-Output "deploy"'
@@ -25,7 +25,7 @@ Describe 'ConvertFrom-McpCodeFile' {
     }
 
     It 'uses a longer fence for code that contains fences and well-known file names' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'readme.py'
             Set-Content -Path $path -Value "x = 1`n``````python`ny = 2`n``````"
@@ -37,7 +37,7 @@ Describe 'ConvertFrom-McpCodeFile' {
     }
 
     It 'accepts an explicit language and format' {
-        InModuleScope MCPPosh -Parameters @{ Files = $script:Files } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Files = $script:Files } {
             param($Files)
             $path = Join-Path $Files 'settings.json'
             Set-Content -Path $path -Value '{ "port": 8080 }'

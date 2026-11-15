@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Add-McpDocument.md
 schema: 2.0.0
 ---
 
@@ -292,12 +292,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String, System.IO.FileInfo. You can pipe paths or file objects from Get-ChildItem, and objects with a Url or Uri property.
 ## OUTPUTS
 
-### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+### PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Add-McpDocument.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Add-McpDocument.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Add-McpDocument.md)
 
 [Get-McpDocument]()
 

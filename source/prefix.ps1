@@ -1,7 +1,7 @@
-# Module-level state. ModuleBuilder places this file at the top of the built MCPPosh.psm1.
+# Module-level state. ModuleBuilder places this file at the top of the built PSMcpKnowledgeBase.psm1.
 
 $script:ModuleRoot = $PSScriptRoot
-$script:ModuleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath 'MCPPosh.psd1'
+$script:ModuleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath 'PSMcpKnowledgeBase.psd1'
 $script:ModuleVersion = '0.0.0'
 if (Test-Path -LiteralPath $script:ModuleManifestPath) {
     $mcpManifestData = Import-PowerShellDataFile -Path $script:ModuleManifestPath
