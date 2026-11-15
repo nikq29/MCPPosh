@@ -11,7 +11,10 @@
 #   docker run -p 8080:8080 -e PSMCPKB_API_KEY=change-me -v psmcpkb-data:/data psmcpkb
 
 ARG PWSH_VERSION=7.4.6
-ARG TARGETARCH=amd64
+# Set by BuildKit for each target platform (amd64, arm64). Do not give it a default: a default
+# replaces the automatic value, and a multi-platform build would put the x64 PowerShell into
+# the arm64 image.
+ARG TARGETARCH
 
 # PowerShell release archives, one stage per architecture (only the target architecture is built).
 FROM scratch AS pwsh-amd64
@@ -38,7 +41,7 @@ ARG PSMCPKB_SOURCE=PSGallery
 ARG PSMCPKB_VERSION=
 
 COPY --from=pwsh /powershell.tar.gz /tmp/powershell.tar.gz
-RUN case "${TARGETARCH:-amd64}" in \
+RUN case "${TARGETARCH}" in \
         amd64) expected="${PWSH_SHA256_AMD64}" ;; \
         arm64) expected="${PWSH_SHA256_ARM64}" ;; \
         *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
@@ -48,7 +51,8 @@ RUN case "${TARGETARCH:-amd64}" in \
     && tar -xzf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 \
     && chmod +x /opt/microsoft/powershell/7/pwsh \
     && ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \
-    && rm /tmp/powershell.tar.gz
+    && rm /tmp/powershell.tar.gz \
+    && pwsh -NoLogo -NoProfile -Version
 
 ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
     POWERSHELL_UPDATECHECK=Off \
