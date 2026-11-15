@@ -18,7 +18,7 @@ Adds knowledge to a knowledge base: files, folders, web pages or inline text.
 Exports a knowledge base to a ZIP archive (backup or transfer to another machine).
 
 ### [Get-McpClientConfig](Get-McpClientConfig.md)
-Generates the configuration to connect an AI client to an PSMcpKnowledgeBase server.
+Generates the configuration to connect an AI client to a PSMcpKnowledgeBase server.
 
 ### [Get-McpDocument](Get-McpDocument.md)
 Lists the documents of a knowledge base.

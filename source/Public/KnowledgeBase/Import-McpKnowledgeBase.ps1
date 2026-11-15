@@ -111,7 +111,7 @@ function Import-McpKnowledgeBase {
 
             $metaPath = Join-Path -Path $staging -ChildPath 'knowledgebase.json'
             if (-not (Test-Path -LiteralPath $metaPath) -or -not (Test-Path -LiteralPath (Join-Path $staging 'manifest.json'))) {
-                throw "'$source' is not an PSMcpKnowledgeBase knowledge base archive (knowledgebase.json or manifest.json is missing)."
+                throw "'$source' is not a PSMcpKnowledgeBase knowledge base archive (knowledgebase.json or manifest.json is missing)."
             }
             # Document ids become file names; reject manifests whose ids could address files outside the
             # knowledge base (for example '../../secret' or absolute paths).

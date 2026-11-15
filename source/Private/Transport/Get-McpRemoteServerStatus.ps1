@@ -4,7 +4,7 @@ function Get-McpRemoteServerStatus {
         Returns the status of a remote PSMcpKnowledgeBase server.
 
     .DESCRIPTION
-        Calls the /health endpoint of an PSMcpKnowledgeBase HTTP server (for example in Azure) and returns an PSMcpKnowledgeBase.Server object with the status, knowledge base, number of documents, revision, uptime and version. Details require a valid API key.
+        Calls the /health endpoint of a PSMcpKnowledgeBase HTTP server (for example in Azure) and returns a PSMcpKnowledgeBase.Server object with the status, knowledge base, number of documents, revision, uptime and version. Details require a valid API key.
 
     .PARAMETER Uri
         Base URL or MCP endpoint of the server, for example https://docs.example.com/mcp.

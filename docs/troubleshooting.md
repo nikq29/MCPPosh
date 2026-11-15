@@ -36,7 +36,7 @@ is created automatically.
 
 - "Port 5050 is already in use": choose another port with `-Port`, or find the process with `Get-McpServer` (PSMcpKnowledgeBase
   servers) or `Get-NetTCPConnection -LocalPort 5050` (Windows) / `ss -ltnp` (Linux).
-- "An PSMcpKnowledgeBase server is already running on port …": stop it with `Stop-McpServer -Port <port>`.
+- "A PSMcpKnowledgeBase server is already running on port …": stop it with `Stop-McpServer -Port <port>`.
 - Windows, "Could not listen on http://+:…/ : Access is denied": listening on all interfaces requires administrator
   rights or a URL reservation: `netsh http add urlacl url=http://+:5050/ user=DOMAIN\user`.
 - Windows, `400 Bad Request - Invalid Hostname` for `http://127.0.0.1:…`: the Windows HTTP stack only accepts the

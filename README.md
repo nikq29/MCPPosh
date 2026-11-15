@@ -244,8 +244,8 @@ Test-McpServer -Uri https://<app>.azurecontainerapps.io/mcp -ApiKey $key -Query 
 | Clients | `Get-McpClientConfig` |
 
 Help for every cmdlet: `Get-Help Add-McpDocument -Full`, `Get-Help Add-McpDocument -Online` and
-`Get-Help about_PSMcpKnowledgeBase`. The [cmdlet reference](docs/en-US/PSMcpKnowledgeBase.md) contains the same help as Markdown, and more
-examples are in [`examples`](examples).
+`Get-Help about_PSMcpKnowledgeBase`. The [cmdlet reference](docs/en-US/PSMcpKnowledgeBase.md) contains the same help
+as Markdown, and more examples are in [`examples`](examples).
 
 ## Storage location and layout
 

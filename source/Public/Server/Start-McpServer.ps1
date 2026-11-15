@@ -150,7 +150,7 @@ function Start-McpServer {
     # Background process
     $existing = Get-McpServerState | Where-Object { [int]$_.port -eq $Port -and $_.Status -eq 'Running' }
     if ($existing) {
-        throw "An PSMcpKnowledgeBase server is already running on port $Port (knowledge base '$($existing.knowledgeBase)', pid $($existing.pid)). Stop it with: Stop-McpServer -Port $Port"
+        throw "A PSMcpKnowledgeBase server is already running on port $Port (knowledge base '$($existing.knowledgeBase)', pid $($existing.pid)). Stop it with: Stop-McpServer -Port $Port"
     }
     if (-not (Test-McpPortAvailable -Port $Port)) {
         throw "Port $Port is already in use. Choose another port with -Port."

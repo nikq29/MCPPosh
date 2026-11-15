@@ -5,7 +5,7 @@ security model and recommendations.
 
 ## What agents can access
 
-- An PSMcpKnowledgeBase server provides exactly one knowledge base. Agents can search and read all of its documents, nothing
+- A PSMcpKnowledgeBase server provides exactly one knowledge base. Agents can search and read all of its documents, nothing
   else: no files outside the knowledge base, no commands, no other knowledge bases. Document ids are file names and
   may only contain letters, digits, `_` and `-`; documents with other ids in `manifest.json` (for example from a
   manipulated archive or share) are ignored, so they can never address files outside the knowledge base.
