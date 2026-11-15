@@ -57,7 +57,7 @@
             "type": "Microsoft.Common.InfoBox",
             "options": {
               "style": "Info",
-              "text": "Clients can sign in with Microsoft Entra ID (OAuth), use an API key, or both. The app registration must expose an API scope and accept v2 access tokens.",
+              "text": "Clients can sign in with Microsoft Entra ID (OAuth), use an API key, or both. The app registration must accept v2 access tokens and expose the scope under the Application ID URI https://<app FQDN>/mcp (deployment output oauthApplicationIdUri).",
               "uri": "https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/hosting-azure.md#sign-in-with-microsoft-entra-id"
             }
           },
@@ -262,6 +262,7 @@
       "allowAnonymous": "[steps('auth').allowAnonymous]",
       "oauthClientId": "[if(equals(steps('auth').oauthMode, 'pick'), steps('auth').appPicker, if(equals(steps('auth').oauthMode, 'manual'), steps('auth').clientId, ''))]",
       "oauthScope": "[coalesce(steps('auth').oauthScope, 'access_as_user')]",
+      "oauthResource": "",
       "allowWrite": "[steps('options').allowWrite]",
       "allowedOrigins": "[coalesce(steps('options').allowedOrigins, '')]",
       "minReplicas": "[steps('options').minReplicas]",

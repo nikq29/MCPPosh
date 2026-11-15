@@ -49,6 +49,9 @@ param(
 
     [string] $OAuthScope = 'access_as_user',
 
+    # Application ID URI of the app registration; only needed for a custom domain (https://kb.contoso.com/mcp).
+    [string] $OAuthResource,
+
     [string[]] $AllowedOrigin,
 
     [ValidateRange(0, 10)]
@@ -100,6 +103,7 @@ $parameters = @{
 if ($OAuthClientId) {
     $parameters['oauthClientId'] = $OAuthClientId
     $parameters['oauthScope'] = $OAuthScope
+    if ($OAuthResource) { $parameters['oauthResource'] = $OAuthResource }
 }
 if ($RegistryServer) {
     $parameters['registryServer'] = $RegistryServer
@@ -134,6 +138,9 @@ if ($Publish) {
 
 Write-Host ''
 Write-Host 'Next steps:' -ForegroundColor Cyan
+if ($OAuthClientId) {
+    Write-Host "  App registration > Expose an API: set the Application ID URI to $($deployment.Outputs['oauthApplicationIdUri'].Value)"
+}
 Write-Host "  Test-McpServer -Uri $endpoint -ApiKey <key>"
 Write-Host "  Publish-McpKnowledgeBase -Name $KnowledgeBase -StorageAccountName $storageAccount -ShareName $share -ResourceGroupName $ResourceGroupName -Prune"
 Write-Host "  Get-McpClientConfig -KnowledgeBase $KnowledgeBase -Client VSCode -Transport Http -Uri $endpoint -ApiKeyPlaceholder"

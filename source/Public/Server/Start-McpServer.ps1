@@ -44,7 +44,7 @@ function Start-McpServer {
         API identifier configured at the identity provider. Required with -OAuthIssuer. Defaults to the comma-separated values in $env:PSMCPKB_OAUTH_AUDIENCE.
 
     .PARAMETER OAuthScope
-        Scope the access tokens must contain (scp or scope claim), e.g. api://<client-id>/access_as_user. It is also
+        Scope the access tokens must contain (scp or scope claim), e.g. https://kb.contoso.com/mcp/access_as_user. It is also
         advertised to MCP clients. Defaults to $env:PSMCPKB_OAUTH_SCOPE.
 
     .PARAMETER AllowedOrigin
@@ -82,7 +82,7 @@ function Start-McpServer {
         Runs an HTTP server reachable from the network in the current console, for example in a container. Clients must send the API key.
 
     .EXAMPLE
-        Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "api://$clientId/access_as_user" -Foreground
+        Start-McpServer -KnowledgeBase Contoso -Port 8080 -ListenAddress '*' -OAuthIssuer "https://login.microsoftonline.com/$tenantId/v2.0" -OAuthAudience $clientId -OAuthScope "https://kb.contoso.com/mcp/access_as_user" -Foreground
 
         Runs an HTTP server that accepts Microsoft Entra ID access tokens; MCP clients sign in with OAuth.
 

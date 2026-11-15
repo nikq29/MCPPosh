@@ -44,6 +44,9 @@ param oauthClientId string = ''
 @description('Scope the app registration exposes and the access tokens must contain (short name, e.g. access_as_user).')
 param oauthScope string = 'access_as_user'
 
+@description('Application ID URI of the app registration: the public MCP endpoint without trailing slash, e.g. https://kb.contoso.com/mcp for a custom domain. Empty: https://<app FQDN>/mcp.')
+param oauthResource string = ''
+
 @description('Comma-separated browser origins allowed via CORS (optional).')
 param allowedOrigins string = ''
 
@@ -88,6 +91,9 @@ var apiKeyEnv = useApiKey ? [
     secretRef: 'api-key'
   }
 ] : []
+// MCP clients send the endpoint URL as resource parameter (RFC 8707); Entra ID only accepts it when it is the
+// Application ID URI and the scope belongs to it (otherwise AADSTS9010010). The app FQDN is <name>.<default domain>.
+var oauthResourceUri = empty(oauthResource) ? 'https://${name}.${environment.properties.defaultDomain}/mcp' : oauthResource
 // v2 tokens of the tenant this template is deployed to; they carry the client ID as audience. v1 tokens have another
 // issuer and are rejected (the app registration must request v2 tokens, see docs/hosting-azure.md).
 var oauthEnv = empty(oauthClientId) ? [] : [
@@ -97,11 +103,11 @@ var oauthEnv = empty(oauthClientId) ? [] : [
   }
   {
     name: 'PSMCPKB_OAUTH_AUDIENCE'
-    value: oauthClientId
+    value: '${oauthClientId},${oauthResourceUri}'
   }
   {
     name: 'PSMCPKB_OAUTH_SCOPE'
-    value: 'api://${oauthClientId}/${oauthScope}'
+    value: '${oauthResourceUri}/${oauthScope}'
   }
 ]
 var registrySecrets = useRegistry ? [
@@ -276,6 +282,9 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
 
 @description('MCP endpoint for AI clients.')
 output mcpEndpoint string = 'https://${app.properties.configuration.ingress.fqdn}/mcp'
+
+@description('Application ID URI to set on the app registration (Expose an API); empty without oauthClientId.')
+output oauthApplicationIdUri string = empty(oauthClientId) ? '' : oauthResourceUri
 
 @description('Storage account that holds the knowledge base share (for Publish-McpKnowledgeBase).')
 output storageAccountName string = storage.name

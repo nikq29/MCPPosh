@@ -67,6 +67,7 @@ Connect-AzAccount
 | `-RegistryServer`, `-RegistryUsername`, `-RegistryPassword` | credentials for a private registry | none |
 | `-AllowWrite` | enables the `add_note` tool | off |
 | `-OAuthClientId`, `-OAuthScope` | [Entra ID sign-in](#sign-in-with-microsoft-entra-id) with this app registration and scope | off, `access_as_user` |
+| `-OAuthResource` | Application ID URI, only for a [custom domain](#custom-domain) | `https://<app>/mcp` |
 | `-AllowAnonymous` | no API key is generated; only behind an authenticating gateway | off |
 | `-AllowedOrigin` | browser origins allowed via CORS | none |
 | `-MinReplicas` | minimum number of replicas (0 allows scale to zero) | `1` |
@@ -92,6 +93,7 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 | `apiKey` | API key(s), comma-separated, at least 16 characters (secure); empty only with `oauthClientId` or `allowAnonymous` | empty |
 | `oauthClientId` | client ID of an Entra app registration in the tenant; enables [OAuth sign-in](#sign-in-with-microsoft-entra-id) | empty |
 | `oauthScope` | scope the app registration exposes | `access_as_user` |
+| `oauthResource` | Application ID URI of the app registration, only for a [custom domain](#custom-domain) | `https://<app>/mcp` |
 | `allowAnonymous` | no API key or token required; only behind an authenticating gateway | `false` |
 | `knowledgeBase` | knowledge base name on the share | `Default` |
 | `knowledgeBaseDescription` | description used when the knowledge base is created | empty |
@@ -102,10 +104,12 @@ az deployment group create -g rg-psmcpkb -f deploy/azure/main.bicep \
 | `maxReplicas` | maximum replicas (1-10) | `1` |
 | `shareQuotaGiB` | quota of the file share | `5` |
 
-Outputs: `mcpEndpoint` (`https://<app>/mcp`), `storageAccountName` and `shareName`.
+Outputs: `mcpEndpoint` (`https://<app>/mcp`), `oauthApplicationIdUri` (with `oauthClientId`), `storageAccountName`
+and `shareName`.
 
 The issuer is the tenant you deploy to (`https://login.microsoftonline.com/<tenant id>/v2.0`); tokens must be issued
-for `<client id>` (v2 tokens) and contain `api://<client id>/<oauthScope>`.
+for `<client id>` (v2 tokens) and contain the scope `<oauthScope>`, which clients request as
+`<oauthApplicationIdUri>/<oauthScope>`.
 
 ### Sign in with Microsoft Entra ID
 
@@ -113,14 +117,21 @@ One app registration serves as both the API and the client that signs users in:
 
 1. *Microsoft Entra ID › App registrations › New registration*: single tenant, no redirect URI yet. Note the
    *Application (client) ID*. You are its owner, so the Deploy to Azure form lists it.
-2. *Expose an API*: set the Application ID URI to `api://<client id>` and add the scope `access_as_user` (who can
-   consent: admins and users).
-3. *Manifest*: set `requestedAccessTokenVersion` (older manifest format: `accessTokenAcceptedVersion`) to `2`. With
-   v1 tokens the issuer does not match and every token is rejected.
-4. *Authentication › Add a platform › Mobile and desktop applications*: add the redirect URI of each client, for
-   Claude Code `http://localhost:<port>/callback` with the port you pass as `--callback-port`.
-5. Deploy with `oauthClientId` (or `deploy.ps1 -OAuthClientId`) and add the server to the client, for example
-   `claude mcp add --transport http --client-id <client id> --callback-port <port> psmcpkb <mcpEndpoint>`.
+2. *Manifest*: set `requestedAccessTokenVersion` (older manifest format: `accessTokenAcceptedVersion`) to `2`. With
+   v1 tokens the issuer does not match and every token is rejected. Entra ID requires this before step 4.
+3. Deploy with `oauthClientId` (or `deploy.ps1 -OAuthClientId`).
+4. *Expose an API*: set the Application ID URI to the output `oauthApplicationIdUri` (`https://<app>/mcp`, no
+   trailing slash) and add the scope `access_as_user` (who can consent: admins and users). MCP clients send the
+   endpoint URL as `resource` parameter; with any other Application ID URI, such as `api://<client id>`, Entra ID
+   rejects the sign-in with AADSTS9010010.
+5. *Authentication*: add the redirect URI of each client, for example
+   - claude.ai: platform *Web*, `https://claude.ai/api/mcp/auth_callback`; create a client secret (*Certificates &
+     secrets*) and enter client ID and secret in the advanced settings of the connector.
+   - Claude Code: platform *Mobile and desktop applications*, `http://localhost:<port>/callback`, then
+     `claude mcp add --transport http --client-id <client id> --callback-port <port> psmcpkb <mcpEndpoint>`.
+
+With a [custom domain](#custom-domain) the Application ID URI is `https://<your domain>/mcp`: deploy again with
+`oauthResource` (`deploy.ps1 -OAuthResource`) and change the URI of the app registration.
 
 API keys keep working next to OAuth, for scripts and `Test-McpServer`.
 
@@ -187,5 +198,7 @@ See [Client configuration](client-configuration.md#http).
 - `minReplicas = 0` saves costs but causes a cold start of a few seconds on the first request.
 - Logs: Log Analytics table `ContainerAppConsoleLogs_CL` or
   `az containerapp logs show -n psmcpkb -g rg-psmcpkb --follow`.
-- Updates: deploy a new image version with `deploy.ps1 -Image ghcr.io/nikq29/psmcpkb:<new version>`; the knowledge
-  base on the share is kept.
+- Updates: `az containerapp update -n psmcpkb -g rg-psmcpkb --image ghcr.io/nikq29/psmcpkb:<new version>` creates a
+  new revision and keeps all settings and the knowledge base on the share. Use a fixed version: with `:latest` the
+  image name does not change and no new image is pulled. `deploy.ps1` also works, but pass `-ApiKey` and the OAuth
+  parameters again; otherwise it generates a new API key and turns Entra ID sign-in off.
