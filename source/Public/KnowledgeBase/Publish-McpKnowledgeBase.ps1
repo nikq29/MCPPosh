@@ -12,6 +12,10 @@ function Publish-McpKnowledgeBase {
         last so the server always sees a consistent state. -Prune removes documents from the
         share that no longer exist locally.
 
+        Publishing stops when the share holds documents that do not exist locally and were not
+        published from this computer, for example notes that agents saved on the server with
+        add_note. Copy them to the local knowledge base first, or use -Force to replace them.
+
         Requires the Az.Storage module (Install-Module Az.Storage).
 
     .PARAMETER Name
@@ -44,7 +48,8 @@ function Publish-McpKnowledgeBase {
         Delete documents on the share that no longer exist locally.
 
     .PARAMETER Force
-        Upload all files, not only the changed ones.
+        Upload all files, not only the changed ones, and replace documents that exist only on
+        the share (for example agent notes) instead of stopping.
 
     .EXAMPLE
         Connect-AzAccount
@@ -153,6 +158,19 @@ function Publish-McpKnowledgeBase {
             $existing = Get-AzStorageFile -ShareName $ShareName -Path $directory -Context $storageContext -ErrorAction SilentlyContinue
             if (-not $existing) {
                 $null = New-AzStorageDirectory -ShareName $ShareName -Path $directory -Context $storageContext
+            }
+        }
+
+        # Notes saved by agents on the server (add_note) exist only in the remote manifest, and uploading the local
+        # manifest would drop them. Documents published from here before were removed locally on purpose.
+        if (-not $Force) {
+            $remoteManifestPath = Join-Path -Path $snapshot -ChildPath '.remote-manifest.json'
+            $null = Get-AzStorageFileContent -ShareName $ShareName -Path "$remoteRoot/manifest.json" -Destination $remoteManifestPath -Context $storageContext -Force -ErrorAction SilentlyContinue
+            $remoteManifest = Read-McpJsonFile -Path $remoteManifestPath
+            $localIds = @((Read-McpManifest -KbPath $snapshot)['documents'] | ForEach-Object { [string]$_.id })
+            $remoteOnly = @(@($remoteManifest.documents) | Where-Object { $_ -and $localIds -notcontains [string]$_.id -and -not $previous.Contains("documents/$($_.id).md") })
+            if ($remoteOnly.Count -gt 0) {
+                throw ("The share contains {0} document(s) that do not exist locally and were not published from here, for example notes saved by agents with add_note: {1}. Publishing would remove them from the server. Copy them to the local knowledge base first, or use -Force to replace them." -f $remoteOnly.Count, (($remoteOnly | ForEach-Object { "'$($_.title)' ($($_.id))" }) -join ', '))
             }
         }
 

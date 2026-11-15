@@ -35,6 +35,14 @@ Describe 'Invoke-McpAddNoteTool' {
         }
     }
 
+    It 'rejects too many or too long tags, which the size limits do not count' {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:WriteContext } {
+            param($Context)
+            { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Tags'; content = 'x'; tags = [string[]](1..21) }) } | Should -Throw '*at most 20 tags*'
+            { Invoke-McpAddNoteTool -Context $Context -Arguments ([ordered]@{ title = 'Tags'; content = 'x'; tags = @('t' * 51) }) } | Should -Throw '*50 characters*'
+        }
+    }
+
     Context 'limits against agents that fill the knowledge base' {
         BeforeEach {
             New-McpKnowledgeBase -Name Notes | Out-Null

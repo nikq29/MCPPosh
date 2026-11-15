@@ -29,6 +29,12 @@ Describe 'Invoke-McpSearchTool' {
         @($result.structuredContent.results).Count | Should -Be 0
     }
 
+    It 'rejects queries longer than 1000 characters as a tool error' {
+        $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'search_documentation'; arguments = @{ query = ('backup ' * 200) } } }).result
+        $result.isError | Should -BeTrue
+        $result.content[0].text | Should -BeLike '*1000 characters*'
+    }
+
     It 'uses LF line endings on all platforms' {
         $result = (Invoke-McpTestMessage -KnowledgeBase Proto -Message @{ jsonrpc = '2.0'; id = 1; method = 'tools/call'; params = @{ name = 'search_documentation'; arguments = @{ query = 'backup' } } }).result
         $result.content[0].text | Should -Match "`n## 1\. Backup`n"

@@ -32,7 +32,7 @@ function Get-McpToolList {
             inputSchema = [ordered]@{
                 type       = 'object'
                 properties = [ordered]@{
-                    query = [ordered]@{ type = 'string'; description = 'Search terms or a short natural-language question.' }
+                    query = [ordered]@{ type = 'string'; description = 'Search terms or a short natural-language question.'; maxLength = 1000 }
                     limit = [ordered]@{ type = 'integer'; description = 'Maximum number of sections to return (1-20, default 5).'; minimum = 1; maximum = 20; default = 5 }
                     tags  = [ordered]@{ type = 'array'; items = [ordered]@{ type = 'string' }; description = 'Only search documents that have at least one of these tags.' }
                 }
@@ -77,9 +77,9 @@ function Get-McpToolList {
                 inputSchema = [ordered]@{
                     type       = 'object'
                     properties = [ordered]@{
-                        title   = [ordered]@{ type = 'string'; description = 'Short, descriptive title.' }
-                        content = [ordered]@{ type = 'string'; description = 'Note content in Markdown.' }
-                        tags    = [ordered]@{ type = 'array'; items = [ordered]@{ type = 'string' }; description = 'Optional tags.' }
+                        title   = [ordered]@{ type = 'string'; description = 'Short, descriptive title.'; maxLength = 200 }
+                        content = [ordered]@{ type = 'string'; description = 'Note content in Markdown.'; maxLength = 200000 }
+                        tags    = [ordered]@{ type = 'array'; items = [ordered]@{ type = 'string'; maxLength = 50 }; maxItems = 20; description = 'Optional tags.' }
                     }
                     required   = @('title', 'content')
                 }

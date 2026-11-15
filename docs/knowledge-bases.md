@@ -94,12 +94,15 @@ Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareN
 | `-Context` | uses an existing storage context from `New-AzStorageContext` |
 | `-RemoteName` | name of the knowledge base on the share; must match `PSMCPKB_KNOWLEDGEBASE` of the container |
 | `-Prune` | deletes documents on the share that no longer exist locally |
-| `-Force` | uploads all files instead of only the changed ones |
+| `-Force` | uploads all files instead of only the changed ones, and replaces documents that exist only on the share |
 
 How publishing works:
 
 1. The local files are copied to a snapshot while the knowledge base is locked.
 2. The folders `knowledgebases/<name>/documents` and `index` are created on the share when needed.
+   Publishing stops when the remote manifest lists documents that do not exist locally and were not published from
+   this computer, for example notes that agents saved with `add_note`; uploading the local manifest would remove
+   them from the server. Copy them to the local knowledge base first, or use `-Force` to replace them.
 3. Files whose SHA-256 hash differs from the last publish are uploaded; the manifest is always uploaded last, so the
    server only reloads when all files are in place.
 4. With `-Prune`, remote documents and index files that do not exist locally are deleted.
