@@ -1,15 +1,15 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Publish-McpKnowledgeBase.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Publish-McpKnowledgeBase.md
 schema: 2.0.0
 ---
 
 # Publish-McpKnowledgeBase
 
 ## SYNOPSIS
-Publishes a local knowledge base to an Azure Files share used by a hosted MCPPosh server.
+Publishes a local knowledge base to an Azure Files share used by a hosted PSMcpKnowledgeBase server.
 
 ## SYNTAX
 
@@ -42,7 +42,7 @@ Publish-McpKnowledgeBase [-Name] <String> -ShareName <String> -Context <Object> 
 
 ## DESCRIPTION
 Maintain your documentation locally with Add-McpDocument and publish it to the file share
-that the MCPPosh container (e.g.
+that the PSMcpKnowledgeBase container (e.g.
 in Azure Container Apps) mounts at /data.
 The running
 server picks up the new revision automatically.
@@ -60,7 +60,7 @@ Requires the Az.Storage module (Install-Module Az.Storage).
 ### EXAMPLE 1
 ```
 Connect-AzAccount
-Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
+Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareName psmcpkb -ResourceGroupName rg-psmcpkb -Prune
 ```
 
 Uploads the changed files of the knowledge base Contoso to the Azure Files share of a hosted server and deletes documents that were removed locally.
@@ -68,10 +68,10 @@ The storage key is read from the resource group.
 
 ### EXAMPLE 2
 ```
-Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -SasToken $sas -RemoteName Docs
+Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareName psmcpkb -SasToken $sas -RemoteName Docs
 ```
 
-Publishes with a SAS token into the knowledge base Docs on the share; the container must use MCPPOSH_KNOWLEDGEBASE=Docs.
+Publishes with a SAS token into the knowledge base Docs on the share; the container must use PSMCPKB_KNOWLEDGEBASE=Docs.
 
 ## PARAMETERS
 
@@ -106,7 +106,7 @@ Accept wildcard characters: False
 ```
 
 ### -ShareName
-Azure Files share mounted by the container (the Bicep template creates 'mcpposh').
+Azure Files share mounted by the container (the Bicep template creates 'psmcpkb').
 
 ```yaml
 Type: String
@@ -184,7 +184,7 @@ Accept wildcard characters: False
 ### -RemoteName
 Knowledge base name on the share.
 Defaults to the local name; must match
-MCPPOSH_KNOWLEDGEBASE of the container.
+PSMCPKB_KNOWLEDGEBASE of the container.
 
 ```yaml
 Type: String
@@ -267,12 +267,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### None. You cannot pipe objects to this cmdlet.
 ## OUTPUTS
 
-### MCPPosh.PublishResult: KnowledgeBase, Destination, Uploaded, Skipped, Deleted and Revision.
+### PSMcpKnowledgeBase.PublishResult: KnowledgeBase, Destination, Uploaded, Skipped, Deleted and Revision.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Publish-McpKnowledgeBase.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Publish-McpKnowledgeBase.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Publish-McpKnowledgeBase.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Publish-McpKnowledgeBase.md)
 
 [Export-McpKnowledgeBase]()
 

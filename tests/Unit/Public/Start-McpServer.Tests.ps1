@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Srv | Out-Null
 }
 
@@ -12,7 +12,7 @@ AfterAll {
 
 Describe 'Start-McpServer' {
     It 'runs the stdio transport for Transport Stdio' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-McpStdioServer { }
             Start-McpServer -KnowledgeBase Srv -Transport Stdio -AllowWrite
             Should -Invoke Start-McpStdioServer -Times 1 -ParameterFilter { $Context.KnowledgeBase.Name -eq 'Srv' -and $Context.AllowWrite -and $Context.Transport -eq 'Stdio' }
@@ -20,7 +20,7 @@ Describe 'Start-McpServer' {
     }
 
     It 'runs the HTTP transport in the foreground with the API keys' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-McpHttpServer { }
             Start-McpServer -KnowledgeBase Srv -Port 5123 -ApiKey 'k1', 'k2' -Foreground
             Should -Invoke Start-McpHttpServer -Times 1 -ParameterFilter {
@@ -29,34 +29,34 @@ Describe 'Start-McpServer' {
         }
     }
 
-    It 'reads API keys from MCPPOSH_API_KEY' {
-        InModuleScope MCPPosh {
+    It 'reads API keys from PSMCPKB_API_KEY' {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-McpHttpServer { }
-            $previous = $env:MCPPOSH_API_KEY
-            $env:MCPPOSH_API_KEY = 'env-key-1, env-key-2'
+            $previous = $env:PSMCPKB_API_KEY
+            $env:PSMCPKB_API_KEY = 'env-key-1, env-key-2'
             try {
                 Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -Foreground
             }
             finally {
-                $env:MCPPOSH_API_KEY = $previous
+                $env:PSMCPKB_API_KEY = $previous
             }
             Should -Invoke Start-McpHttpServer -Times 1 -ParameterFilter { ($ApiKeys -join ',') -eq 'env-key-1,env-key-2' }
         }
     }
 
     It 'requires an API key when listening on all interfaces' {
-        $previous = $env:MCPPOSH_API_KEY
-        $env:MCPPOSH_API_KEY = $null
+        $previous = $env:PSMCPKB_API_KEY
+        $env:PSMCPKB_API_KEY = $null
         try {
             { Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -Port 5999 -Foreground } | Should -Throw '*ApiKey*'
         }
         finally {
-            $env:MCPPOSH_API_KEY = $previous
+            $env:PSMCPKB_API_KEY = $previous
         }
     }
 
     It 'allows anonymous access only with -AllowAnonymous' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-McpHttpServer { }
             Start-McpServer -KnowledgeBase Srv -ListenAddress '*' -AllowAnonymous -Foreground
             Should -Invoke Start-McpHttpServer -Times 1 -ParameterFilter { $AllowAnonymous }
@@ -64,7 +64,7 @@ Describe 'Start-McpServer' {
     }
 
     It 'refuses to start a background server on a port that is in use' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Get-McpServerState { [pscustomobject]@{ port = 5124; Status = 'Running'; knowledgeBase = 'Other'; pid = 1 } }
             { Start-McpServer -KnowledgeBase Srv -Port 5124 } | Should -Throw '*already running*'
             Mock Get-McpServerState { }
@@ -74,7 +74,7 @@ Describe 'Start-McpServer' {
     }
 
     It 'does not start a process with -WhatIf' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-Process { throw 'must not be called' }
             Start-McpServer -KnowledgeBase Srv -Port (Get-McpFreePort) -WhatIf
             Should -Invoke Start-Process -Times 0
@@ -82,7 +82,7 @@ Describe 'Start-McpServer' {
     }
 
     It 'reports the errors of a background server that fails to start' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             Mock Start-Process {
                 Set-Content -LiteralPath $RedirectStandardError -Value 'boom: listener failed'
                 [System.Diagnostics.Process]::Start((Get-McpPwshPath), '-NoProfile -Command exit 1')

@@ -1,6 +1,6 @@
 # Development
 
-MCPPosh is built, tested, documented and released with [Sampler](https://github.com/gaelcolas/Sampler), the
+PSMcpKnowledgeBase is built, tested, documented and released with [Sampler](https://github.com/gaelcolas/Sampler), the
 PowerShell module build framework based on InvokeBuild, ModuleBuilder, Pester and PlatyPS.
 
 ## Requirements
@@ -14,10 +14,10 @@ PowerShell module build framework based on InvokeBuild, ModuleBuilder, Pester an
 
 ```powershell
 ./build.ps1 -ResolveDependency -Tasks noop   # download the build dependencies (once, or after RequiredModules.psd1 changes)
-./build.ps1 -Tasks build                     # build the module into output/module/MCPPosh/<version>
+./build.ps1 -Tasks build                     # build the module into output/module/PSMcpKnowledgeBase/<version>
 ./build.ps1 -Tasks test                      # QA, unit and integration tests with code coverage
 ./build.ps1 -Tasks build, docs               # regenerate the cmdlet reference in docs/en-US
-./build.ps1 -Tasks pack                      # build and create output/MCPPosh.<version>.nupkg (requires the .NET SDK)
+./build.ps1 -Tasks pack                      # build and create output/PSMcpKnowledgeBase.<version>.nupkg (requires the .NET SDK)
 ./build.ps1                                  # default workflow: build and test
 ```
 
@@ -37,13 +37,13 @@ Custom tasks live in `.build/` and are loaded by `build.ps1` automatically.
 
 ```text
 source/                      module source
-  MCPPosh.psd1               module manifest (version and exports are set by the build)
-  MCPPosh.psm1               placeholder; the build creates the real root module
+  PSMcpKnowledgeBase.psd1               module manifest (version and exports are set by the build)
+  PSMcpKnowledgeBase.psm1               placeholder; the build creates the real root module
   prefix.ps1                 module state placed at the top of the built psm1
   suffix.ps1                 initialization placed at the end of the built psm1
   Public/<area>/<Verb-Noun>.ps1    exported cmdlets, one per file
   Private/<area>/<Verb-Noun>.ps1   internal functions, one per file
-  en-US/about_MCPPosh.help.txt     conceptual help
+  en-US/about_PSMcpKnowledgeBase.help.txt     conceptual help
 tests/
   QA/                        Sampler quality tests, documentation checks and the integration coverage guard
   Unit/Public, Unit/Private  one test file per function
@@ -57,8 +57,8 @@ examples/                    example scripts
 build.ps1, build.yaml, RequiredModules.psd1, Resolve-Dependency.*, GitVersion.yml   Sampler build files
 ```
 
-ModuleBuilder merges `prefix.ps1`, all files in `Private` and `Public` and `suffix.ps1` into one `MCPPosh.psm1` and
-exports the functions in `Public` (the file name is the function name).
+ModuleBuilder merges `prefix.ps1`, all files in `Private` and `Public` and `suffix.ps1` into one
+`PSMcpKnowledgeBase.psm1` and exports the functions in `Public` (the file name is the function name).
 
 ## Coding rules
 
@@ -82,8 +82,8 @@ Keep source files ASCII-only; use `[char]` escapes for other characters.
 ```
 
 - Tests run against the built module in `output/module`, which the build puts first on `PSModulePath`.
-- Each test file imports `tests/TestHelpers/MCPPosh.TestHelpers.psm1`, which creates an isolated `MCPPOSH_HOME`.
-- Private functions are tested with `InModuleScope MCPPosh`.
+- Each test file imports `tests/TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1`, which creates an isolated `PSMCPKB_HOME`.
+- Private functions are tested with `InModuleScope PSMcpKnowledgeBase`.
 - Code coverage must be at least 85 % (`CoveragePercentTarget` in `build.yaml`).
 - To run a single test file after a build:
 
@@ -112,7 +112,7 @@ Rules for integration tests:
   that `Publish-McpKnowledgeBase` uses on top of a local folder.
 - Fixtures are created at runtime (`New-McpTestFixture` creates a file for every built-in converter, including a
   PDF and a Word document). Adding a built-in converter requires a fixture.
-- Call MCPPosh cmdlets with named, full parameter names. Commands for child processes and thread jobs are written
+- Call PSMcpKnowledgeBase cmdlets with named, full parameter names. Commands for child processes and thread jobs are written
   as script block literals (`Start-McpTestProcess`, `ConvertTo-McpTestEncodedCommand`).
 
 The QA test `tests/QA/integration.tests.ps1` reads the integration tests and fails when an exported cmdlet, a
@@ -126,7 +126,7 @@ PSWritePDF and `pdftotext` it is skipped.
 
 - Guides are hand-written Markdown in `docs/`.
 - The cmdlet reference in `docs/en-US` is generated from the comment-based help with PlatyPS. After changing help,
-  run `./build.ps1 -Tasks build, docs` and commit the changes. The module page `docs/en-US/MCPPosh.md` is maintained
+  run `./build.ps1 -Tasks build, docs` and commit the changes. The module page `docs/en-US/PSMcpKnowledgeBase.md` is maintained
   by hand.
 - `tests/QA/docs.tests.ps1` checks that every cmdlet has a reference page whose synopsis matches the help, that no
   placeholders are left and that relative links resolve.
@@ -153,7 +153,7 @@ The workflow [`.github/workflows/build.yml`](../.github/workflows/build.yml) run
 | `analyze` | Bicep build, PSScriptAnalyzer for `docker` and `deploy`, Markdown lint |
 | `docker` | builds the image from the built package and runs a smoke test (not for tags) |
 | `publish` | tags only: `./build.ps1 -Tasks publish` to the PowerShell Gallery and GitHub releases |
-| `docker-release` | tags only: builds the multi-architecture image from the Gallery and pushes it to `ghcr.io/<owner>/mcpposh` |
+| `docker-release` | tags only: builds the multi-architecture image from the Gallery and pushes it to `ghcr.io/<owner>/psmcpkb` |
 
 To release a version:
 

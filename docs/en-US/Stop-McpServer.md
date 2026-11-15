@@ -1,15 +1,15 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Stop-McpServer.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Stop-McpServer.md
 schema: 2.0.0
 ---
 
 # Stop-McpServer
 
 ## SYNOPSIS
-Stops MCPPosh HTTP servers that run on this machine.
+Stops PSMcpKnowledgeBase HTTP servers that run on this machine.
 
 ## SYNTAX
 
@@ -25,7 +25,7 @@ Stop-McpServer [-All] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Stops MCPPosh HTTP servers that run on this machine, in the background or in another console, and removes their state files.
+Stops PSMcpKnowledgeBase HTTP servers that run on this machine, in the background or in another console, and removes their state files.
 Without parameters the only running server is stopped.
 
 ## EXAMPLES
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -All
-Stops all MCPPosh HTTP servers that were started on this machine.
+Stops all PSMcpKnowledgeBase HTTP servers that were started on this machine.
 
 ```yaml
 Type: SwitchParameter
@@ -127,7 +127,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### MCPPosh.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
+### PSMcpKnowledgeBase.Server. You can pipe servers from Get-McpServer; KnowledgeBase and Port bind by property name.
 ## OUTPUTS
 
 ### None.
@@ -135,7 +135,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Stop-McpServer.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Stop-McpServer.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Stop-McpServer.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Stop-McpServer.md)
 
 [Start-McpServer]()
 

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Get-McpServerState' {
     It 'marks running and stale servers' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $self = [System.Diagnostics.Process]::GetCurrentProcess()
             Write-McpJsonFile -Path (Get-McpServerStateFile -KnowledgeBaseName A -Port 1) -InputObject ([ordered]@{ pid = $PID; processStartTime = $self.StartTime.ToUniversalTime().ToString('o'); port = 1 })
             Write-McpJsonFile -Path (Get-McpServerStateFile -KnowledgeBaseName B -Port 2) -InputObject ([ordered]@{ pid = 999999; port = 2 })

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,7 +11,7 @@ AfterAll {
 
 Describe 'Initialize-McpKnowledgeBaseFolder' {
     It 'creates the folders, metadata and an empty manifest' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $path = Join-Path $Home 'kb-init'
             Initialize-McpKnowledgeBaseFolder -Path $path -Name Init -Description 'Init test'
@@ -22,7 +22,7 @@ Describe 'Initialize-McpKnowledgeBaseFolder' {
     }
 
     It 'does not overwrite existing metadata' {
-        InModuleScope MCPPosh -Parameters @{ Home = $script:TestHome } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Home = $script:TestHome } {
             param($Home)
             $path = Join-Path $Home 'kb-init'
             Initialize-McpKnowledgeBaseFolder -Path $path -Name Other -Description 'Changed'

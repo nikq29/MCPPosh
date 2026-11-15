@@ -40,13 +40,13 @@ function Update-McpDocument {
         Updates all documents and removes documents whose source file no longer exists.
 
     .INPUTS
-        MCPPosh.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
+        PSMcpKnowledgeBase.Document. You can pipe documents from Get-McpDocument; Id and KnowledgeBase bind by property name.
 
     .OUTPUTS
-        MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
+        PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content. Only documents that were re-imported are returned.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Update-McpDocument.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Update-McpDocument.md
 
     .LINK
         Add-McpDocument
@@ -55,7 +55,7 @@ function Update-McpDocument {
         Get-McpDocument
     #>
     [CmdletBinding(DefaultParameterSetName = 'Id', SupportsShouldProcess)]
-    [OutputType('MCPPosh.Document')]
+    [OutputType('PSMcpKnowledgeBase.Document')]
     param(
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'Id', ValueFromPipelineByPropertyName)]
         [string[]] $Id,

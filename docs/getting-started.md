@@ -15,13 +15,13 @@ Check your PowerShell version:
 $PSVersionTable.PSVersion
 ```
 
-## 1. Install MCPPosh
+## 1. Install PSMcpKnowledgeBase
 
 ```powershell
-Install-PSResource -Name MCPPosh                    # PowerShell 7.4 and later (PSResourceGet)
-Install-Module -Name MCPPosh -Scope CurrentUser     # alternatively with PowerShellGet
-Import-Module MCPPosh
-Get-Command -Module MCPPosh
+Install-PSResource -Name PSMcpKnowledgeBase                    # PowerShell 7.4 and later (PSResourceGet)
+Install-Module -Name PSMcpKnowledgeBase -Scope CurrentUser     # alternatively with PowerShellGet
+Import-Module PSMcpKnowledgeBase
+Get-Command -Module PSMcpKnowledgeBase
 ```
 
 To build the module from source instead, see [Development](development.md).
@@ -35,7 +35,7 @@ describe what the documentation covers and when the agent should use it.
 New-McpKnowledgeBase -Name Contoso -Description 'Internal IT documentation of Contoso: runbooks, architecture and FAQ.'
 ```
 
-The knowledge base is stored in `~/.mcpposh/knowledgebases/Contoso`. Set `$env:MCPPOSH_HOME` to use another
+The knowledge base is stored in `~/.psmcpkb/knowledgebases/Contoso`. Set `$env:PSMCPKB_HOME` to use another
 location. A knowledge base named `Default` is created automatically when a cmdlet uses it for the first time.
 
 ## 3. Add knowledge

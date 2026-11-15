@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     $script:Files = Join-Path $script:TestHome 'files'
     New-Item -ItemType Directory -Path $script:Files -Force | Out-Null
     New-McpKnowledgeBase -Name Kb | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Invoke-McpSearch' {
     It 'ranks the most relevant chunk first' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $index = Get-McpSearchIndex -KbPath (Resolve-McpKnowledgeBase -KnowledgeBase Kb).Path
             $results = @(Invoke-McpSearch -Index $index -Query 'connection drops vpnagent')
             $results[0].Heading | Should -Be 'VPN Runbook > Connection drops'
@@ -25,7 +25,7 @@ Describe 'Invoke-McpSearch' {
     }
 
     It 'expands prefixes, filters by tag and limits chunks per document' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $index = Get-McpSearchIndex -KbPath (Resolve-McpKnowledgeBase -KnowledgeBase Kb).Path
             (Invoke-McpSearch -Index $index -Query 'certif')[0].Heading | Should -Match 'Certificates'
             Invoke-McpSearch -Index $index -Query 'rollback' -Tags vpn | Should -BeNullOrEmpty
@@ -34,7 +34,7 @@ Describe 'Invoke-McpSearch' {
     }
 
     It 'returns nothing for stop words and unknown terms' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $index = Get-McpSearchIndex -KbPath (Resolve-McpKnowledgeBase -KnowledgeBase Kb).Path
             Invoke-McpSearch -Index $index -Query 'the and' | Should -BeNullOrEmpty
             Invoke-McpSearch -Index $index -Query 'xyzzy' | Should -BeNullOrEmpty

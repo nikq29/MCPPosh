@@ -1,11 +1,11 @@
 function Publish-McpKnowledgeBase {
     <#
     .SYNOPSIS
-        Publishes a local knowledge base to an Azure Files share used by a hosted MCPPosh server.
+        Publishes a local knowledge base to an Azure Files share used by a hosted PSMcpKnowledgeBase server.
 
     .DESCRIPTION
         Maintain your documentation locally with Add-McpDocument and publish it to the file share
-        that the MCPPosh container (e.g. in Azure Container Apps) mounts at /data. The running
+        that the PSMcpKnowledgeBase container (e.g. in Azure Container Apps) mounts at /data. The running
         server picks up the new revision automatically.
 
         Only files that changed since the last publish are uploaded. The manifest is uploaded
@@ -21,7 +21,7 @@ function Publish-McpKnowledgeBase {
         Storage account that holds the share.
 
     .PARAMETER ShareName
-        Azure Files share mounted by the container (the Bicep template creates 'mcpposh').
+        Azure Files share mounted by the container (the Bicep template creates 'psmcpkb').
 
     .PARAMETER StorageAccountKey
         Access key of the storage account that holds the Azure Files share.
@@ -38,7 +38,7 @@ function Publish-McpKnowledgeBase {
 
     .PARAMETER RemoteName
         Knowledge base name on the share. Defaults to the local name; must match
-        MCPPOSH_KNOWLEDGEBASE of the container.
+        PSMCPKB_KNOWLEDGEBASE of the container.
 
     .PARAMETER Prune
         Delete documents on the share that no longer exist locally.
@@ -48,23 +48,23 @@ function Publish-McpKnowledgeBase {
 
     .EXAMPLE
         Connect-AzAccount
-        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -ResourceGroupName rg-mcpposh -Prune
+        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareName psmcpkb -ResourceGroupName rg-psmcpkb -Prune
 
         Uploads the changed files of the knowledge base Contoso to the Azure Files share of a hosted server and deletes documents that were removed locally. The storage key is read from the resource group.
 
     .EXAMPLE
-        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName mcpposhab12cd -ShareName mcpposh -SasToken $sas -RemoteName Docs
+        Publish-McpKnowledgeBase -Name Contoso -StorageAccountName psmcpkbab12cd -ShareName psmcpkb -SasToken $sas -RemoteName Docs
 
-        Publishes with a SAS token into the knowledge base Docs on the share; the container must use MCPPOSH_KNOWLEDGEBASE=Docs.
+        Publishes with a SAS token into the knowledge base Docs on the share; the container must use PSMCPKB_KNOWLEDGEBASE=Docs.
 
     .INPUTS
         None. You cannot pipe objects to this cmdlet.
 
     .OUTPUTS
-        MCPPosh.PublishResult: KnowledgeBase, Destination, Uploaded, Skipped, Deleted and Revision.
+        PSMcpKnowledgeBase.PublishResult: KnowledgeBase, Destination, Uploaded, Skipped, Deleted and Revision.
 
     .LINK
-        https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Publish-McpKnowledgeBase.md
+        https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Publish-McpKnowledgeBase.md
 
     .LINK
         Export-McpKnowledgeBase
@@ -76,7 +76,7 @@ function Publish-McpKnowledgeBase {
         Test-McpServer
     #>
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'ResourceGroup')]
-    [OutputType('MCPPosh.PublishResult')]
+    [OutputType('PSMcpKnowledgeBase.PublishResult')]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string] $Name,
@@ -133,7 +133,7 @@ function Publish-McpKnowledgeBase {
     if ($null -eq $previous -or $Force) { $previous = [ordered]@{} }
 
     # Snapshot the local files under the lock so the published state is consistent.
-    $snapshot = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('mcpposh-publish-' + [guid]::NewGuid().ToString('N'))
+    $snapshot = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ('psmcpkb-publish-' + [guid]::NewGuid().ToString('N'))
     $null = New-Item -ItemType Directory -Path $snapshot -Force
     try {
         $kbLock = Lock-McpKnowledgeBase -KbPath $kb.Path
@@ -187,7 +187,7 @@ function Publish-McpKnowledgeBase {
 
         Write-McpJsonFile -Path $stateFile -InputObject $current
         [pscustomobject]@{
-            PSTypeName    = 'MCPPosh.PublishResult'
+            PSTypeName    = 'PSMcpKnowledgeBase.PublishResult'
             KnowledgeBase = $kb.Name
             Destination   = $destination
             Uploaded      = $uploaded

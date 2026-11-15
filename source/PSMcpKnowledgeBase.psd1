@@ -1,6 +1,6 @@
 @{
     # Script module or binary module file associated with this manifest.
-    RootModule           = 'MCPPosh.psm1'
+    RootModule           = 'PSMcpKnowledgeBase.psm1'
 
     # Version number of this module. Set by the Sampler build (GitVersion).
     ModuleVersion        = '0.0.1'
@@ -28,8 +28,8 @@
     PrivateData          = @{
         PSData = @{
             Tags         = @('MCP', 'ModelContextProtocol', 'AI', 'Agent', 'LLM', 'Documentation', 'KnowledgeBase', 'Claude', 'Copilot', 'RAG', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS')
-            LicenseUri   = 'https://github.com/nikq29/MCPPosh/blob/main/LICENSE'
-            ProjectUri   = 'https://github.com/nikq29/MCPPosh'
+            LicenseUri   = 'https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/nikq29/PSMcpKnowledgeBase'
             ReleaseNotes = ''
             Prerelease   = ''
         }

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
 }
 
 AfterAll {
@@ -11,21 +11,21 @@ AfterAll {
 
 Describe 'ConvertTo-McpShellArgument' {
     It 'leaves safe values unchanged' {
-        InModuleScope MCPPosh {
-            ConvertTo-McpShellArgument -Value 'mcpposh-docs' | Should -Be 'mcpposh-docs'
+        InModuleScope PSMcpKnowledgeBase {
+            ConvertTo-McpShellArgument -Value 'psmcpkb-docs' | Should -Be 'psmcpkb-docs'
             ConvertTo-McpShellArgument -Value 'https://docs.example.com/mcp' -Shell PowerShell | Should -Be 'https://docs.example.com/mcp'
         }
     }
 
     It 'quotes values for POSIX shells' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             ConvertTo-McpShellArgument -Value "Import-Module 'x'; Start" -Shell Posix | Should -Be "'Import-Module '\''x'\''; Start'"
             ConvertTo-McpShellArgument -Value 'a $(id) `b`' -Shell Posix | Should -Be "'a `$(id) ``b``'"
         }
     }
 
     It 'quotes values for PowerShell so that nothing is expanded' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             ConvertTo-McpShellArgument -Value "Import-Module 'x'; Start" -Shell PowerShell | Should -Be "'Import-Module ''x''; Start'"
             $quoted = ConvertTo-McpShellArgument -Value 'C:\KB $(Get-Process) `n "x"' -Shell PowerShell
             $quoted | Should -Be "'C:\KB `$(Get-Process) ``n `"x`"'"
@@ -39,7 +39,7 @@ Describe 'ConvertTo-McpShellArgument' {
     }
 
     It 'uses PowerShell quoting on Windows and POSIX quoting elsewhere by default' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $expected = if ($IsWindows) { "'it''s'" } else { "'it'\''s'" }
             ConvertTo-McpShellArgument -Value "it's" | Should -Be $expected
         }

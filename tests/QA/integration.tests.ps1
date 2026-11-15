@@ -1,5 +1,5 @@
 <#
-    Integration test coverage guard: every exported command, every parameter set and every parameter of MCPPosh
+    Integration test coverage guard: every exported command, every parameter set and every parameter of PSMcpKnowledgeBase
     must be used in an end-to-end test in tests/Integration, and those tests must not use mocks.
 
     The calls are found in the syntax tree of the test files (including script blocks that run in child processes
@@ -7,10 +7,10 @@
     splatting are not counted.
 #>
 BeforeDiscovery {
-    $module = Get-Module -Name 'MCPPosh' -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+    $module = Get-Module -Name 'PSMcpKnowledgeBase' -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
     Import-Module -Name $module.Path -Force -ErrorAction Stop
     $common = [System.Management.Automation.PSCmdlet]::CommonParameters + [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
-    $commands = @(Get-Command -Module 'MCPPosh' -CommandType Function | Sort-Object -Property Name)
+    $commands = @(Get-Command -Module 'PSMcpKnowledgeBase' -CommandType Function | Sort-Object -Property Name)
 
     $script:commandCases = @($commands | ForEach-Object { @{ Name = $_.Name } })
     $script:parameterSetCases = @(foreach ($command in $commands) {
@@ -31,7 +31,7 @@ BeforeAll {
     $integrationFiles = @(Get-ChildItem -Path (Join-Path -Path $projectPath -ChildPath 'tests/Integration') -Filter '*.Tests.ps1' -File)
     $common = [System.Management.Automation.PSCmdlet]::CommonParameters + [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
     $commands = @{}
-    Get-Command -Module 'MCPPosh' -CommandType Function | ForEach-Object { $commands[$_.Name] = $_ }
+    Get-Command -Module 'PSMcpKnowledgeBase' -CommandType Function | ForEach-Object { $commands[$_.Name] = $_ }
 
     function Resolve-ParameterName {
         <# Returns the full parameter name for a (possibly abbreviated) name or alias, or $null. #>

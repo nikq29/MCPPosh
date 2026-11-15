@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocument.md
 schema: 2.0.0
 ---
 
@@ -20,7 +20,7 @@ Get-McpDocument [[-Id] <String[]>] [-Title <String>] [-Tag <String[]>] [-Format 
 ```
 
 ## DESCRIPTION
-Returns the documents stored in a knowledge base as MCPPosh.Document objects.
+Returns the documents stored in a knowledge base as PSMcpKnowledgeBase.Document objects.
 Filter by id, title, tag, format or source type, and add the Markdown content with -IncludeContent.
 
 ## EXAMPLES
@@ -162,12 +162,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.String. You can pipe objects with an Id property.
 ## OUTPUTS
 
-### MCPPosh.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
+### PSMcpKnowledgeBase.Document: Id, Title, Format, Tags, SourceType (File, Url, Inline, Agent or Imported), Source, Summary, Chars, Added, Updated, KnowledgeBase, Uri and, with -IncludeContent, Content.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/Get-McpDocument.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocument.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/Get-McpDocument.md)
 
 [Add-McpDocument]()
 

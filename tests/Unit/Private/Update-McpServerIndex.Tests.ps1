@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Proto -Description 'Protocol tests' | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Backup' -Content "# Backup`n`nThe nightly backup runs at 02:00 with Veeam." -Tags ops | Out-Null
     Add-McpDocument -KnowledgeBase Proto -Title 'Onboarding' -Content ("# Onboarding`n`n" + ('New employees receive their laptop on the first day. ' * 40)) -Tags hr | Out-Null
@@ -16,7 +16,7 @@ AfterAll {
 
 Describe 'Update-McpServerIndex' {
     It 'reloads the index and description when the manifest changes' {
-        InModuleScope MCPPosh -Parameters @{ Context = $script:Context } {
+        InModuleScope PSMcpKnowledgeBase -Parameters @{ Context = $script:Context } {
             param($Context)
             $first = Update-McpServerIndex -Context $Context -Force
             $first.Documents.Count | Should -Be 2

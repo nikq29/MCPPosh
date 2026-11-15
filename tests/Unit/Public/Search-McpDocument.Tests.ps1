@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Search | Out-Null
     $runbook = @(
         '# VPN Runbook', '', 'General notes about VPN access.', ''
@@ -26,7 +26,7 @@ Describe 'Search-McpDocument' {
         $results = Search-McpDocument -KnowledgeBase Search -Query 'vpn connection dropped'
         $results[0].Heading | Should -Be 'VPN Runbook > Connection drops'
         $results[0].Text | Should -Match 'vpnagent'
-        $results[0].PSObject.TypeNames | Should -Contain 'MCPPosh.SearchResult'
+        $results[0].PSObject.TypeNames | Should -Contain 'PSMcpKnowledgeBase.SearchResult'
     }
 
     It 'filters by tag and limits the results' {

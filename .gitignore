@@ -18,7 +18,7 @@ node_modules
 package-lock.json
 
 # Local knowledge bases created while developing
-/.mcpposh/
+/.psmcpkb/
 
 .idea/
 *.swp

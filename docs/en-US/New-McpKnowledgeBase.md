@@ -1,8 +1,8 @@
 ---
-external help file: MCPPosh-help.xml
+external help file: PSMcpKnowledgeBase-help.xml
 GeneratedBy: Sampler update_help_source task
-Module Name: MCPPosh
-online version: https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/New-McpKnowledgeBase.md
+Module Name: PSMcpKnowledgeBase
+online version: https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/New-McpKnowledgeBase.md
 schema: 2.0.0
 ---
 
@@ -21,7 +21,7 @@ New-McpKnowledgeBase [-Name] <String> [[-Description] <String>] [-Path <String>]
 ## DESCRIPTION
 A knowledge base is a folder that holds normalized Markdown documents, a manifest and a
 search index.
-By default it is created below $env:MCPPOSH_HOME (or ~/.mcpposh).
+By default it is created below $env:PSMCPKB_HOME (or ~/.psmcpkb).
 Use -Path
 to place it somewhere else, e.g.
 on a mounted Azure Files share.
@@ -41,7 +41,7 @@ The description tells AI agents what the documentation covers and when to use it
 
 ### EXAMPLE 2
 ```
-New-McpKnowledgeBase -Name Shared -Path Z:\mcpposh\Shared
+New-McpKnowledgeBase -Name Shared -Path Z:\psmcpkb\Shared
 ```
 
 Creates a knowledge base on a mapped network drive.
@@ -82,7 +82,7 @@ Accept wildcard characters: False
 
 ### -Path
 Optional directory for the knowledge base.
-Defaults to $env:MCPPOSH_HOME/knowledgebases/\<Name\>.
+Defaults to $env:PSMCPKB_HOME/knowledgebases/\<Name\>.
 
 ```yaml
 Type: String
@@ -135,12 +135,12 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### None. You cannot pipe objects to this cmdlet.
 ## OUTPUTS
 
-### MCPPosh.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
+### PSMcpKnowledgeBase.KnowledgeBase: Name, Description, Documents, Characters, Tags, Revision, Created, Updated and Path.
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/New-McpKnowledgeBase.md](https://github.com/nikq29/MCPPosh/blob/main/docs/en-US/New-McpKnowledgeBase.md)
+[https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/New-McpKnowledgeBase.md](https://github.com/nikq29/PSMcpKnowledgeBase/blob/main/docs/en-US/New-McpKnowledgeBase.md)
 
 [Get-McpKnowledgeBase]()
 

@@ -1,7 +1,7 @@
 BeforeAll {
-    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/MCPPosh.TestHelpers.psm1') -Force
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '../../TestHelpers/PSMcpKnowledgeBase.TestHelpers.psm1') -Force
     $script:TestHome = Initialize-McpTestEnvironment
-    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'MCPPosh'
+    $PSDefaultParameterValues['InModuleScope:ModuleName'] = 'PSMcpKnowledgeBase'
     New-McpKnowledgeBase -Name Kb | Out-Null
 }
 
@@ -12,7 +12,7 @@ AfterAll {
 
 Describe 'Write-McpDocumentIndex' {
     It 'writes the chunks of a document to the index file' {
-        InModuleScope MCPPosh {
+        InModuleScope PSMcpKnowledgeBase {
             $kb = Resolve-McpKnowledgeBase -KnowledgeBase Kb
             Write-McpDocumentIndex -KbPath $kb.Path -Id 'manual-1' -Content "# A`n`nAlpha text`n`n## B`n`nBeta text" -Title 'Manual'
             $index = Read-McpJsonFile -Path (Get-McpDocumentPath -KbPath $kb.Path -Id 'manual-1').Index
