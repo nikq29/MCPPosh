@@ -33,7 +33,7 @@ Describe 'Import-McpKnowledgeBase' {
         Set-Content -Path (Join-Path $folder 'readme.txt') -Value 'hi'
         $bogus = Join-Path $script:TestHome 'bogus.zip'
         Compress-Archive -Path (Join-Path $folder '*') -DestinationPath $bogus
-        { Import-McpKnowledgeBase -Path $bogus -Name Bogus } | Should -Throw '*not an PSMcpKnowledgeBase knowledge base*'
+        { Import-McpKnowledgeBase -Path $bogus -Name Bogus } | Should -Throw '*not a PSMcpKnowledgeBase knowledge base*'
         Get-McpKnowledgeBase -Name Bogus -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 

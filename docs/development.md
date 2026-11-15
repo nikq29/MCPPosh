@@ -57,8 +57,8 @@ examples/                    example scripts
 build.ps1, build.yaml, RequiredModules.psd1, Resolve-Dependency.*, GitVersion.yml   Sampler build files
 ```
 
-ModuleBuilder merges `prefix.ps1`, all files in `Private` and `Public` and `suffix.ps1` into one `PSMcpKnowledgeBase.psm1` and
-exports the functions in `Public` (the file name is the function name).
+ModuleBuilder merges `prefix.ps1`, all files in `Private` and `Public` and `suffix.ps1` into one
+`PSMcpKnowledgeBase.psm1` and exports the functions in `Public` (the file name is the function name).
 
 ## Coding rules
 

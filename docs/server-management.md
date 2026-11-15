@@ -1,7 +1,7 @@
 # Server management
 
-PSMcpKnowledgeBase servers are started, inspected and stopped with PowerShell. stdio servers are started by AI clients and end
-when the client closes the connection; this page is mostly about HTTP servers.
+PSMcpKnowledgeBase servers are started, inspected and stopped with PowerShell. stdio servers are started by AI clients
+and end when the client closes the connection; this page is mostly about HTTP servers.
 
 ## Start a server
 

@@ -1,7 +1,7 @@
 function Get-McpClientConfig {
     <#
     .SYNOPSIS
-        Generates the configuration to connect an AI client to an PSMcpKnowledgeBase server.
+        Generates the configuration to connect an AI client to a PSMcpKnowledgeBase server.
 
     .DESCRIPTION
         Produces the JSON snippet (and for Claude Code the 'claude mcp add' command) for:

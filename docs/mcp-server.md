@@ -28,7 +28,8 @@ The client starts with `initialize`. The server
 
 - accepts the requested protocol version when it supports it, otherwise answers with the newest supported version,
 - announces the capabilities `tools` and `resources` (both without change notifications),
-- returns `serverInfo` (`name` = `PSMcpKnowledgeBase`, `title` = `PSMcpKnowledgeBase - <knowledge base>`, `version` = module version), and
+- returns `serverInfo` (`name` = `PSMcpKnowledgeBase`, `title` = `PSMcpKnowledgeBase - <knowledge base>`,
+  `version` = module version), and
 - returns `instructions` built from the knowledge base description, for example:
 
 ```text

@@ -4,7 +4,7 @@ function ConvertTo-McpDocumentObject {
         Converts a manifest record to a document object.
 
     .DESCRIPTION
-        Converts a document record from manifest.json to an PSMcpKnowledgeBase.Document object with Id, Title, Format, Tags, source information, timestamps and the resource URI, optionally including the Markdown content.
+        Converts a document record from manifest.json to a PSMcpKnowledgeBase.Document object with Id, Title, Format, Tags, source information, timestamps and the resource URI, optionally including the Markdown content.
 
     .PARAMETER Record
         The document record from the manifest, an ordered dictionary with id, title, format and the other fields.

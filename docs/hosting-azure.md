@@ -1,7 +1,7 @@
 # Hosting in Azure
 
-The Bicep template in [`deploy/azure`](../deploy/azure) runs an PSMcpKnowledgeBase server as an **Azure Container App**. The
-knowledge base lives on an **Azure Files share** that the container mounts at `/data`. You keep maintaining the
+The Bicep template in [`deploy/azure`](../deploy/azure) runs a PSMcpKnowledgeBase server as an **Azure Container App**.
+The knowledge base lives on an **Azure Files share** that the container mounts at `/data`. You keep maintaining the
 knowledge locally with PowerShell and upload it with `Publish-McpKnowledgeBase`; the running server loads new
 documents automatically.
 

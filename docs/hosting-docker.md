@@ -1,6 +1,6 @@
 # Hosting with Docker
 
-The Docker image runs an PSMcpKnowledgeBase HTTP server for central hosting. The module is installed from the PowerShell
+The Docker image runs a PSMcpKnowledgeBase HTTP server for central hosting. The module is installed from the PowerShell
 Gallery, so the image always contains a released version.
 
 ## Quick start

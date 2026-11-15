@@ -1,6 +1,6 @@
 # Client configuration
 
-`Get-McpClientConfig` creates the configuration that connects an AI client to an PSMcpKnowledgeBase server, either over stdio
+`Get-McpClientConfig` creates the configuration that connects an AI client to a PSMcpKnowledgeBase server, either over stdio
 (the client starts the server) or over HTTP (the client connects to a running server).
 
 ```powershell
